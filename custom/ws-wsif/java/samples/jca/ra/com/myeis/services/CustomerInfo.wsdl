@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions name="CustomerInfoImpl"
+    targetNamespace="http://services.myeis.com/"
+    xmlns="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:format="http://schemas.xmlsoap.org/wsdl/formatbinding/"
+    xmlns:myeis="http://schemas.xmlsoap.org/wsdl/myeis/"
+    xmlns:tns="http://services.myeis.com/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+   <import location="/com/myeis/services/CustomerInfo.xsd" namespace="http://services.myeis.com/"/>
+    <message name="getAddressRequest">
+        <part name="number" type="xsd:string"/>
+    </message>
+    <message name="getAddressResponse">
+        <part name="result" type="tns:Address"/>
+    </message>
+    <message name="getCustomerRequest">
+        <part name="number" type="xsd:string"/>
+    </message>
+    <message name="getCustomerResponse">
+        <part name="result" type="tns:Customer"/>
+    </message>
+    <portType name="CustomerInfo">
+        <operation name="getAddress" parameterOrder="number">
+            <input message="tns:getAddressRequest" name="getAddressRequest"/>
+            <output message="tns:getAddressResponse" name="getAddressResponse"/>
+        </operation>
+        <operation name="getCustomer" parameterOrder="number">
+            <input message="tns:getCustomerRequest" name="getCustomerRequest"/>
+            <output message="tns:getCustomerResponse" name="getCustomerResponse"/>
+        </operation>
+    </portType>
+    <binding name="CustomerInfoMyEISBinding" type="tns:CustomerInfo">
+        <myeis:binding/>
+        <format:typeMapping encoding="myeis">
+            <format:typeMap formatType="" typeName="xsd:string"/>
+            <format:typeMap formatType="" typeName="tns:Address"/>
+            <format:typeMap formatType="" typeName="tns:Customer"/>
+        </format:typeMapping>
+        <operation name="getAddress">
+            <myeis:operation functionName="CUSTOMERINFO_getAddress" />
+            <input name="getAddressRequest"/>
+            <output name="getAddressResponse"/>
+        </operation>
+        <operation name="getCustomer">
+            <myeis:operation functionName="CUSTOMERINFO_getCustomer" />
+            <input name="getCustomerRequest"/>
+            <output name="getCustomerResponse"/>
+        </operation>
+    </binding>
+    <service name="CustomerInfoService">
+        <port binding="tns:CustomerInfoMyEISBinding" name="CustomerInfoMyEISPort">
+            <myeis:address />
+        </port>
+    </service>
+</definitions>

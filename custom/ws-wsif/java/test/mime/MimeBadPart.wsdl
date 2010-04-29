@@ -1,0 +1,65 @@
+<?xml version="1.0" ?>
+
+<definitions targetNamespace="http://mime/"
+             xmlns:tns="http://mime/"
+             xmlns:xsd="http://www.w3.org/1999/XMLSchema"
+             xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+             xmlns:jms="http://schemas.xmlsoap.org/wsdl/jms/"
+             xmlns:format="http://schemas.xmlsoap.org/wsdl/formatbinding/"
+             xmlns:java="http://schemas.xmlsoap.org/wsdl/java/"
+             xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/"
+             xmlns="http://schemas.xmlsoap.org/wsdl/">
+
+  <message name="DataHandlerMessage">
+    <part name="file" type="tns:datahandler"/>
+  </message>
+
+  <message name="StringMessage">
+    <part name="buff" type="xsd:string"/>
+  </message>
+
+  <!-- port type declns -->
+  <portType name="Mime">
+    <operation name="badPart">
+      <input message="tns:DataHandlerMessage"/>
+      <output message="tns:StringMessage"/>
+    </operation>
+  </portType>
+
+  <!-- binding declns -->
+  <binding name="SOAPHttpBinding" type="tns:Mime">
+    <soap:binding style="rpc"
+                  transport="http://schemas.xmlsoap.org/soap/http"/>
+    <operation name="badPart">
+      <soap:operation soapAction=""/>
+      <input>
+        <mime:multipartRelated>
+          <mime:part>
+            <soap:body use="encoded"
+                       namespace="http://mime/"
+                       encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+          </mime:part>
+          <mime:part>
+            <mime:content part="trash" type="text/plain"/>
+          </mime:part>
+        </mime:multipartRelated> 
+      </input>
+      <output>
+        <soap:body use="encoded"
+                   namespace="http://mime/"
+                   encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+      </output>
+    </operation>
+  </binding>
+
+  <!-- service decln -->
+  <service name="MimeService">
+    <port name="SOAPPort" binding="tns:SOAPHttpBinding">
+      <soap:address location="http://localhost:8080/soap/servlet/rpcrouter"/>
+    </port>
+    <port name="AXISPort" binding="tns:SOAPHttpBinding">
+      <soap:address location="http://localhost:8080/axis/services/Mime"/>
+    </port>
+  </service>
+
+</definitions>

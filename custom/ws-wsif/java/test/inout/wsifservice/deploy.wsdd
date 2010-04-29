@@ -1,0 +1,33 @@
+<deployment xmlns="http://xml.apache.org/axis/wsdd/"
+            xmlns:java="http://xml.apache.org/axis/wsdd/providers/java">
+
+ <service name="Inout" provider="java:RPC">
+  <parameter name="className" value="inout.wsiftypes.InoutImpl"/>
+  <parameter name="allowedMethods" value="*"/>
+  <parameter name="scope" value="Application"/>
+  
+  <beanMapping 
+    qname="ns1:address" 
+    xmlns:ns1="http://wsiftypes.addressbook/"
+    languageSpecificType="java:addressbook.wsiftypes.Address"/>
+    
+  <beanMapping 
+    qname="ns2:phone" 
+    xmlns:ns2="http://wsiftypes.addressbook/"
+    languageSpecificType="java:addressbook.wsiftypes.Phone"/>
+    
+  <beanMapping 
+    qname="ns3:mutablestring" 
+    xmlns:ns3="http://wsiftypes.inout/"
+    languageSpecificType="java:inout.wsiftypes.Mutablestring"/>
+    
+  <typeMapping 
+    qname="ns4:arrayofint" 
+    xmlns:ns4="http://wsiftypes.inout/"
+    languageSpecificType="java:[I"
+    serializer="org.apache.axis.encoding.ser.ArraySerializerFactory"
+    deserializer="org.apache.axis.encoding.ser.ArrayDeserializerFactory"
+    encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+ </service>
+
+</deployment>

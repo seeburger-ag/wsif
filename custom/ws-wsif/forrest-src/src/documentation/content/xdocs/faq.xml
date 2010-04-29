@@ -1,0 +1,167 @@
+<?xml version="1.0"?>
+<!DOCTYPE faqs PUBLIC
+       "-//APACHE//DTD FAQ V1.1//EN"
+       "faq-v11.dtd">
+<faqs title="Frequently Asked Questions">
+ <faq>
+  <question>What is the official version of WSIF? How to I get the latest version?</question>
+  <answer>
+   <p>
+The official version of WSIF is found here on the Apache web site.
+Nightly builds are available at
+    <link href="http://cvs.apache.org/dist/axis/nightly/">http://xml.apache.org/dist/axis/nightly/</link>
+   </p>
+   <p>
+          The  wsif-src*.zip contains source distribution, the wsif-bin* zip file contains a built wsif.jar along with the API Javadoc and the wsif-all*.zip 
+          contains the source, the JAR and the javadocs. (* will be replaced by the current version number in the file names).
+   </p>
+   <p>
+The version available from
+    <link href="http://www.alphaworks.ibm.com/">Alphaworks</link>
+is no longer maintained.
+   </p>
+  </answer>
+ </faq>
+
+ <faq>
+  <question>What are the differences between WSIF and WSTK?</question>
+  <answer>
+   <p>WSIF is a framework for invoking WSDL-described services. WSTK is IBM's Web Services Toolkit, 
+   a preview technology for web services support in Websphere available from alphaworks. WSTK includes WSIF amongst other things.</p>
+  </answer>
+ </faq>
+
+ <faq>
+  <question>What are the differences between WSIF and Axis?</question>
+  <answer>
+ <p>Axis is an implementation of SOAP. It includes on the server-side infrastructure for deploying web service implementations and then routing 
+ SOAP messages between clients and those implementations. It also implements the JAX-RPC specification for invoking SOAP services.</p>
+
+ <p>WSIF is similar to the client piece of Axis, in that it is used for invoking services. However, WSIF's API is WSDL-driven and 
+ protocol independent; it allows protocol-specific code ("providers") to be plugged in. For invoking SOAP services, WSIF is in fact 
+ packaged with an Axis provider, that uses Axis APIs (i.e. JAX-RPC) to do the invocation. So WSIF operates at a more abstract level than Axis.</p>
+  </answer>
+ </faq>
+
+ <faq>
+  <question>What are the differences between WSIF and JAX-RPC?</question>
+  <answer>
+   <p>JAX-RPC is an API for invoking XML-based RPC services - essentially its current scope is limited to invocation of SOAP services. 
+   WSIF is an API for invoking WSDL-described services, whether they happen to be SOAP services or not (for example, WSIF defines WSDL 
+   bindings so that EJBs, enterprise software acessible using JMS or the Java Connector architecture as wel as local java classes can all 
+   be described as first class WSDL services and then invoked using the same, protocol-independent WSIF API)..</p>
+  </answer>
+ </faq>
+
+<faq>
+  <question>How do I set an HTTP proxy to be used by WSIF?</question>
+  <answer>
+<p>HTTP proxy settings can be set using the following system properties</p>
+<ul>
+<li><code>http.proxyHost</code>  - The hostname of the proxy server</li>
+<li><code>http.proxyPort</code> - The port for the proxy server</li>
+<li><code>http.nonProxyHosts</code> - A comma separated list of hosts to access directly rather than through the proxy</li>
+</ul>
+  </answer>
+</faq>
+
+  <faq>
+  <question>How can I configure WSIF to work through an authenticating proxy server?</question>
+  <answer>
+   <note>The following applies to the latest nightly builds and is not available in WSIF 2.0</note>
+   <p>In order to retrieve and parse a wsdl document from behind an
+authenticating proxy, you can use the WSIFUtils.readWSDLThroughAuthProxy
+method. Assuming a username of <em>fred</em> and password of <em>cat</em> then use:</p>
+<source>
+String wsdlLoc = "http://someserver.com/somedoc.wsdl"
+char[] passwd = "cat".toCharArray();
+java.net.PasswordAuthentication pa = new java.net.PasswordAuthentication("fred", c);
+Definition def = WSIFUtils.readWSDLThroughAuthProxy(wsdlLoc, pa);
+</source>
+<p>
+If using the Axis provider, you can invoke a service through an
+authenticating proxy by setting proxy usernames and passwords in one of two
+ways:</p>
+<ol>
+<li>Set system properties <code>http.proxyUser</code> and <code>http.proxyPassword</code> or</li>
+<li>Set the username and password on the context message used by the service
+via:</li>
+  </ol>
+<source>
+  WSIFService service = ..... /// Get from factory
+  WSIFMessage ctx = service.getContext();
+  ctx.setObjectPart(WSIFConstants.CONTEXT_HTTP_PROXY_USER, "fred");
+  ctx.setObjectPart(WSIFConstants.CONTEXT_HTTP_PROXY_PWSD, "cat");
+  service.setContext(ctx);
+  </source>
+  </answer>
+ </faq> 
+
+ <faq>
+  <question>Where can I find details of the extensions to WSDL that are supported by WSIF?</question>
+  <answer>
+   <p>Links to the supported extensions can be found in the <link href="providers/index.html">providers </link>section.
+   </p>
+  </answer>
+ </faq>
+
+  <faq>
+  <question>How do I define my own WSDL binding extensions and write WSIF providers for them</question>
+  <answer>
+   <p>Here's <link href="developers/how_to_wsdl_extensions.html">how to write your own WSDL extensions</link> to support new protocols, and then 
+   <link href="developers/how_to_provider.html">write your own WSIF providers</link> to support customized WSIF extensions.</p>
+  </answer>
+ </faq> 
+
+ <faq>
+  <question>How do I report problems and request new features?</question>
+  <answer>
+   <p>The <link href="mail.html">mailing lists</link> are what you are looking for</p>
+  </answer>
+ </faq> 
+
+ <faq>
+  <question>How do I select SOAP provider used in WSIF?</question>
+  <answer>
+   <p>WSIF comes with an Apache Axis provider so using axis with WSIF is easy. WSIF has two SOAP providers, one using Apache SOAP 2.3 
+   and the other using Axis, by default WSIF will use the Axis provider. The default is controlled by the org.apache.wsif.util.WSIFPluggableProviders class. 
+   The javadoc for this class gives details of how the default is defined, but it can be overridden programmatically, for example, the following call sets 
+   the axis provider to be the default: <br /><br /><code>WSIFPluggableProviders.overrideDefaultProvider("http://schemas.xmlsoap.org/wsdl/soap/",
+new WSIFDynamicProvider_ApacheSOAP() );</code>
+</p>
+  </answer>
+ </faq> 
+
+ <faq>
+  <question>How do I use use dynamic invoker sample?</question>
+  <answer>
+   <source>java clients.DynamicInvoker http://www.xmethods.net/sd/2001/TemperatureService.wsdl getTemp 10570
+
+Reading WSDL document from 'http://www.xmethods.net/sd/2001/TemperatureService.wsdl'
+Preparing WSIF dynamic invocation
+- WSIF0006W: Multiple WSIFProvider found supporting the same namespace URI 'http://schemas.xmlsoap.org/wsdl/soap/'. 
+  Found ('org.apache.wsif.providers.soap.apachesoap.WSIFDynamicProvider_ApacheSOAP, org.apache.wsif.providers.soap.apacheaxis.WSIFDynamicProvider_ApacheAxis')
+- WSIF0007I: Using WSIFProvider 'org.apache.wsif.providers.soap.apachesoap.WSIFDynamicProvider_ApacheSOAP' for namespaceURI 'http://schemas.xmlsoap.org/wsdl/soap/'
+Executing operation getTemp
+Result:
+return=56.0
+
+Done!
+   </source>
+  </answer>
+ </faq>
+
+ <faq>
+  <question>Sample DynamicInvoker and Complex Type handling in WSIF?</question>
+  <answer>
+   <p>WSIF does support complex types - of course XML schema support is limited (but very reasonable).</p> 
+
+<p>The DynamicInvoker doesn't support invocation of services using complex types since this requires that java representations of the complex types be generated first. </p>
+
+<p>It is also possible to extend DynamicInvoker to support complex types but it will require some kind of intermediate representation of values that can handle any complex type 
+(such as <link href="http://www.alphaworks.ibm.com/tech/jrom">JROM</link>...) </p>
+
+  </answer>
+ </faq>
+
+</faqs>

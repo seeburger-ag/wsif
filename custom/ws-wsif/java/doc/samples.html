@@ -1,0 +1,98 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><html><head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<meta name="Author" content="Nirmal Mukhi">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<title>Web Services Invocation Framework: Samples</title>
+<link rel="stylesheet" href="wsif.css" type="text/css"></head>
+
+<body alink="#0000ff" bgcolor="#ffffff" leftmargin="2" topmargin="2" marginwidth="2" marginheight="2">
+
+<h1>
+Web Services Invocation Framework:<br>
+Samples</h1>
+<p>The WSIF distribution comes with a set of sample clients that demonstrate WSIF features. This document describes the features demonstrated by each sample, along with a guide to running them.</p>
+<p>Before you run samples you need to make sure that you have required
+JAR files and set CLASSPATH to contain both WSIF jar files and
+required JAR files. If you use binary distribution of WSIF most of JAR
+files is already provided and classpath script can be used to set
+CLASSPATH.&nbsp; We redistribute as many of the required JARs as we can; you will only need to download the following and put them into the <tt>lib/</tt> directory.
+<ul>
+<li><b>activation.jar</b></li>
+<li><b>mail.jar</b></li>
+<li><b>jms.jar</b></li>
+<li><b>j2ee.jar</b>; if you plan to download this it includes the above three so you won't need to download those separately.</li>
+</ul>
+The <a href="../lib/README.html">dependency README</a> tells you where you can download these from and also how they are used, so you can decide for yourself which JARs you really need.</p>
+
+<p>Once you have the necessary jar files, to run samples
+you can simply call <b>classpath script</b> (on Windows use
+classpath.bat on UNIX use source classpath.csh if you use TCSH or
+source classpath.sh if you use BASH) and you will have all required
+jar files on CLASSPATH.</p>
+<p>The samples are present under the samples
+directory of your WSIF installation. Each sample resides in its own
+directory. Within each sample directory, you will find the following
+files (here, <em>SampleName</em> is the name of the sample):
+<ul>
+  <li><tt>SampleName.wsdl</tt>: WSDL file for sample</li>
+  <li><tt>README.html</tt>: README file describing the sample, what WSIF features it demonstrates, and how to run it.</li>
+  <li><tt>service</tt>: Subdirectory containing service implementation files, deployment files, README file describing how to deploy service. In case the sample uses a publicly available service, this directory will contain only a README file describing where the service is hosted, and pointing to further information on the service.</li>
+  <li><tt>client</tt>: Subdirectory containing two further subdirectories, <tt>dynamic</tt> and <tt>stub</tt>. The dynamic subdirectory contains files for a client that uses WSIF's DII (dynamic invocation interface) to invoke the sample service. The stub subdirectory contains a pregenerated set of files that allow invocation of the service through a JAX-RPC compliant service interface. Each of these subdirectories may contain README files for useful information about that particular client.</li>
+</ul></p>
+<p>You will find that in most cases the sample WSDLs widely differ, but the client code remains much the same. This is the whole point of WSIF - providing access to services exposed via diverse protocols through a uniform WSDL-based API. So you might have two samples, one of which invokes the EJB binding for a service and the other invoking a SOAP binding. Since the client does not contain any binding specific code, the client code for these samples might be identical.</p>
+<p>Below you will find a listing of the available samples and a pointer to the README files for each of them.</p>
+<p>
+<table>
+<tr bgcolor="lightgreen">
+   <td><b>What the sample demonstrates</b></td>
+   <td><b>Where the sample is available</b></td>
+   <td><b>Information on how to setup and run this sample</b></td>
+</tr>
+<tr>
+   <td>How to invoke a simple SOAP service</td>
+   <td>The samples/simplesoap directory under your WSIF installation</td>
+   <td><a href="../samples/simplesoap/README.html">The Sample README</a></td>
+</tr>
+<tr>
+   <td>How to invoke a SOAP service that uses custom schema types</td>
+   <td>The samples/complexsoap directory under your WSIF installation</td>
+   <td><a href="../samples/complexsoap/README.html">The Sample README</a></td>
+</tr>
+<tr>
+   <td>How to invoke a local java class as a service</td>
+   <td>The samples/localjava directory under your WSIF installation</td>
+   <td><a href="../samples/localjava/README.html">The Sample README</a></td>
+</tr>
+<tr>
+   <td>How to invoke an EJB as a service</td>
+   <td>The samples/ejb directory under your WSIF installation</td>
+   <td><a href="../samples/ejb/README.html">The Sample README</a></td>
+</tr>
+<tr>
+   <td>How to invoke software accessible using the JCA (Java Connector Architecture) as a service</td>
+   <td>The samples/jca directory under your WSIF installation</td>
+   <td><a href="../samples/jca/README.html">The Sample README</a></td>
+</tr>
+<tr>
+   <td>How to invoke software accessible via the Java Message Service (JMS)</td>
+   <td>The samples/jms directory under your WSIF installation</td>
+   <td><a href="../samples/jms/README.html">The Sample README</a></td>
+</tr>
+<tr>
+   <td>How to choose between the available bindings of a service at runtime</td>
+   <td>The samples/multibinding directory under your WSIF installation</td>
+   <td><a href="../samples/multibinding/README.html">The Sample README</a></td>
+</tr>
+<tr>
+   <td>How to customize WSIF to select between bindings using your own heuristics</td>
+   <td>The samples/customfactory directory under your WSIF installation</td>
+   <td><a href="../samples/customfactory/README.html">The Sample README</a></td>
+</tr>
+<tr>
+   <td>A sample application that builds on the EJB, JMS and complexsoap samples</td>
+   <td>The samples/dslprovider directory under your WSIF installation</td>
+   <td><a href="../samples/dslprovider/README.html">The Sample README</a></td>
+</tr>
+</table>
+<hr width="100%">
+</body></html>

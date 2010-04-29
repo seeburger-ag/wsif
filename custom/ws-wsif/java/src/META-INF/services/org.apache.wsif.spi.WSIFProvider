@@ -1,0 +1,14 @@
+# EJB provider
+org.apache.wsif.providers.ejb.WSIFDynamicProvider_EJB
+
+# Java provider
+org.apache.wsif.providers.java.WSIFDynamicProvider_Java
+
+# SOAP Apache Axis provider
+org.apache.wsif.providers.soap.apacheaxis.WSIFDynamicProvider_ApacheAxis
+
+# SOAP Apache SOAP provider
+org.apache.wsif.providers.soap.apachesoap.WSIFDynamicProvider_ApacheSOAP
+
+# Native JMS provider
+org.apache.wsif.providers.jms.WSIFDynamicProvider_Jms

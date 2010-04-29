@@ -1,0 +1,159 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><html><head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<meta name="Author" content="Nirmal Mukhi">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<title>Web Services Invocation Framework: Samples</title>
+<link rel="stylesheet" href="wsif.css" type="text/css"></head>
+
+  <body alink="#0000ff" bgcolor="#ffffff" leftmargin="2" topmargin="2" marginwidth="2" marginheight="2">
+    
+    <h1>
+      Web Services Invocation Framework:<br>
+      DSL Provider Sample Application</h1>
+    <p>This is a sample application that shows how WSIF lets you write flexible applications through its WSDL-driven, protocol-independent APIs.</p>
+    <p>The application lets users enter their names and addresses and then tells them whether DSL service is available in their area or not. It stores addresses once entered, so returning users need not reenter that information. It also verifies the validity of addresses.</p>
+    <p>The application uses three separate pieces of software to do its job:
+    <ul>
+      <li>An address book service: this is capable of storing addresses and allowing lookup</li>
+      <li>A zip code service: this is capable of looking up information pertaining to a particular zip code, and can be used to verify addresses</li>
+      <li>An availability service : this checks if DSL service is available at a particular zip code</li>
+    </ul>
+  </p>
+    <p>These three pieces of software are modeled as WSDL-described services. Once we do this, we can then access their functionality using the WSIF API, giving us a consistent view of the functionality being used, and allowing dynamic protocol switching and other WSIF benefits. Our application is programmed against the following abstract service definitions:
+      <ul>
+	<li>The address book service is described in the <a href="../ejb/AddressBook.wsdl">AddressBook.wsdl</a> file in the <tt>samples/ejb</tt></p> directory</li>
+	<li>The zip code service is described in the <a href="../complexsoap/Zip2Geo.wsdl">Zip2Geo.wsdl</a> file in the <tt>samples/complexsoap</tt></p> directory</li>
+	<li>The availability service is described in the <a href="../jms/ServiceAvailability.wsdl">Serviceavailability.wsdl</a> file in the <tt>samples/jms</tt></p> directory</li>
+    </ul>
+  </p>
+    <p><a href="ServiceChecker.java">Here</a> is the code for our application. It takes as command line arguments the locations of the WSDL files for the three services. Note that we can provide <em>absolutely any</em> WSDL files as long as the abstract definitions match the ones we programed against. In particular, we can define new bindings, move the service endpoints - for example, to a different application server - change client libraries, etc. <em>without affecting the application code in any way</em>.</p>
+    <img src="applicationview.jpg">
+    <p>Above we show the application's view of the services it uses, along with a different view that shows what could really be behind the WSDL service.</p>
+    <h2>Running the application</h2>
+    <p><b>It is advisable to try running this application after going through the simplesoap, complexsoap, ejb and jms samples.</b></p>
+    <p>The simplest way to run this application is to use the provided WSDL files. First, you need to make sure all your services are deployed and available.</p>
+    <p>The addressbook WSDL describes an EJB binding. To deploy the address book service as an EJB, follow the instructions provided <a href="../ejb/README.html">in the EJB sample</a>. Test that your EJB works using the client provided with that sample.</p>
+    <p>The zip code WSDL describes a SOAP binding. Fortunately this is an external, publicly available web service. To verify that the server is up and the service is running, try out one of the clients in the <a href="../complexsoap/README.html">complexsoap sample</a>.</p>
+    <p>The availability WSDL describes a JMS binding. To deploy the availability service so that it is accessible via JMS, follow the instructions provided <a href="../jms/README.html">in the JMS sample</a>. Test that your JMS service works using the client provided with that sample.</p>
+    <p>Once you have all the pieces deployed and you have verified that they work, you can then run this application. You can use the command
+      <br><tt>java dslprovider.ServiceChecker samples/complexsoap/Zip2Geo.wsdl 
+	<br>samples/ejb/AddressBook.wsdl samples/jms/ServiceAvailability.wsdl</tt>
+    </p>
+    <p>Here is a set of interactions with the application:
+<p>Providing an invalid zip code/city combination:<br>
+<pre><tt>
+C:\work\xml-axis-wsif\java>java dslprovider.ServiceChecker samples\complexsoap\Zip2Geo.wsdl samples\ejb\AddressBook.wsdl samples\jms\ServiceAvailability.wsdl
+
+************************
+WELCOME TO FAST DSL INC.
+************************
+
+
+Interested in DSL service? Enter your address in the form below and we will chec
+k whether we have service available in your area.
+
+If you have previously expressed interest, just enter your name (leave other fie
+lds blank) and we will look up the rest of the information in our records
+Name: Jow Schmoe
+Street Number: 20
+Street Name: Nowhere Street
+City: New York
+State: NY
+Zip: 47405
+
+
+Adding address to records...
+
+
+Verifying validity of address...
+Zip 47405 is in city BLOOMINGTON, not city New York as you specified
+</tt></pre></p>
+<p>Providing a valid address, checking for service; then repeating the check for service for the same name with providing address (address provided the first time is stored):<br>
+<pre><tt>
+C:\work\xml-axis-wsif\java>java dslprovider.ServiceChecker samples\complexsoap\Zip2Geo.wsdl samples\ejb\AddressBook.wsdl samples\jms\ServiceAvailability.wsdl
+************************
+WELCOME TO FAST DSL INC.
+************************
+
+
+Interested in DSL service? Enter your address in the form below and we will check whether we have service available in your area.
+
+If you have previously expressed interest, just enter your name (leave other fields blank) and we will look up the rest of the information in our records
+Name: Joe Schmoe
+Street Number: 20
+Street Name: Nowhere Street
+City: NEW YORK
+State: NY
+Zip: 10005
+
+
+Adding address to records...
+
+
+Verifying validity of address...
+
+
+Customer: Joe Schmoe
+Address: 20 Nowhere Street, NEW YORK NY 10005
+Checking service availability...
+No, we do not offer service in your area
+
+
+Enter 'q' to quit, any other key continue...
+
+************************
+WELCOME TO FAST DSL INC.
+************************
+
+
+Interested in DSL service? Enter your address in the form below and we will check whether we have service available in your area.
+
+If you have previously expressed interest, just enter your name (leave other fields blank) and we will look up the rest of the information in our records
+Name: Joe Schmoe
+Street Number:
+Street Name:
+City:
+State:
+Zip:
+
+
+Looking up address...
+
+
+Verifying validity of address...
+
+
+Customer: Joe Schmoe
+Address: 20 Nowhere Street, NEW YORK NY 10005
+Checking service availability...
+No, we do not offer service in your area
+
+
+Enter 'q' to quit, any other key continue...
+q
+</tt></pre></p>
+<p>Doing an invalid address lookup by providing a name not entered before:<br>
+<pre><tt>
+C:\work\xml-axis-wsif\java>java dslprovider.ServiceChecker samples\complexsoap\Zip2Geo.wsdl samples\ejb\AddressBook.wsdl samples\jms\ServiceAvailability.wsdl
+************************
+WELCOME TO FAST DSL INC.
+************************
+
+
+Interested in DSL service? Enter your address in the form below and we will check whether we have service available in your area.
+
+If you have previously expressed interest, just enter your name (leave other fields blank) and we will look up the rest of the information in our records
+Name: Jane Schmoe
+Street Number:
+Street Name:
+City:
+State:
+Zip:
+
+
+Looking up address...
+Address for Jane Schmoe wasn't found
+</tt></pre></p>
+    <p><b>Note:</b> The addressbook service has an EJB binding; in our sample implementation, this is implemented by a session bean, so the conversational state (i.e. the addressbook being modified and queried) is not saved to persistent storage. As a result, in your use of this application, you will notice that if you add an address and then terminate the session, then start another session with the application you start out with an empty address book, i.e. the previous address you entered will not be stored. You can however verify the lookup function by adding an address, then repeating the information with the same name but an empty address. This is not in any way close to a real application it is just a sample that demonstrates how easy it is to tie together JMS, EJBs and SOAP using WSDL as a normalised description of software and WSIF as the programming model.</p>
+<hr width="100%">
+</body></html>

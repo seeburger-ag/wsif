@@ -1,0 +1,17 @@
+<?xml version="1.0" ?>
+
+<definitions targetNamespace="http://wsifservice.addressbook/"
+             xmlns:tns="http://wsifservice.addressbook/"
+             xmlns:typens="http://wsiftypes.addressbook/"
+             xmlns:xsd="http://www.w3.org/1999/XMLSchema"
+             xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+             xmlns:soapjms="http://schemas.xmlsoap.org/wsdl/soap/jms"
+             xmlns:format="http://schemas.xmlsoap.org/wsdl/formatbinding/"
+             xmlns:java="http://schemas.xmlsoap.org/wsdl/java/"
+             xmlns="http://schemas.xmlsoap.org/wsdl/">
+<import
+    location="http://localhost:8080/wsdl/AddressBook.wsdl"
+    namespace="http://wsifservice.addressbook/">
+</import>
+
+</definitions>

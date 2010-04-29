@@ -1,0 +1,119 @@
+<?xml version="1.0"?>
+<status>
+
+ <developers>
+  <person name="Anthony Elder" email="antelder@apache.org" id="AE" />
+  <person name="Owen Burroughs" email="owenb@apache.org" id="OB" />
+  <person name="Jeremy Hughes" email="hughesj@apache.org" id="JH" />
+  <person name="Mark Whitlock" email="whitlock@apache.org" id="MW" />
+  <person name="Alek Slominski" email="aslom@apache.org" id="AS" />
+  <person name="Nirmal Mukhi" email="nmukhi@apache.org" id="NM" />
+  <!-- Add more people here -->
+ </developers>
+
+ <todo info="Tasks for ">
+  <actions priority="high">
+   <action context="misc" dev="">
+        etc
+   </action>  
+  </actions>
+  <actions priority="medium">
+   <action context="misc" dev="">
+        etc
+   </action>
+  </actions>
+  <actions priority="low">
+   <action context="misc" dev="">
+        etc
+   </action>
+  </actions>  
+  <!-- Add todo items. @context is an arbitrary string. Eg:
+  <actions priority="high">
+    <action context="code" dev="SN">
+    </action>
+  </actions>
+  <actions priority="medium">
+    <action context="docs" dev="open">
+    </action>
+  </actions>
+  -->
+ </todo>
+
+ <changes> 
+   <release version="2.0" date="27th Jan 2003">
+        <action dev="" type="add" context="admin">
+            <strong>First official release (WSIF_2_0) <link href="http://www.apache.org/dyn/closer.cgi/ws/wsif/">Download here</link></strong>
+        </action>
+        <action dev="NM" type="add" context="admin">
+1/23/03: built RC3 release (tagged as <strong>WSIF_2_0_RC3</strong>)
+        </action>
+        <action dev="" type="add" context="admin">
+added JCA sample
+        </action>
+        <action dev="AE" type="add" context="admin">
+fixed bugs:<br/>
+<link href="http://nagoya.apache.org/bugzilla/show_bug.cgi?id=13646">13646</link> WSIFOperation_ApacheAxis fails to set up Call's Parameter list<br />
+<link href="http://nagoya.apache.org/bugzilla/show_bug.cgi?id=15134">15134</link>  AXIS provider requires mail.jar and acivation.jar even when not using attachements<br />
+<link href="http://nagoya.apache.org/bugzilla/show_bug.cgi?id=15578">15578</link>  WSIF incorrectly handles returned attachment from service<br />
+<link href="http://nagoya.apache.org/bugzilla/show_bug.cgi?id=15691">15691</link>  errors in docs<br />
+<link href="http://nagoya.apache.org/bugzilla/show_bug.cgi?id=15780">15780</link>  WSIF stub invocation for doc style with unwrapped parts don't work<br />
+<link href="http://nagoya.apache.org/bugzilla/show_bug.cgi?id=15837">15837</link>  Attachments fail if in the wrong order<br />
+<link href="http://nagoya.apache.org/bugzilla/show_bug.cgi?id=16041">16041</link>  There is no way to override the default (de)serializers used by the WSIF AXIS provider<br />
+<link href="http://nagoya.apache.org/bugzilla/show_bug.cgi?id=16196">16196</link>  WSIF AXIS provider performance unacceptable<br />
+<link href="http://nagoya.apache.org/bugzilla/show_bug.cgi?id=16197">16197</link>  axis provider messaging with attachments don't work<br />
+<link href="http://nagoya.apache.org/bugzilla/show_bug.cgi?id=16199">16199</link>  response soap headers not passed to WSIF client<br />
+<link href="http://nagoya.apache.org/bugzilla/show_bug.cgi?id=16199">16199</link>  WSIF AXIS provider no longer supports jms:property parts in the input message<br />
+<link href="http://nagoya.apache.org/bugzilla/show_bug.cgi?id=16256">16256</link>  WSIF AXIS Operation uses incorrect encoding style<br />
+<link href="http://nagoya.apache.org/bugzilla/show_bug.cgi?id=16271">16271</link>  WSIFUtils method initializeProviders should be public<br />
+<link href="http://nagoya.apache.org/bugzilla/show_bug.cgi?id=16334">16334</link>  WSIF NPE for a document style service which is not wrapped<br />
+        </action>
+
+<action dev="" type="add" context="admin">updated FAQ</action>
+
+<action dev="" type="add" context="admin">added <link href="wsif_samples/index.html">DSL provider</link> sample to demonstrate how WSIF
+can be used ot interact with many services each potentially implemented with
+different protocol (EJB, JMS, SOAP, ...).</action>
+
+<action dev="" type="add" context="admin">added <link href="wsif_samples/index.html">JMS</link> sample to demonstrate how WSIF
+can be used to interacts with software accessible through the JMS API.</action>
+
+<action dev="" type="add" context="admin">12/20/02: built RC1 release (tagged as <strong>WSIF_2_0_RC1</strong>): new samples (<strong>multibinding</strong>,
+<strong>customfactory</strong>),
+misc. updates to documentation and samples</action>
+
+<action dev="" type="add" context="admin">built BETA1 release (tagged as <strong>WSIF_2_0_BETA1</strong>):
+improvements to documentation that is now split in smaller pieces that
+are better fitting into <link href="http://xml.apache.org/axis/wsif/">
+http://xml.apache.org/axis/wsif/</link> website</action>
+
+<action dev="" type="add" context="admin">added EJB sample with documentation and pre-packaged jar
+for deployment in JBoss</action>
+
+<action dev="" type="add" context="admin">built ALPHA2 release (tagged as <strong>WSIF_2_0_ALPHA2</strong>)</action>
+
+<action dev="" type="add" context="admin">
+  changed release packaging: there are now three different release builds:
+<ul>
+<li><strong>src</strong>: only source file (no binaries) - essentially all that is needed
+to compile WSIF if you downloaded all required jar files</li>
+<li><strong>bin</strong>: only binaries: just download few jar files that can not be distributed
+and you are ready to run WSIF (no source code except for samples)</li>
+<li><strong>all</strong> = bin + src</li>
+</ul>
+</action>
+
+<action dev="" type="add" context="samples">
+included samples to demonstrate invocation of SOAP service, local java and service with complex types and documentation for samples.
+</action>
+
+<action dev="" type="add" context="docs">
+documentation changes: <br />
+factored out readme.html into smaller pieces that are put in doc/ (like cvs and requirements)
+updated doc/ with factored out info about cvs and requirements and improved build instructions,
+moved wsdl_extensions to doc/ from README_files,
+simplified wsif.css (much less colors, easier to read ...)
+</action>
+
+   </release>
+ </changes>
+</status>

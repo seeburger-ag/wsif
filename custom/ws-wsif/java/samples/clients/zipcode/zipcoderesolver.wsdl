@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<definitions xmlns:s="http://www.w3.org/2001/XMLSchema" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:tm="http://microsoft.com/wsdl/mime/textMatching/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:s0="http://webservices.eraserver.net/" targetNamespace="http://webservices.eraserver.net/" xmlns="http://schemas.xmlsoap.org/wsdl/" xmlns:jms="http://schemas.xmlsoap.org/wsdl/jms/" >
+  <types>
+    <s:schema xmlns:s="http://www.w3.org/2001/XMLSchema" attributeFormDefault="qualified" elementFormDefault="qualified" targetNamespace="http://webservices.eraserver.net/">
+      <s:element name="ShortZipCode">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="accessCode" nillable="true" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="address" nillable="true" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="city" nillable="true" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="state" nillable="true" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="ShortZipCodeResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="ShortZipCodeResult" nillable="true" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="string" nillable="true" type="s:string" />
+      <s:element name="USPSAddress" type="s0:USPSAddress" />
+    </s:schema>
+  </types>
+  
+  <message name="ShortZipCodeSoapIn">
+    <part name="parameters" element="s0:ShortZipCode" />
+  </message>
+  <message name="ShortZipCodeSoapOut">
+    <part name="parameters" element="s0:ShortZipCodeResponse" />
+  </message>
+  <portType name="ZipCodeResolverSoap">
+    <operation name="ShortZipCode">
+      <documentation>Given a valid street address, city, and state, returns the ZIP code in NNNNN format. If an error occurs, returns 00000 instead. Use accessCode of '0' or '9999' for testing.</documentation>
+      <input message="s0:ShortZipCodeSoapIn" />
+      <output message="s0:ShortZipCodeSoapOut" />
+    </operation>
+  </portType>
+  <binding name="ZipCodeResolverSoap" type="s0:ZipCodeResolverSoap">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" style="document" />
+    <operation name="ShortZipCode">
+      <soap:operation soapAction="http://webservices.eraserver.net/ShortZipCode" style="document" />
+      <input>
+        <soap:body use="literal" />
+      </input>
+      <output>
+        <soap:body use="literal" />
+      </output>
+    </operation>
+  </binding>
+  <service name="ZipCodeResolver">
+    <documentation>Given a valid street address, city, and state, this service returns the proper ZIP code, ZIP code+4, or USPS corrected address. NOTE: This service is meant for non-commercial, personal use only.</documentation>
+    <port name="ZipCodeResolverSoap" binding="s0:ZipCodeResolverSoap">
+      <soap:address location="http://webservices.eraserver.net/zipcoderesolver/zipcoderesolver.asmx" />
+    </port>
+    <port name="ZipCodeResolverSoapJms" binding="s0:ZipCodeResolverSoap">
+      <jms:address queue="SoapJmsZipCodeQueue"
+                   queueConnectionFactory="ZipCodeQCF"
+                   initialContextFactory="com.sun.jndi.fscontext.RefFSContextFactory"
+                   jndiContext="file:///JNDI-Directory"/>
+    </port>
+  </service>
+</definitions>

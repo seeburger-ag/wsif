@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+      <!DOCTYPE document PUBLIC "-//APACHE//DTD Documentation V1.1//EN" "document-v11.dtd">
+      <document> 
+        <header> 
+          <title>Soap Attachments using WSIF</title> 
+        </header> 
+        <body> 
+<section>
+<title>Overview</title>
+<p>
+WSIF supports passing attachments in a Mime message using the Axis 
+provider. The attachment is a javax.activation.DataHandler, The mime:multipartRelated, 
+mime:part and mime:content tags are used to describe the attachment 
+in the WSDL.</p>
+<p>
+The WSDL extensions...</p>
+<source>
+&lt;binding name="MyBinding" type="tns:abc" &gt;
+&nbsp;&lt;soap:binding style="rpc" transport="http://schemas.xmlsoap.org/soap/http"/&gt;
+&nbsp;&lt;operation name="MyOperation"&gt;
+&nbsp;&nbsp;&lt;soap:operation soapAction=""/&gt;
+&nbsp;&nbsp;&lt;input&gt;
+&nbsp;&nbsp;&nbsp;&lt;mime:multipartRelated&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;mime:part&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;soap:body use="encoded" namespace="http://mynamespace"
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;encodingStyle="http://schemas.xmlsoap.org/soap/encoding"/&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;/mime:part&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;mime:part&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;mime:content part="attch" type="text/html"/&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;/mime:part&gt;
+&nbsp;&nbsp;&nbsp;&lt;/mime:multipartRelated&gt;
+&nbsp;&nbsp;&lt;/input&gt;
+&nbsp;&lt;/operation&gt;
+&lt;/binding&gt;
+</source>
+<p>The above WSDL demonstrates a simple operation that has one 
+attachment called <em>attch</em>. There must be a part called <em>attch</em> on 
+the input message for MyOperation. There may be other input parts 
+to MyOperation that are not attachments. In the binding input there 
+must either be a &lt;soap:body or a &lt;mime:multipartRelated, but not 
+both. For mime messages, the soap:body is inside a mime:part. There 
+must only be one mime:part that contains a soap:body in the binding 
+input and that must not contain a mime:content as well, since a 
+content type of text/xml is assumed for the soap:body. There can 
+be multiple attachments in a mime message, each described by a 
+mime:part. Each mime:part (that isn't a soap:body) contains a 
+mime:content that describes the attachment itself. The type field 
+inside the mime:content is not checked or used by WSIF. Instead it 
+is there to provide a hint to the application using WSIF as to what 
+the attachment is intended to contain. Multiple mime:contents inside 
+a single mime:part means that the backend service will expect a single 
+attachment with a type specified by one of the mime:contents inside 
+that mime:part. The parts="..." tag (optional) inside the soap:body 
+is assumed to contain the names of all the mime parts as well as the 
+names of all the soap parts in the message.
+</p>
+</section>
+<section><title>Passing attachments to WSIF</title>
+<p>The following code snippet could invoke the service described by the WSDL above...</p>
+<source>
+import javax.activation.DataHandler;
+. . .
+DataHandler dh = new DataHandler(new FileDataSource("axis.jpg"));
+WSIFServiceFactory factory = WSIFServiceFactory.newInstance();
+WSIFService service = factory.getService("my.wsdl",null,null,"http://mynamespace","abc");
+WSIFOperation op = service.getPort().createOperation("MyOperation");
+WSIFMessage in = op.createInputMessage();
+in.setObjectPart("attch",dh);
+op.executeInputOnlyOperation(in);
+</source>
+<p>I use tomcat with soap 2.3 as my soap server so my 
+DeploymentDescriptor.xml contains the following type mapping..</p>
+<source>
+&lt;isd:mappings&gt;
+&lt;isd:map encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+&nbsp;xmlns:x="http://mynamespace"
+&nbsp;qname="x:datahandler"
+&nbsp;javaType="javax.activation.DataHandler"
+&nbsp;java2XMLClassName="org.apache.soap.encoding.soapenc.MimePartSerializer"
+&nbsp;xml2JavaClassName="org.apache.soap.encoding.soapenc.MimePartSerializer" /&gt;
+&lt;/isd:mappings&gt;
+</source>
+<p>and my backend service gets invoked with the following signature ...</p>
+<source>
+public void MyOperation(DataHandler dh);
+</source>
+<p>Attachments can also be passed in to WSIF using stubs...</p>
+<source>
+DataHandler dh = new DataHandler(new FileDataSource("axis.jpg"));
+WSIFServiceFactory factory = WSIFServiceFactory.newInstance();
+WSIFService service = factory.getService("my.wsdl",null,null,"http://mynamespace","abc");
+MyInterface stub = (MyInterface)service.getStub(MyInterface.class);
+stub.MyOperation(dh);
+</source>
+<p>Attachments can also be returned from an operation, but at present 
+only one attachment can be returned as the return parameter.
+</p>
+</section>
+<section><title>Types and type mappings</title>
+<p>
+By default, attachments are passed into WSIF as DataHandlers. If 
+the part on the message which is the DataHandler maps to a mime:part 
+in the WSDL, then WSIF will automatically map the fully qualified 
+name of the WSDL type to DataHandler.class and set up that type mapping 
+with Axis. </p>
+<p>In your WSDL you may have defined a schema for the attachment as a binary[] 
+for instance. Whether or not you have done this, WSIF silently ignores this 
+mapping and treats the attachment as a DataHandler, unless you have 
+explicitly issued mapType(). WSIF lets axis set the mime content type based 
+on the DataHandler's type, instead of the mime:content type specified in the WSDL.
+</p>
+</section>
+<section><title>Restrictions</title>
+<p> These are not supported...</p>
+<ul>
+<li>Attachments using the Apache Soap provider</li>
+<li>Mime/Axis/Jms</li>
+<li>DIME</li>
+<li>Passing in axis AttachmentParts</li>
+<li>Passing in javax.xml.transform.Source and javax.mail.internet.MimeMultipart</li>
+<li>The mime:mimeXml WSDL tag</li>
+<li>Attachments over doc-style</li>
+<li>Nesting a mime:multipartRelated inside a mime:part</li>
+<li>Types that extend DataHandler, Image, etc</li>
+<li>Types that contain DataHandler, Image, etc</li>
+<li>Arrays or Vectors of DataHandlers, Images, etc</li>
+<li>Multiple inout or output attachments</li>
+</ul>
+</section>
+        </body>
+    </document>
+

@@ -1,0 +1,23 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><html><head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<meta name="Author" content="Nirmal Mukhi">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<title>Web Services Invocation Framework: Samples</title>
+<link rel="stylesheet" href="wsif.css" type="text/css"></head>
+
+<body alink="#0000ff" bgcolor="#ffffff" leftmargin="2" topmargin="2" marginwidth="2" marginheight="2">
+
+<h1>
+Web Services Invocation Framework:<br>
+EJB Sample</h1>
+<p>This sample aims to demonstrate the invocation of an EJB through WSIF's API. This means that an EJB is exposed as a first class WSDL-described service using the <a href="../../doc/wsdl_extensions/ejb_extension.html">EJB binding extensions</a> defined in WSIF.</p>
+<p>In this particular sample, we describe an AddressBook service, a common example in various Web services toolkits. For those 
+unfamiliar with it, this service offers a port type with three operations. Two of the operations add an entry to the address book, using slightly different styles for providing input information. The third operation queries the address book with a name. The service uses complex schema types for representing an address and a phone number.</p>
+<p>The abstract functionality is tied to an EJB binding that describes how a stateful session bean supports the abstract port type defined. It is worth emphasizing that this isn't a standard WSDL binding, instead it exploits WSDL's extensibility to describe how to access the abstract functionality when it is deployed and available on an EJB. You will notice that the <tt>&lt;ejb:address&gt;</tt> element in the <a href="AddressBook.wsdl">AddressBook WSDL</a> refers to an initial context factory that gets used by WSIF's EJB provider. The classpath specified here is vendor specific and will need to be changed depending on your particular deployment, we have provided instructions in the service deployment documentation we link to below.</p>
+<p>The <a href="AddressBook.wsdl">WSDL file</a> is in this sample directory; this has the EJB binding.</p>
+<p><a href="service/README.html">Here's</a> how this service is implemented. We also describe how to deploy the EJB on a J2EE platform of your choice.</p>
+<p><a href="client/dynamic/README.html">Here's</a> how to invoke this service dynamically using WSIF's dynamic invocation interface (DII).</p>
+<p><a href="client/stub/README.html">Here's</a> how to invoke this service by first generating the stub interface and using this directly through WSIF's dynamic proxy, thus hiding all WSIF specifics from the client code. Note that the stub interface used is the the service interface as defined by the JAX-RPC specification.</p>
+<p>Deployment of an EJB as well as accessing and using it is vendor-specific. We have included instructions for deploying and using this sample in particular app server environments; even if your favorite app server isn't part of our list, we have provided enough documentation so that it should not be hard to run this sample in a different environment.
+<hr width="100%">
+</body></html>

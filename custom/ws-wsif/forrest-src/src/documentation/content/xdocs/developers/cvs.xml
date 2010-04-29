@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+      <!DOCTYPE document PUBLIC "-//APACHE//DTD Documentation V1.1//EN" "document-v11.dtd">
+      <document> 
+        <header> 
+          <title>CVS</title> 
+        </header> 
+        <body> 
+<section>
+ <title>Accessing Builds and Source Code</title>
+<p>The source code for this package is available on the Apache web site. Individual
+files can be accessed using the web-based
+<fork href="http://cvs.apache.org/viewcvs/ws-wsif/">CVS interface</fork>.
+The entire package can be downloaded using the following instructions.</p>
+</section>
+
+<section>
+<title>Accessing the Nightly Builds</title>
+<p>This package is built nightly along with Axis. The build will create two
+zip files: wsif-bin-1.2.zip and xml-axis.wsif-src.zip. The first file contains a
+complete build image, which includes wsif.jar and the API Javadoc. The second file contains  a copy of the source code, which could
+be built using Ant. Both of these files can be accessed at the same location
+as the <fork href="http://cvs.apache.org/dist/axis/nightly/">Axis nightly builds</fork>.</p>
+</section>
+
+<section>
+<title>Accessing the Source Tree (AnonCVS)</title>
+<p>So, you've decided that you need access to the source tree to see the latest
+and greatest code. There's two different forms of CVS access. The first
+is anonymous and anybody can use it. The second is not and you must have
+a login to the development server. If you don't know what this means, join
+the <link href="../mail.html">mailing list</link> and find out.</p>
+<p>Anyone can checkout source code from our anonymous CVS server. To do so,
+simply use the following commands (if you are using a GUI CVS client, configure
+it appropriatly):
+</p>
+<source>cvs -d :pserver:anoncvs@cvs.apache.org:/home/cvspublic login password: anoncvs
+
+cvs -d :pserver:anoncvs@cvs.apache.org:/home/cvspublic checkout ws-wsif</source>
+</section>
+<section>
+ <title>Full Remote CVS Access</title>
+<p>If you are a <em>Committer</em> and have a login on the
+Apache development server, this section is for you. If you are not a Committer,
+but you want to submit patches or even request commit privelages, please see the
+<link href="http://jakarta.apache.org/site/guidelines.html">Jakarta
+GuideLines </link>page (we follow the same rules) for more information.
+</p>
+<p>To have full access to the CVS server, you need to follow the links depending
+on the operating system you are using:
+</p>
+<ul>
+<li><fork href="http://jakarta.apache.org/site/cvsonunix.html">Unix</fork></li>
+<li><fork href="http://jakarta.apache.org/site/cvsonwin32.html">Windows</fork></li>
+</ul>
+</section>
+   </body>
+    </document>

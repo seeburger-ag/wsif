@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema attributeFormDefault="qualified" elementFormDefault="qualified"
+    targetNamespace="http://toolplugin.jca.providers.wsif.apache.org/"
+    xmlns="http://www.w3.org/2001/XMLSchema"
+    xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/"
+    xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:xsd1="http://toolplugin.jca.providers.wsif.apache.org/"
+    xmlns:xsd2="http://xml.apache.org/xml-soap">
+    <import namespace="http://xml.apache.org/xml-soap"/>
+    <import namespace="http://schemas.xmlsoap.org/wsdl/" schemaLocation="http://schemas.xmlsoap.org/wsdl/"/>
+    <import namespace="http://schemas.xmlsoap.org/soap/encoding/" schemaLocation="http://schemas.xmlsoap.org/soap/encoding/"/>
+    <complexType name="ImportDefinition">
+        <all>
+            <element name="importXSDs" type="xsd1:ArrayOfImportXSD"/>
+            <element name="definition" type="xsd1:javax.wsdl.Definition"/>
+            <element name="importResources" type="xsd1:ArrayOfImportResource"/>
+        </all>
+    </complexType>
+    <complexType name="ImportXSD">
+        <all>
+            <element name="location" type="string"/>
+            <element name="namespace" type="string"/>
+            <element name="source" type="string"/>
+        </all>
+    </complexType>
+    <complexType name="ImportResource">
+        <all>
+            <element name="location" type="string"/>
+            <element name="contents" type="base64"/>
+        </all>
+    </complexType>
+    <complexType name="ArrayOfImportXSD">
+        <complexContent>
+            <restriction base="soapenc:Array">
+                <sequence/>
+                <attribute ref="soapenc:arrayType" wsdl:arrayType="xsd1:ImportXSD[]"/>
+            </restriction>
+        </complexContent>
+    </complexType>
+    <complexType name="ArrayOfImportResource">
+        <complexContent>
+            <restriction base="soapenc:Array">
+                <sequence/>
+                <attribute ref="soapenc:arrayType" wsdl:arrayType="xsd1:ImportResource[]"/>
+            </restriction>
+        </complexContent>
+    </complexType>
+    <complexType name="javax.wsdl.Definition">
+        <all>
+            <element name="imports" type="xsd2:Map"/>
+            <element name="bindings" type="xsd2:Map"/>
+            <element name="namespaces" type="xsd2:Map"/>
+            <element name="documentBase" type="xsd1:java.net.URL"/>
+            <element name="documentationElement" type="xsd1:anyElement"/>
+            <element name="portTypes" type="xsd2:Map"/>
+            <element name="QName" type="xsd1:javax.wsdl.QName"/>
+            <element name="messages" type="xsd2:Map"/>
+            <element name="extensionRegistry" type="xsd1:javax.wsdl.extensions.ExtensionRegistry"/>
+            <element name="targetNamespace" type="string"/>
+            <element name="services" type="xsd2:Map"/>
+            <element name="extensibilityElements" type="xsd1:java.util.List"/>
+            <element name="typesElement" type="xsd1:anyElement"/>
+        </all>
+    </complexType>
+    <complexType name="java.net.URL">
+        <all>
+            <element name="ref" type="string"/>
+            <element name="port" type="int"/>
+            <element name="file" type="string"/>
+            <element name="authority" type="string"/>
+            <element name="content"/>
+            <element name="query" type="string"/>
+            <element name="URLStreamHandlerFactory" type="xsd1:java.net.URLStreamHandlerFactory"/>
+            <element name="userInfo" type="string"/>
+            <element name="protocol" type="string"/>
+            <element name="host" type="string"/>
+            <element name="path" type="string"/>
+        </all>
+    </complexType>
+    <complexType name="java.net.URLStreamHandlerFactory">
+        <all/>
+    </complexType>
+    <complexType name="anyElement">
+        <sequence>
+            <any processContents="skip"/>
+        </sequence>
+    </complexType>
+    <complexType name="javax.wsdl.QName">
+        <all>
+            <element name="localPart" type="string"/>
+            <element name="namespaceURI" type="string"/>
+        </all>
+    </complexType>
+    <complexType name="javax.wsdl.extensions.ExtensionRegistry">
+        <all/>
+    </complexType>
+    <complexType name="java.util.List">
+        <all>
+            <element name="empty" type="boolean"/>
+        </all>
+    </complexType>
+    <complexType name="PortTypeSelection">
+        <all>
+            <element name="operationSelection" type="xsd1:ArrayOfOperationSelection"/>
+            <element name="portTypeQName" type="xsd1:javax.wsdl.QName"/>
+        </all>
+    </complexType>
+    <complexType name="OperationSelection">
+        <all>
+            <element name="operationName" type="string"/>
+            <element name="inputName" type="string"/>
+            <element name="outputName" type="string"/>
+        </all>
+    </complexType>
+    <complexType name="ArrayOfOperationSelection">
+        <complexContent>
+            <restriction base="soapenc:Array">
+                <sequence/>
+                <attribute ref="soapenc:arrayType" wsdl:arrayType="xsd1:OperationSelection[]"/>
+            </restriction>
+        </complexContent>
+    </complexType>
+    <complexType name="PortTypeArray">
+        <all>
+            <element name="portTypes" type="xsd1:ArrayOfJavax.wsdl.PortType"/>
+        </all>
+    </complexType>
+    <complexType name="javax.wsdl.PortType">
+        <all>
+            <element name="QName" type="xsd1:javax.wsdl.QName"/>
+            <element name="operations" type="xsd1:java.util.List"/>
+            <element name="documentationElement" type="xsd1:anyElement"/>
+            <element name="undefined" type="boolean"/>
+        </all>
+    </complexType>
+    <complexType name="ArrayOfJavax.wsdl.PortType">
+        <complexContent>
+            <restriction base="soapenc:Array">
+                <sequence/>
+                <attribute ref="soapenc:arrayType" wsdl:arrayType="xsd1:javax.wsdl.PortType[]"/>
+            </restriction>
+        </complexContent>
+    </complexType>
+</schema>

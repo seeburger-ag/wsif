@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+      <!DOCTYPE document PUBLIC "-//APACHE//DTD Documentation V1.1//EN" "document-v11.dtd">
+      <document> 
+        <header> 
+          <title>Quick Start</title> 
+        </header> 
+        <body> 
+<section>
+<title>Preliminaries</title>
+<p>Download the WSIF distribution from 
+<link href="http://www.apache.org/dyn/closer.cgi/ws/wsif/">
+http://www.apache.org/dyn/closer.cgi/ws/wsif/</link>. 
+It comes in three flavors: the binary distribution (&quot;bin&quot;), 
+the source-only distribution (&quot;src&quot;) or everything 
+included (&quot;all&quot;). If you are familiar with CVS and 
+want to work with the latest code <link href="developers/cvs.html">use cvs</link>. Using CVS 
+you can also retrieve any past release by using tag (for example 
+WSIF_2_0_ALPHA2).</p></section>
+
+<section>
+<title>Getting Started</title>
+<p>If you have downloaded binary package then you are ready to use WSIF: the 
+very first thing to do is to check provided samples. However before you start 
+please read <link href="faq.html">WSIF FAQ</link>. Then read about <link href="wsif_samples/index.html">
+how to run the samples</link>. Otherwise if you downloaded source code or accessed it from CVS you will need 
+to build WSIF. To do this, first <link href="requirements.html">check that all 
+prerequisites</link> are available. Then <link href="developers/building.html">proceed with 
+building</link>.</p>
+
+<p>After you have successfully downloaded and installed WSIF, you
+      can test your installation by <link href="wsif_samples/index.html">running the
+	samples</link>. If you are able to run all the samples
+      successfully you should have a very good idea of what you can do
+      with WSIF. Essentially once you have a WSDL file with a binding
+      that WSIF understands (such as SOAP, EJB, Java, JMS, JCA, etc.)
+      you can write a client that uses WSIF's APIs - the dynamic
+      invocation API or the stub-based invocation - to use this
+      service.</p>
+
+<p>Traditionally, the burden of dealing with new protocols has
+      been a carried by the server-side. Software has to morph itself
+      (through the addition of wrappers) to look like something the
+      client expects to see. With WSIF, the software remains exactly
+      the same - we just get the client to use WSIF's binding
+      independent API, and through the addition of providers, we can
+      mix and match protocols as we please.</p>
+
+<p><em>Service</em> is a very liberal term for WSIF!
+      Anything that can be described in WSDL qualifies as a service
+      and is something you can access using the WSIF API. Moreover,
+      since WSDL is extensible, potentially everything can be
+      described using WSDL. The next section describes how you can
+      define your own bindings and write your own WSIF providers.</p>
+</section>
+        </body>
+    </document>

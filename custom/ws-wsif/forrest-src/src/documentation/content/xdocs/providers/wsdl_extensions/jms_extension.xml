@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8"?>
+      <!DOCTYPE document PUBLIC "-//APACHE//DTD Documentation V1.1//EN" "document-v11.dtd">
+      <document> 
+        <header> 
+          <title>WSDL JMS Extension</title> 
+        </header> 
+        <body>
+<section><title>Overview</title>
+<p>
+WSIF defines extra WSDL extensions that are not part of WSDL4J itself. Amongst
+others, these WSDL extensions are needed for JMS. You should use WSIF to read
+in your WSDL, rather than using WSDL4J directly, because WSIF adds in its
+own extension registries that understand these extra WSDL extensions. For example
+you can use WSIFUtils.readWSDL to do this. This page describes WSIF's WSDL
+extensions for JMS. Currently, these WSDL extensions are valid for Soap over Jms,
+Axis over Jms and NativeJms. The jms namespace must be 
+<code>
+xmlns:jms="http://schemas.xmlsoap.org/wsdl/jms/"
+</code>
+</p>
+</section>
+<section><title>Jms address</title>
+<p>
+&lt;jms:address describes a target port that is accessible via JMS.
+</p>
+<source>
+&lt;jms:address jmsVendorURI="xxx"
+&nbsp;&nbsp;&nbsp;&nbsp;jndiDestinationName="xxx"
+&nbsp;&nbsp;&nbsp;&nbsp;destinationStyle="xxx"
+&nbsp;&nbsp;&nbsp;&nbsp;jndiConnectionFactoryName="xxx"
+&nbsp;&nbsp;&nbsp;&nbsp;initialContextFactory="xxx"
+&nbsp;&nbsp;&nbsp;&nbsp;jndiProviderURL="xxx"
+&nbsp;&nbsp;&nbsp;&nbsp;jmsProviderDestinationName="xxx"
+&nbsp;&nbsp;&nbsp;&nbsp;jmsImplementationSpecificURI="xxx" /&gt;
+</source>
+<ul>
+<li>there must be exactly one jms:address in the port instead of the soap:address</li>
+<li>jmsVendorURI is optional and unused by WSIF. It allows to the client 
+to check the JMS implementation.</li>
+<li>either destinationStyle or jmsImplementationSpecificURI must be 
+specified, but not both.</li>
+<li>jmsImplementationSpecificURI specifies the queue manager and queues 
+in a implementation specific format. This is currently unimplemented by WSIF.</li>
+<li>destinationStyle must either be queue or topic, but topics aren't yet 
+implemented by WSIF.</li>
+<li>if destinationStyle is specified, then either jndiDestinationName or 
+jmsProviderDestinationName must be specified but not both.</li>
+<li>jndiDestinationName is the JNDI name of the JMS queue that WSIF will 
+send requests to.</li>
+<li>jmsProviderDestinationName is the JMS name of the JMS queue that WSIF 
+will send requests to.</li>
+<li>if jndiDestinationName is specified then jndiConnectionFactoryName must 
+also be specified.</li>
+<li>if jmsProviderDestinationName is specified then jndiConnectionFactoryName may
+also be specified. jndiConnectionFactoryName would be needed if the JNDI name
+of a replyTo queue is passed to WSIF.</li>
+<li>jndiConnectionFactoryName is the JNDI name of the connection factory 
+that WSIF will use.</li>
+<li>if destinationStyle is specified then either both jndiProviderURL and 
+initialContextFactory or neither must be specified.</li>
+<li>jndiProviderURL and initialContextFactory specify which JNDI database to 
+use. If they are not present, WSIF uses the default JNDI.</li>
+</ul>
+<p>
+WSIF uses the following order to lookup queues and queue managers in JNDI</p>
+<ul>
+<li>Lookup java:comp/env/&lt;name&gt; in the default (local) JNDI</li>
+<li>Lookup java:comp/env/&lt;name&gt; in the JNDI specified by the WSDL</li>
+<li>Lookup &lt;name&gt; in the default (local) JNDI</li>
+<li>Lookup &lt;name&gt; in the JNDI specified by the WSDL.</li>
+</ul>
+<p>
+This allows a client administrator to override the JNDI definition specified 
+in the WSDL.
+</p>
+</section>
+<section><title>Jms binding</title>
+<p>
+The Jms binding is used to bind Native Jms.
+</p>
+<source>
+&lt;binding name="xxx" type="xxx"&gt;
+&nbsp;&nbsp;&lt;jms:binding type="ObjectMessage"/&gt;
+&nbsp;&nbsp;&lt;format:typeMapping encoding="Java" style="Java"&gt;
+&nbsp;&nbsp;&nbsp;&nbsp; &lt;format:typeMap typeName="xxx" formatType="xxx" /&gt;
+&nbsp;&nbsp;&lt;/format:typeMapping&gt;
+&nbsp;&nbsp;&lt;operation name="xxx"&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;input name="xxx" /&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;output name="xxx" /&gt;
+&nbsp;&nbsp;&lt;/operation&gt;
+&lt;/binding&gt;
+</source>
+<p>
+For information about the format:typeMapping and format:typeMap please see
+<link href="formattypemapping_extension.html">Format Type Mapping</link>.
+</p>
+<p>
+The jms:binding specifies that this binding is for Native Jms. The type is the
+type of the JMS message that will be sent. Currently only object messages
+are supported.
+</p>
+</section>
+<section><title>Jms property</title>
+<source>
+&lt;jms:property name="&lt;name&gt;" part="&lt;part&gt;" /&gt;
+</source>
+<ul>
+<li>this must go in the input, output or fault section of the binding operation. 
+Output jms properties are not yet implemented in WSIF.</li>
+<li>the &lt;name&gt; may be the name of a property defined by JMS, or 
+the name of a property defined by the JMS implementation, or the name of 
+a user property.</li>
+<li>the &lt;part&gt; must be the name of a part in the message.</li>
+<li>JMS user properties that are objects are not implemented by WSIF.</li>
+<li>When using stubs to invoke WSIF, this property appears as a parameter 
+on the stub's signature, but will not appear on the web service's 
+method signature.</li>
+</ul>
+</section>
+<section>
+<title>Jms property value</title>
+<source>
+&lt;jms:propertyValue name="&lt;name&gt;" type="&lt;type&gt;" 
+value="&lt;value&gt;" /&gt;
+</source>
+<ul>
+<li>this must go in either the &lt;jms:address or in the input section 
+of the binding operation.</li>
+<li>the &lt;name&gt; may be the name of a property defined by JMS, or 
+the name of a property defined by the JMS implementation, or the name of 
+a user property.</li>
+<li>the &lt;type&gt; is the datatype of the &lt;value&gt; that hardcodes 
+the value of this property in the WSDL.</li>
+<li>JMS user properties that are objects are not implemented by WSIF.</li>
+</ul>
+<p>
+JMS properties can also be set on the message context, without being 
+defined in the WSDL.
+</p>
+</section>
+<section><title>Jms fault, fault property and fault indicator</title>
+<p>
+The JMS fault, fault property and fault indicator tags are WSDL extensions
+that describe the Native JMS binding for a fault message. These tags appear
+in the fault message of a JMS binding operation. These faults are problems
+that the backend web service wishes to report to the client. In Native JMS
+these are mapped to either body parts or JMS properties. There is a JMS 
+property that is the fault indicator. If this fault indicator is set, this 
+message describes a fault, not an output message. The fault indicator also 
+shows which fault occurred.
+</p>
+<source>
+&lt;binding name="xxx" type="xxx"&gt;
+&nbsp;&nbsp;&lt;jms:binding type="ObjectMessage"/&gt;
+&nbsp;&nbsp;&lt;format:typeMapping encoding="Java" style="Java" /&gt;
+&nbsp;&nbsp;&lt;operation name="xxx"&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;input name="xxx" /&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;output name="xxx" /&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;fault name="xxx"&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;jms:faultIndicator type="property"&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;jms:faultProperty 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;name="xxx" 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;type="xxx" 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;value="xxx" 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;part="xxx"/&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;/jms:faultIndicator&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;jms:fault parts="a b c"/&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;jms:property 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;name="xxx" 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;type="xxx" 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;part="xxx"/&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;/fault&gt;
+&nbsp;&nbsp;&lt;/operation&gt;
+&lt;/binding&gt;
+</source>
+<ul>
+<li>There can be multiple fault messages for a particular operation. Each fault
+message describes a different fault that this operation can return.</li>
+<li>The &lt;jms:faultIndicator tag describes how to recognise this fault message.
+The type of the faultIndicator must be set to property which means that this 
+faultIndicator is described by a JMS property. Other faultIndicator types may be
+supported in the future. WSIF currently supports each fault message having 
+exactly one jms:faultIndicator.</li>
+<li>The &lt;jms:faultProperty tag appears in the &lt;jms:faultIndicator, if the 
+faultIndicator type is property (which is the only value allowed currently).
+The jms:faultProperty describes the JMS property that indicates that this 
+message is a fault. The faultProperty name is the name of the JMS property. The
+type is the type of the JMS property, which must also match the type of the message
+part that this faultProperty maps to. Also the value must be able to be
+converted into this type. The value is the value that the JMS property must
+be set to, if the message describes this fault. The part is the message part
+that maps to this faultProperty. The name, type and value are mandatory, whereas
+the part is optional. There cannot be two fault messages for the same operation
+that have the same faultProperty name and value.</li>
+<li>The &lt;jms:fault tag describes which message parts will be set for this
+fault. The parts is a space separated list of message parts.</li>
+<li>For a description of the &lt;jms:property tag, please see above.</li>
+</ul>
+</section>
+</body>
+</document>

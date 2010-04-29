@@ -1,0 +1,22 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><html><head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<meta name="Author" content="Nirmal Mukhi">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<title>Web Services Invocation Framework: Samples</title>
+<link rel="stylesheet" href="wsif.css" type="text/css"></head>
+
+<body alink="#0000ff" bgcolor="#ffffff" leftmargin="2" topmargin="2" marginwidth="2" marginheight="2">
+
+<h2>
+Web Services Invocation Framework:<br>
+Invoking the JMS Sample using WSIF's dynamic invocation interface</h2>
+<p>First you need to <a href="../../../../doc/samples.html">set up the CLASSPATH in your environment</a>. Beyond the standard classpath setting, you also need to add the J2EE client jar files to your classpath. The set of J2EE client JARs is vendor specific. We have included below instructions for some app servers, follow that link if you happen to be using one of those, otherwise refer to the documentation in your application server on how to set up the environment for a JMS client.</p>
+<p><b>Setting up the client on some app servers</b>
+<ul>
+      <li><a href="../jboss_setup/README.html">JBoss setup</a></li>
+</ul></p>
+<p><b>Running the client</b>
+<p>To invoke this sample using WSIF's DII, run the DynamicInvoker class. Specify as command line arguments the location of the WSDL file for the jms sample followed by the operation you wish to invoke and the zip code you are interested in. For example, <br><tt>java  clients.DynamicInvoker samples/jms/ServiceAvailability.wsdl checkAvailability 10050</tt></p>
+<p>To see details of how the WSIF API is used to make invocations dynamically, take a look at the code for the <a href="../../../clients/DynamicInvoker.java">DynamicInvoker class</a>.</p>
+<hr width="100%">
+</body></html>

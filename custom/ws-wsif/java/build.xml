@@ -1,0 +1,759 @@
+<?xml version="1.0"?>
+
+<!-- ==================================================================
+
+   Build file for WSIF
+
+Notes:
+   This is a build file for use with the Jakarta Ant build tool.
+
+Prerequisites:
+
+   jakarta-ant from http://jakarta.apache.org
+   A JAXP-compliant DOM parser.
+     - Xerces, from http://xml.apache.org, works fine.
+   WSDL4J
+   Apache Soap 2.3
+
+Optional additions:
+   SoapRMI from http://www.extreme.indiana.edu/soap/
+
+Build Instructions:
+   To build, run
+
+     java org.apache.tools.ant.Main <target>
+
+   on the directory where this file is located with the target you want.
+
+Main targets:
+
+ - compile  -> creates the "wsif.jar" package in "./build/lib"
+ - javadocs -> creates the javadocs in "./build/javadocs"
+ - bindist  -> creates the complete binary distribution
+ - srcdist  -> creates the complete src distribution
+
+Author:
+  Aleksander Slominski <aslom@apache.org>
+  Matthew J. Duftler <duftler@us.ibm.com>
+  Jeremy Hughes <hughesj@apache.org>
+  Owen Burroughs <owenb@apache.org>
+  Piotr Przybylski <piotrp@apache.org>
+  
+==================================================================== -->
+
+<project default="compile" basedir=".">
+
+  <target name="init">
+    <property name="Name" value="WSIF"/>
+    <property name="name" value="wsif"/>
+    <property name="dynamic.name" value="wsif-dynamic"/>
+    <property name="Name" value="wsif"/>
+    <property name="wsif.version" value="2.0"/>
+    <property name="year-from" value="2002"/>
+    <property name="year-to" value="2003"/>
+    <property name="version.postfix" value=""/>
+    <property name="javadoc.title" value="${Name}"/>    
+
+    <property name="build.compiler" value="classic"/>
+    <property name="debug" value="off"/>
+
+    <property name="src.dir" value="./src"/>
+    <property name="samples.dir" value="./samples"/>
+    <property name="docs.dir" value="./doc"/>
+
+    <property name="packages"
+              value="org.apache.wsif.*"/>
+
+    <property name="build.file" value="build.xml"/>
+
+    <property name="build.dir" value="./build"/>
+    <property name="build.dest" value="./build/classes"/>
+    <property name="dynamic.dest" value="./build/classes"/>
+    <property name="build.lib" value="./build/lib"/>
+    <property name="build.samples" value="./build/samples"/>
+    <property name="build.tests" value="./build/tests"/>
+    <property name="build.javadocs" value="./build/javadocs"/>
+
+    <property name="jar" value="${build.dir}/lib/${name}.jar"/>
+    <!--<property name="jar_complete" value="${build.dir}/lib/${name}-all-${wsif.version}.jar"/>-->
+    <!--property name="wsdl4j_jar" value="lib/wsdl4j.jar"/-->
+    <!--property name="qname_jar" value="lib/qname.jar"/-->
+
+
+    <property name="dist.dir" value="${build.dir}/${name}${version.postfix}"/>
+    <property name="dist.all.file"
+              value="build/${name}-all${version.postfix}"/>
+    <property name="dist.bin.file"
+              value="build/${name}-bin${version.postfix}"/>
+    <property name="dist.src.file"
+              value="${build.dir}/${name}-src${version.postfix}"/>
+
+
+    <property name="build.javadocs.base" value="${build.dir}/javadocs/base"/>
+    <property name="build.javadocs.j2c" value="${build.dir}/javadocs/j2c"/>
+    <property name="j2c.name" value="wsif-j2c"/>
+    <property name="j2c.dest" value="${build.dir}/j2c/classes"/>
+    <property name="j2c.src" value="${build.dir}/j2c/src"/>
+    <property name="j2c.dir" value="${build.dir}/j2c"/>
+    <property name="j2c.jar" value="${build.dir}/lib/${j2c.name}.jar"/>
+    <property name="j2c.packages" value="org.apache.wsif.providers.jca.*"/>
+    <property name="j2c.sample.jar" value="${build.dir}/samples/jca/myeis.jar"/>
+    <property name="j2c.sample.rar" value="${build.dir}/samples/jca/myeis.rar"/>
+    <property name="forrest.home" value=""/>
+  </target>
+
+  <!-- =================================================================== -->
+  <!-- Project classpath to use                                            -->
+  <!-- =================================================================== -->
+
+<path id="project.classpath">
+   <!--pathelement location="${build.tests}"/>
+   <pathelement path="${build.samples}"/>
+   <pathelement path="${build.dest}"/>
+   <pathelement path="."/-->
+   <fileset dir=".">
+     <include name="lib/*.jar"/>
+   </fileset>
+   <!-- this build file will utilize the classpath set in the users environment. -->
+  <pathelement path="${java.class.path}"/>
+</path> 
+
+
+  <!-- =================================================================== -->
+  <!-- Prepares the build directory                                        -->
+  <!-- =================================================================== -->
+  <target name="prepare" depends="init">
+    <mkdir dir="${build.dir}"/>
+
+    <uptodate property="javac.notRequired"
+              targetfile="${jar}">
+      <srcfiles dir="${src.dir}">
+        <patternset refid="javac.source.files"/>
+      </srcfiles>
+    </uptodate>
+
+    <uptodate property="javadoc.required"
+              targetfile="${jar}">
+      <srcfiles dir="${build.dir}" includes="**/*.html"/>
+    </uptodate>
+
+    <available property="soaprmi.present" classname="soaprmi.Remote" classpathref="project.classpath"  />
+    <available property="jms.present" classname="javax.jms.Message" classpathref="project.classpath"   />
+    <available property="ejb.present" classname="javax.ejb.EJBHome" classpathref="project.classpath"   />
+    <available property="apachesoap.present" classname="org.apache.soap.Envelope" classpathref="project.classpath"   />
+    <available property="apacheaxis.present" classname="org.apache.axis.message.SOAPEnvelope" classpathref="project.classpath"   />
+    <available property="j2c.present" classname="javax.resource.Referenceable" classpathref="project.classpath"   />
+    <available property="junit.present" classname="junit.framework.TestCase" classpathref="project.classpath"   />
+    <available property="forrest.present" file="${forrest.home}" type="dir" classpathref="project.classpath"   />
+
+    <available property="wsdl.present" classname="javax.wsdl.WSDLException" classpathref="project.classpath"   />
+    <fail unless="wsdl.present">Warning: WSDL4J is required 
+    Put WSDL4J JAR in lib directory and for more details see lib/README.html</fail>
+
+    <available property="qname.present" classname="javax.xml.namespace.QName" classpathref="project.classpath"  />
+    <fail unless="qname.present">Warning: QName class is required 
+    JAR file with QName class can be obtained from WSDL4J and should be put in lib directory.
+    For more details see lib/README.html</fail>
+
+    <available property="activation.present" classname="javax.activation.DataHandler" classpathref="project.classpath"  />
+    <fail unless="activation.present">Warning: Java Acticvation is required 
+    Put J2EE or Java Activation JAR in lib directory and for more details see lib/README.html</fail>
+
+    <available property="commons.logging.present" classname="org.apache.commons.logging.Log" classpathref="project.classpath"  />
+    <fail unless="commons.logging.present">Warning: Commons Logging is required 
+    Put Commons Logging JAR in lib directory and for more details see lib/README.html</fail>
+
+    <available property="axis.present" classname="org.apache.axis.utils.CLUtil" classpathref="project.classpath"  />
+    <fail unless="commons.logging.present">Warning: AXIS is required 
+    Put AXIS JAR in lib directory and for more details see lib/README.html</fail>
+
+
+  </target>
+
+  <!--target name="require_activation" unless="activation_present" depends="prepare">
+  </target-->
+
+  <target name="checkSoapRMI" unless="soaprmi.present">
+    <echo message="Warning: SoapRMI dependencies were not resolved (see lib/README.html on how to required jar files)."/>
+  </target>
+
+  <target name="checkJMS" unless="jms.present">
+    <echo message="Warning: JMS dependencies were not resolved (see lib/README.html on how to required jar files)."/>
+  </target>
+
+  <target name="checkEJB" unless="ejb.present">
+    <echo message="Warning: EJB dependencies were not resolved (see lib/README.html on how to download required jar files)."/>
+  </target>
+
+  <target name="checkApacheSOAP" unless="apachesoap.present">
+    <echo message="Warning: ApacheSOAP dependencies were not resolved (see lib/README.html on how to required jar files)."/>
+  </target>
+
+  <target name="checkApacheAxis" unless="apacheaxis.present">
+    <echo message="Warning: ApacheAXIS dependencies were not resolved (see lib/README.html on how to required jar files)."/>
+  </target>
+  
+  <target name="checkJ2C" unless="j2c.present">
+    <echo message="Warning: J2C dependencies were not resolved (see lib/README.html on how to download required jar files)."/>
+  </target>
+
+  <target name="checkJUnit" unless="junit.present">
+    <echo message="Warning: JUnit dependencies were not resolved (see lib/README.html on how to download required jar files)."/>
+  </target>
+
+  <target name="checkForrest" unless="forrest.present">
+    <echo message="Warning: Forrest dependencies were not resolved. If you wish to build the WSIF web site, download Forrest from http://xml.apache.org/forrest and specify installation directory in the forrest.home variable."/>
+  </target>
+
+  <target name="checkDependencies" depends="prepare" unless="javac.notRequired">
+    <antcall target="checkSoapRMI"/>
+    <antcall target="checkJMS"/>
+    <antcall target="checkEJB"/>
+    <antcall target="checkApacheSOAP"/>
+    <antcall target="checkApacheAxis"/>
+    <antcall target="checkJ2C"/>
+  </target>
+
+  <!-- =================================================================== -->
+  <!-- Source files to be compiled                                         -->
+  <!-- =================================================================== -->
+
+  <patternset id="dynamic.source.files">
+    <include name="**/wsif/**/*.java"/>
+    <include name="**/wsdl/**/*.java"/>
+    <exclude name="**/compiler/**/*.java"/>
+    <exclude name="**/wsif/**/soaprmi/**/*.java" unless="soaprmi.present"/>
+    <exclude name="**/wsif/**/jms/**/*.java" unless="jms.present"/>
+    <exclude name="**/wsif/**/ejb/**/*.java" unless="ejb.present"/>
+    <exclude name="**/wsif/**/jms/JMS2HTTPBridge.java" unless="apachesoap.present"/>
+    <exclude name="**/wsif/**/apachesoap/**/*.java" unless="apachesoap.present"/>
+    <exclude name="**/wsif/**/apacheaxis/**/*.java" unless="apacheaxis.present"/>
+    <exclude name="**/wsif/**/jca/**/*.java"/>
+  </patternset>
+
+  <patternset id="compiler.source.files">
+    <include name="**/compiler/**/*.java"/>
+    <exclude name="**/compiler/MessageCompiler.java"/>
+  </patternset>
+
+  <patternset id="javac.source.files">
+    <include name="**/*.java"/>
+  </patternset>
+
+  <patternset id="samples.source.files">
+      <include name="**/*.java"/>
+      <exclude name="**/zipcode/**.java" unless="apachesoap.present"/>
+      <exclude name="ejb/**/*.java" unless="ejb.present"/>
+      <exclude name="clients/zipcode/**/*.java"/> <!-- until this sample is migrated -->
+      <exclude name="clients/stockquote/**/*.java"/> <!-- until this sample is migrated -->
+      <exclude name="jca/**"/>
+  </patternset>
+
+  <patternset id="test.source.files">
+    <include name="**/*.java"/>
+    <exclude name="shop/**/*.java" unless="ejb.present"/>
+    <exclude name="multiout/**/*.java" unless="ejb.present"/>
+  </patternset>
+
+  <patternset id="j2c.source.files">
+    <include name="**/wsif/**/jca/**/*.java" />
+    <exclude name="**/wsif/**/jca/**/*.java" unless="j2c.present"/>
+  </patternset>
+
+  <!-- =================================================================== -->
+  <!-- Compiles all (clean + compile + samples + dynamic)                  -->
+  <!-- =================================================================== -->
+  <target name="all" depends="clean,compile,compiler,link"/>
+
+  <target name="compile" depends="dynamic, samples"/>
+
+
+  <!-- =================================================================== -->
+  <!-- Compiles the source directory                                       -->
+  <!-- =================================================================== -->
+  <target name="dynamic" depends="checkDependencies">
+    <mkdir dir="${dynamic.dest}"/>
+    <javac srcdir="${src.dir}" destdir="${dynamic.dest}" debug="${debug}">
+      <classpath refid="project.classpath"/>
+      <patternset refid="dynamic.source.files"/>
+    </javac>
+
+    <copy todir="${build.dest}">
+      <fileset dir="${src.dir}">
+         <include name="**/*.properties"/>
+         <include name="client-config.wsdd" if="jms.present"/>
+         <exclude name="**/jca/*.properties"/>
+         <include name="**/META-INF/services/*"/>
+      </fileset>
+    </copy>
+
+  </target>
+
+  <!-- =================================================================== -->
+  <!-- Create compiler classes                                             -->
+  <!-- =================================================================== -->
+  <target name="compiler" depends="prepare">
+    <mkdir dir="${dynamic.dest}"/>
+    <javac srcdir="${src.dir}" destdir="${dynamic.dest}" debug="${debug}">
+      <patternset refid="compiler.source.files"/>
+      <classpath refid="project.classpath"/>      
+    </javac>
+
+  </target>
+
+  <!-- =================================================================== -->
+  <!-- Create wsif-j2c.jar                                                 -->
+  <!-- =================================================================== -->
+  <target name="link_extra" if="j2c.present">
+    <mkdir dir="${j2c.dest}"/>
+    <mkdir dir="${j2c.src}"/>
+    <copy todir="${j2c.src}">
+        <fileset dir="${src.dir}">
+            <include name="**/jca/**/*"/>
+        </fileset>
+    </copy>
+    
+    <copy todir="${j2c.dest}">
+        <fileset dir="${src.dir}">
+            <include name="**/jca/*.properties"/>
+            <include name="**/jca/**/*.xsd"/>
+            <include name="**/jca/**/*.wsdl"/>
+        </fileset>
+    </copy>
+
+    <javac srcdir="${j2c.src}" destdir="${j2c.dest}" classpath="${dynamic.dest}">
+      <include name="**/jca/**/*.java"/>
+      <patternset refid="j2c.source.files"/>
+      <classpath refid="project.classpath"/>
+    </javac>
+
+    <jar jarfile="${j2c.jar}" basedir="${j2c.dest}" update="true" />
+
+    <delete dir="${j2c.dir}"/>
+
+  </target>
+
+
+
+  <!-- =================================================================== -->
+  <!-- Create WSIF JAR                                                     -->
+  <!-- =================================================================== -->
+  <target name="link" depends="dynamic, compiler">
+
+    <mkdir dir="${build.lib}"/>
+
+
+    <jar jarfile="${jar}" basedir="${build.dest}" update="true" />
+
+    <uptodate property="javadoc.required"
+              targetfile="${jar}">
+      <srcfiles dir="${build.dir}" includes="**/*.html"/>
+    </uptodate>
+    <antcall target="link_extra"/>
+  
+  </target>
+
+  <!-- =================================================================== -->
+  <!-- Compiles the samples                                                -->
+  <!-- =================================================================== -->
+  <target name="samples" depends="dynamic,link">
+
+    <fail unless="ejb.present">Warning: EJB is required to compile samples
+      Put J2EE JAR in lib directory and for more details see lib/README.html</fail>
+
+    <fail unless="jms.present">Warning: JMS is required to compile samples
+      Put JMS or J2EE JAR in lib directory and for more details see lib/README.html</fail>
+
+    <available property="jaxrpc.present" classname="javax.xml.rpc.encoding.Deserializer" 
+             classpathref="project.classpath"/>
+    <fail unless="jaxrpc.present">Warning: JAXRPC is required to compile samples
+      Put JAXRPC JAR in lib directory and for more details see lib/README.html</fail>
+
+     <path id="samples.classpath">
+       <pathelement path="${dynamic.dest}"/>
+       <pathelement path="${build.samples}"/>
+       <path refid="project.classpath"/>
+    </path>
+
+    <available property="apachesoap_provider.present" 
+       classname="org.apache.wsif.providers.soap.apachesoap.WSIFDynamicProvider_ApacheSOAP" 
+       classpathref="samples.classpath"/>
+    <fail unless="apachesoap_provider.present">Warning: ApacheSOAP provider is required to compile samples
+      Put ApacheSOAP JAR in lib directory and recompile project (for more details see lib/README.html)</fail>
+
+    <mkdir dir="${build.samples}"/>
+    <javac srcdir="samples" destdir="${build.samples}" debug="${debug}">
+      <patternset refid="samples.source.files"/>
+      <classpath refid="samples.classpath"/>
+    </javac>
+
+    <copy todir="${build.samples}">
+      <fileset dir="${samples.dir}">    
+      </fileset>
+    </copy>
+    <!-- <antcall target="samples_j2c"/> -->
+  </target>
+
+  <!-- =================================================================== -->
+  <!-- Compiles the j2c samples                                            -->
+  <!-- =================================================================== -->
+  <target name="samples_j2c" if="j2c.present">
+     <javac srcdir="${build.samples}/jca/ra" destdir="${build.samples}/jca/ra" debug="${debug}">
+         <classpath path="${dynamic.dest}"/>
+         <classpath path="${j2c.jar}"/>
+         <classpath refid="project.classpath"/>
+     </javac>
+     <javac srcdir="${build.samples}/jca/customer" destdir="${build.samples}/jca/customer" debug="${debug}">
+         <classpath path="${dynamic.dest}"/>
+         <classpath path="${j2c.jar}"/>
+         <classpath path="${build.samples}/jca/ra"/>
+         <classpath refid="project.classpath"/>
+     </javac>
+     <jar jarfile="${j2c.sample.jar}" basedir="${build.samples}/jca/ra" update="true" excludes="**/j2c_plugin.xml,**/ra.xml"/>
+     <copy file="${j2c.sample.jar}" todir="${build.samples}/jca/ra"/>
+     <delete file="${j2c.sample.jar}"/>
+     <jar jarfile="${j2c.sample.rar}" basedir="${build.samples}/jca/ra" update="true" 
+          includes="myeis.jar,**/j2c_plugin.xml,**/ra.xml,**/ImportMyEIS.wsdl"/>
+  </target>
+
+  <!-- =================================================================== -->
+  <!-- Compiles unit tests                                                 -->
+  <!-- =================================================================== -->
+  <target name="tests" depends="dynamic,samples,checkJUnit" if="junit.present">
+    <mkdir dir="${build.tests}"/>
+    <javac srcdir="test" destdir="${build.tests}" 
+           classpath="${dynamic.dest}:${build.samples}" debug="${debug}">
+      <patternset refid="test.source.files"/>
+    </javac>
+
+    <copy todir="${build.samples}">
+      <fileset dir="${samples.dir}">    
+      </fileset>
+    </copy>
+  </target>
+
+  <path id="test-classpath">
+    <pathelement location="${dynamic.dest}" />
+    <pathelement path="${java.class.path}" />
+  </path>
+
+  <target name="junit" if="junit.present" depends="tests">
+    <junit haltonfailure="yes" fork="yes">
+      <classpath>
+        <path refid="test-classpath" />
+        <pathelement location="${build.tests}" />
+        <pathelement location="${build.samples}" />
+      </classpath>
+      <formatter type="plain" usefile="false" />
+      <test name="util.WSIFTestRunner" />
+
+      <!--batchtest>
+        <fileset dir="${build_tests}">
+          <include name="**/PackageTest.class" />
+        </fileset>
+      </batchtest-->
+      
+    </junit>
+  </target>
+
+
+  <!-- =================================================================== -->
+  <!-- Creates the API documentation in separate directories               -->
+  <!-- =================================================================== -->
+  <target name="javadocs_split" depends="prepare">
+
+  <!-- Create java docs without j2c provider -->
+    <mkdir dir="${build.javadocs.base}"/>
+    <javadoc packagenames="${packages}"
+             sourcepath="${src.dir}"
+             destdir="${build.javadocs.base}"
+             author="true"
+             version="true"
+             use="true"
+             public="true"
+             windowtitle="${javadoc.title} API"
+             doctitle="${javadoc.title}"
+             bottom="Copyright &#169; ${year-from}, ${year-to} Apache XML Project. All Rights Reserved."
+	     excludepackagenames="org.apache.wsif.providers.jca, org.apache.wsif.providers.jca.toolplugin"
+    />
+
+  <!-- Create java docs for j2c provider -->
+    <mkdir dir="${build.javadocs.j2c}"/>
+    <javadoc packagenames="${j2c.packages}"
+             sourcepath="${src.dir}"
+             destdir="${build.javadocs.j2c}"
+             author="true"
+             version="true"
+             use="true"
+             public="true"
+             windowtitle="${javadoc.title} API"
+             doctitle="${javadoc.title}"
+             bottom="Copyright &#169; ${year-from}, ${year-to} Apache XML Project. All Rights Reserved."
+    />
+
+  </target>
+
+
+  <!-- =================================================================== -->
+  <!-- Creates the API documentation                                       -->
+  <!-- =================================================================== -->
+  <target name="javadocs" depends="prepare">
+
+  <!-- Create complete java docs, including j2c provider -->
+    <mkdir dir="${build.javadocs}"/>
+    <javadoc packagenames="${packages}"
+             sourcepath="${src.dir}"
+             destdir="${build.javadocs}"
+             author="true"
+             version="true"
+             use="true"
+             public="true"
+             windowtitle="${javadoc.title} API"
+             doctitle="${javadoc.title}"
+             bottom="Copyright &#169; ${year-from}, ${year-to} Apache XML Project. All Rights Reserved."
+    />
+
+  </target>
+
+  <!-- =================================================================== -->
+  <!-- Creates the API documentation if necessary                          -->
+  <!-- =================================================================== -->
+  <target name="javadocsIfRequired" if="javadoc.required" depends="prepare">
+    <antcall target="javadocs"/>
+  </target>
+
+  <!-- =================================================================== -->
+  <!-- Creates the binary distribution  - with src                         -->
+  <!-- =================================================================== -->
+  <target name="prepare-dist" depends="compile, link, javadocsIfRequired, samples">
+    <delete dir="${dist.dir}"/>
+    <mkdir dir="${dist.dir}"/>
+
+    <copy todir="${dist.dir}">
+      <fileset dir=".">
+        <include name="*.xml"/>
+        <include name="*.txt"/>
+        <include name="*.html"/>
+        <include name="*.htm"/>
+        <include name="*.bat"/>
+        <include name="*.sh"/>
+        <include name="*.csh"/>
+      </fileset>
+    </copy>
+
+     <chmod perm="a+x" dir="${dist.dir}"
+       includes="**/*.sh,**/*.csh" />
+
+
+    <fixcrlf srcdir="${dist.dir}"
+       eol="lf" eof="remove"
+       includes="*.sh,**/*.html,**/*.txt,**/*.csh,**/java"
+     />
+
+    <fixcrlf srcdir="${dist.dir}"
+       eol="crlf"
+       includes="*.bat"
+     />
+
+    <mkdir dir="${dist.dir}/test"/>
+    <copy todir="${dist.dir}/test">
+      <fileset dir="test">
+        <include name="**"/>
+        <exclude name="**/.#*"/>
+      </fileset>
+    </copy>
+
+    <mkdir dir="${dist.dir}/samples"/>
+    <copy todir="${dist.dir}/samples">
+      <fileset dir="samples">
+        <include name="**"/>
+        <exclude name="**/.#*"/>
+      </fileset>
+    </copy>
+
+    <mkdir dir="${dist.dir}/src"/>
+    <copy todir="${dist.dir}/src">
+      <fileset dir="${src.dir}">
+          <include name="org/**"/>
+          <include name="META-INF/**"/>
+          <exclude name="**/.#*"/>
+      </fileset>
+    </copy>
+
+    <mkdir dir="${dist.dir}/doc"/>
+    <copy todir="${dist.dir}/doc">
+      <fileset dir="${docs.dir}">
+        <include name="**/*.txt"/>
+        <include name="**/*.css"/>
+        <include name="**/*.html"/>
+        <include name="**/*.htm"/>
+        <include name="**/*.gif"/>
+        <include name="**/*.jpg"/>
+      </fileset>
+    </copy>
+
+    
+    <mkdir dir="${dist.dir}/lib"/>
+    <copy todir="${dist.dir}/lib">
+      <fileset dir="lib">
+        <include name="**"/>
+      </fileset>
+    </copy>
+
+
+  </target>
+  
+
+  <!-- =================================================================== -->
+  <!-- Creates the source distribution                                     -->
+  <!-- =================================================================== -->
+  <target name="srcdist" depends="prepare-dist">
+    <!--copy file="${build.file}" tofile="${dist.dir}/${build.file}"/-->
+
+    <delete file="${dist.src.file}.zip"/>
+    <zip zipfile="${dist.src.file}.zip" basedir="${build.dir}"
+       includes="${name}${version.postfix}/**"/>
+
+
+     <tar tarfile="${dist.src.file}.tar" longfile="gnu">
+
+          <tarfileset dir="${build.dir}" mode="755">
+              <include name="${name}${version.postfix}/**/*.sh"/>
+              <include name="${name}${version.postfix}/**/*.csh"/>
+         </tarfileset>
+         <tarfileset dir="${build.dir}" username="aslom" group="ewww">
+             <include name="${name}${version.postfix}/**"/>
+             <exclude name="${name}${version.postfix}/**/*.sh"/>
+             <exclude name="${name}${version.postfix}/**/*.csh"/>
+         </tarfileset>
+     </tar>
+
+     <gzip zipfile="${dist.src.file}.tgz" src="${dist.src.file}.tar" />
+     <delete file="${dist.src.file}.tar"/>
+
+  </target>
+  
+  <!-- ================================================================= -->
+  <!-- Creates the "all inclusive" distribution                          -->
+  <!-- ================================================================= -->
+  <target name="alldist" depends="srcdist">
+
+    <mkdir dir="${dist.dir}/doc/api"/>
+    <copy todir="${dist.dir}/doc/api">
+      <fileset dir="${build.javadocs}"/>
+    </copy>
+
+
+    <mkdir dir="${dist.dir}/${build.dir}/lib"/>
+    <copy todir="${dist.dir}/${build.dir}/lib">
+     <fileset dir="${build.dir}/lib">
+        <include name="*.jar"/>
+      </fileset>
+    </copy>
+    <!--copy todir="${dist.dir}/${build.dir}/lib" file="${j2c.jar}"/-->
+
+    <!--copy todir="${dist.dir}/lib" file="${wsdl4j_jar}"/-->
+    <!--copy todir="${dist.dir}/lib" file="${qname_jar}"/-->
+
+    <mkdir dir="${dist.dir}/${build.samples}"/>
+    <copy todir="${dist.dir}/${build.samples}">
+      <fileset dir="${build.samples}">    
+        <include name="**"/>
+        <exclude name="**/.#*"/>
+      </fileset>
+    </copy>
+    
+    <copy todir="${dist.dir}/lib">
+      <fileset dir="lib">
+        <include name="ant/*"/>
+        <include name="apache_soap/*"/>
+        <include name="axis/*"/>
+        <include name="commons_discovery/*"/>
+        <include name="commons_logging/*"/>
+        <include name="jaxrpc/*"/>
+        <include name="jms_api/*"/>
+        <include name="junit/*"/>
+        <include name="log4j/*"/>
+        <include name="saaj/*"/>
+        <include name="soaprmi11/*"/>
+        <include name="wsdl4j/*"/>
+        <include name="xerces2/*"/>
+      </fileset>
+    </copy>
+    
+    
+    <delete file="${dist.all.file}.zip"/>
+    <zip zipfile="${dist.all.file}.zip" basedir="${build.dir}"
+       includes="${name}${version.postfix}/**"/>
+
+
+     <tar tarfile="${dist.all.file}.tar" longfile="gnu">
+
+          <tarfileset dir="${build.dir}" mode="755">
+              <include name="${name}${version.postfix}/**/*.sh"/>
+              <include name="${name}${version.postfix}/**/*.csh"/>
+         </tarfileset>
+         <tarfileset dir="${build.dir}" username="aslom" group="ewww">
+             <include name="${name}${version.postfix}/**"/>
+             <exclude name="${name}${version.postfix}/**/*.sh"/>
+             <exclude name="${name}${version.postfix}/**/*.csh"/>
+         </tarfileset>
+     </tar>
+
+     <gzip zipfile="${dist.all.file}.tgz" src="${dist.all.file}.tar" />
+     <delete file="${dist.all.file}.tar"/>
+
+  </target>
+
+  <!-- ================================================================= -->
+  <!-- Creates the binary distribution (no source and tests)             -->
+  <!-- ================================================================= -->
+
+  <target name="bindist" depends="alldist">
+
+    <delete dir="${dist.dir}/src"/>
+    <delete dir="${dist.dir}/test"/>
+    
+    <delete file="${dist.bin.file}.zip"/>
+    <zip zipfile="${dist.bin.file}.zip" basedir="${build.dir}"
+       includes="${name}${version.postfix}/**"/>
+
+     <tar tarfile="${dist.bin.file}.tar" longfile="gnu">
+
+          <tarfileset dir="${build.dir}" mode="755">
+              <include name="${name}${version.postfix}/**/*.sh"/>
+              <include name="${name}${version.postfix}/**/*.csh"/>
+         </tarfileset>
+         <tarfileset dir="${build.dir}" username="aslom" group="ewww">
+             <include name="${name}${version.postfix}/**"/>
+             <exclude name="${name}${version.postfix}/**/*.sh"/>
+             <exclude name="${name}${version.postfix}/**/*.csh"/>
+         </tarfileset>
+     </tar>
+
+     <gzip zipfile="${dist.bin.file}.tgz" src="${dist.bin.file}.tar" />
+     <delete file="${dist.bin.file}.tar"/>
+
+  </target>
+
+  <!-- ================================================================= -->
+  <!-- Target to build web site                                          -->
+  <!-- ================================================================= -->
+  <target name="site" depends="init, prepare" if="forrest.present" description="Generates static HTML documentation">
+    <ant antfile="${forrest.home}/forrest.antproxy.xml" target="site"/>
+  </target>
+  
+  <!-- ================================================================= -->
+  <!-- Target to build all distributions                                -->
+  <!-- ================================================================= -->
+
+  <target name="dist" depends="bindist"/>
+
+  <!-- =================================================================== -->
+  <!-- Cleans everything                                                   -->
+  <!-- =================================================================== -->
+  <target name="clean" depends="init">
+    <delete dir="${build.dir}"/>
+    <delete dir="${dist.dir}"/>
+  </target>
+</project>

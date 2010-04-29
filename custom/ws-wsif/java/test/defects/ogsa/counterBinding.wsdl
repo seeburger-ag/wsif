@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions name="CounterDefinition"
+targetNamespace="http://samples.ogsa.globus.org/counter/counter_bindings"
+xmlns:counter-port-type="http://samples.ogsa.globus.org/counter/counter_port_type"
+xmlns="http://schemas.xmlsoap.org/wsdl/"
+xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/">
+
+<import location="counterPort.wsdl"
+namespace="http://samples.ogsa.globus.org/counter/counter_port_type"/>
+
+<binding name="CounterSOAPBinding" type="counter-port-type:CounterPortType">
+<soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+<operation name="add">
+<soap:operation soapAction="http://samples.ogsa.globus.org/counter#add"/>
+<input>
+<!--
+<soap:body use="literal" namespace="http://samples.ogsa.globus.org/counter"/>
+-->
+<soap:body use="literal" namespace="http://samples.ogsa.globus.org/counter/counter_port_type"/>
+</input>
+<output>
+<soap:body use="literal" namespace="http://samples.ogsa.globus.org/counter"/>
+</output>
+</operation>
+<operation name="subtract">
+<soap:operation soapAction="http://samples.ogsa.globus.org/counter#subtract"/>
+<input>
+<soap:body use="literal" namespace="http://samples.ogsa.globus.org/counter"/>
+</input>
+<output>
+<soap:body use="literal" namespace="http://samples.ogsa.globus.org/counter"/>
+</output>
+</operation>
+<operation name="getValue">
+<soap:operation soapAction="http://samples.ogsa.globus.org/counter#getValue"/>
+<input>
+<soap:body use="literal" namespace="http://samples.ogsa.globus.org/counter"/>
+</input>
+<output>
+<soap:body use="literal" namespace="http://samples.ogsa.globus.org/counter"/>
+</output>
+</operation>
+</binding>
+
+</definitions>

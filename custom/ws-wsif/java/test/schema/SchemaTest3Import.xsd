@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema attributeFormDefault="qualified"
+    elementFormDefault="qualified"
+    targetNamespace="http://types.wsiftest/"
+    xmlns="http://www.w3.org/2001/XMLSchema"
+    xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/"
+    xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:xsd1="http://types.wsiftest/"
+    xmlns:xsd2="http://types2.wsiftest/">
+    <import namespace="http://schemas.xmlsoap.org/wsdl/"/>
+    <import namespace="http://schemas.xmlsoap.org/soap/encoding/"/>
+    <import schemaLocation="SchemaTest3ImportImport.xsd" namespace="http://types2.wsiftest/"/>
+    <include schemaLocation="SchemaTest3ImportImport.xsd"/>    
+    <complexType name="ArrayOfInt">
+        <complexContent>
+            <restriction base="soapenc:Array">
+                <attribute ref="soapenc:arrayType" wsdl:arrayType="int[]"/>
+            </restriction>
+        </complexContent>
+    </complexType>
+    <complexType name="ArrayOfLong">
+        <complexContent>
+            <restriction base="soapenc:Array">
+                <sequence/>
+                <attribute ref="soapenc:arrayType" wsdl:arrayType="long[][]"/>
+            </restriction>
+        </complexContent>
+    </complexType>
+	<element name="InfoRequest">
+	    <complexType />
+    </element>
+    <element name="InfoResponse">
+        <complexType>
+            <sequence>
+                <element minOccurs="0" maxOccurs="1" name="data" type="xsd:string" />
+            </sequence>
+        </complexType>
+    </element>
+    <element name="addresses" type="xsd2:ArrayOfAddress" />			
+</schema>

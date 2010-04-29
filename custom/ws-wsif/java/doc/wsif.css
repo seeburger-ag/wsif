@@ -1,0 +1,69 @@
+BODY {
+  border-top-style : none;
+  border-left-style : none;
+  border-right-style : none;
+  border-bottom-style : none;
+  font-size : 14px;
+  font-family : Arial,sans-serif;
+}
+A:hover {
+  BACKGROUND: #ffffff
+;
+}
+P {
+  TEXT-INDENT: 1.5em
+;
+}
+H3 {
+  padding-left : 6px;
+  padding-right : 6px;
+  padding-top : 2px;
+  padding-bottom : 2px;
+  font-size : 16px;
+  font-family : Arial,sans-serif;
+}
+H2 {
+  PADDING-BOTTOM: 1px;
+  PADDING-LEFT: 4px;
+  PADDING-RIGHT: 4px;
+  PADDING-TOP: 1px;
+  FONT-FAMILY: Arial;
+}
+H1 {
+  text-align : left;
+  FONT-FAMILY: Arial;
+  padding-top : 1px;
+  padding-left : 1px;
+  padding-right : 1px;
+  padding-bottom : 1px;
+  border-top-style : none;
+  border-right-style : none;
+  border-bottom-style : none;
+  border-left-style : none;
+  font-style : italic;
+}
+DT {
+  FONT-WEIGHT: 700
+;
+}
+.masthead {
+  TEXT-ALIGN: center
+;
+}
+.NOTESID {
+  FONT-FAMILY: Arial
+  background-color : silver;  
+;
+}
+H4{
+  background-color : silver;
+  font-family : Arial;
+  padding-top : 1px;
+  padding-left : 4px;
+  padding-right : 4px;
+  padding-bottom : 1px;
+}
+TABLE{
+  font-size : 14px;
+  font-family : Arial,sans-serif;
+}

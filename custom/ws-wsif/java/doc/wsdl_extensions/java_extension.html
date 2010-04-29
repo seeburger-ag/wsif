@@ -1,0 +1,181 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <title>Java binding</title>
+  </head>
+
+  <body>
+    <h2>Java binding</h2>
+    <hr>
+<p>The Java binding is a WSDL binding that allows abstract functionality in the abstract service description (messages, operations and port types) to be mapped to functionality offered by a Java class directly. This means that a Java class can be described using WSDL, and can be accessed as a WSDL-described service through WSIF.</p>
+
+<p>The Java binding extends WSDL with the following extensibility elements:</p>
+
+<p><tt><pre>
+&lt;definitions .... &gt; 
+
+    &lt;!-- Java binding --&gt; 
+    &lt;binding ... &gt; 
+        &lt;java:binding/&gt; 
+        &lt;format:typeMapping style="uri" encoding="..."/&gt;? 
+            &lt;format:typeMap typeName="qname"|elementName="qname" formatType="nmtoken"/&gt;* 
+        &lt;/format:typeMapping&gt; 
+        &lt;operation&gt;* 
+            &lt;java:operation 
+                methodName="nmtoken" 
+                parameterOrder="nmtoken"? 
+		returnPart="nmtoken"?
+                methodType="instance|static|constructor"? /&gt;? 
+            &lt;input name="nmtoken"? /&gt;? 
+            &lt;output name="nmtoken"? /&gt;? 
+            &lt;fault name="nmtoken"? /&gt;? 
+        &lt;/operation&gt; 
+    &lt;/binding&gt; 
+
+    &lt;service ... &gt; 
+        &lt;port&gt;* 
+             &lt;java:address 
+                 className="nmtoken" 
+                 classPath="nmtoken"? 
+                 classLoader="nmtoken"? /&gt; 
+        &lt;/port&gt; 
+    &lt;/service&gt; 
+&lt;/definitions&gt; 
+</pre></tt></p>
+
+<p>Each element is described in detail below.</p>
+
+<ul>
+<li><b><tt>java:binding</tt></b>
+<p>This indicates that the binding is a Java binding.</p></li>
+
+<li><b><tt>format:typeMapping</tt></b>
+<p>This element allows the specification of a mapping from abstract types used in WSDL message parts (within the abstract service description) to Java types that can represent the same information. The style attribute is used to say something about the target type system (i.e. the native type system being used to represent the abstract information); in the case of the Java type system the value here must be "Java". The use of this attribute allows this extension to be reused for other kinds of bindings. The encoding attribute must be a URI which is used to denote the specific way in which the native type corresponds to the abstract type. We define a special encoding, the "Java" encoding, with the rules that tell us how to create a Java class corresponding to an abstract schema type that can be used through the WSDL Java binding. Details on the "Java" encoding follow. Having the encoding attribute allows us to map abstract types to Java types in other convenient ways by using a customized encoding.</p></li>
+
+<p><b>Java encoding</b><br>
+The Java encoding used by WSIF is unspecified. The reason it does not need to be specified is that encoding information is useful only when the information contained within the Java object is transformed in some way - serialized to a SOAP message, or converted to a representation in another type system for example. If all we do with a WSIF message containing parts belonging to the Java type system is invoke the corresponding Java service, we don't need to do anything more than verify that each message part is represented using a Java object of the correct type (as specified by the typemapping element in the Java binding).<br>
+Of course, we envisage the need for transforming messages from one representation to another, but we leave the complete specification of the Java encoding for a later release.</p>
+
+<li><b><tt>format:typemap</tt></b>
+<p>Each typemap element maps an abstract type to a type in some more convenient type system; in the case of the Java binding this is the Java type system. The typeName attribute is a qualified name for the abstract type being mapped (this must be one of the predefined schema types recognised in WSDL, or a type defined under the <types> section in the WSDL). The elementName attribute may be used to specify an element instead of a type (since WSDL message parts can be described either way). The formatType attribute is the Java type corresponding to that abstract type or element. Its value must be one of the primitive Java types (char, byte, short, int, long, float, double) or the fully qualified name of a Java class.</p></li>
+
+<li><b><tt>java:operation</tt></b>
+<p>This element maps an abstract WSDL operation to a Java method. The methodName attribute specifies the name of the Java method corresponding to the abstract operation. The parameterOrder attribute is similar to and overrides the paramterOrder specification in the abstract operation. It specifies the ordering of the input message parts for the invocation; in the Java binding case it identifies the method signature. Having a parameterOrder attribute here allows us to map an abstract operation to a Java method even if their signatures aren't compatible in the ordering of parts. The returnPart is that part of the abstract output message which corresponds to the return value of the Java method. The methodType attribute specifies whether the Java method is a constructor, a static method or an instance method.</p></li>
+
+<li><b><tt>java:address</tt></b>
+<p>This element is an extension under the WSDL port element that allows specification of a Java object as an endpoint for a service available via the Java binding. The port whose address is specified this way must be associated with a Java binding only.</p>
+<p>The className attribute specifies the fully qualified name of the Java class to be used for service invocation. The optional classPath attribute specifies the classpath to be set prior to invocation, and the optional classLoader attribute specifies the class loader to be used for loading the service class. If invoking an instance method, the service user can load and instantiate the service class; it is up to the service provider to insure that a public no-argument constructor is available. All other Java methods/constructors used for mapping abstract operations must also be publicly available in the service class.</p>
+</ul>
+
+<h4>Example:</h4>
+
+<p><tt><pre>
+&lt;?xml version="1.0" ?&gt;
+
+&lt;definitions targetNamespace="http://wsifservice.addressbook/"
+             xmlns:tns="http://wsifservice.addressbook/"
+             xmlns:typens="http://wsiftypes.addressbook/"
+             xmlns:xsd="http://www.w3.org/2000/10/XMLSchema"
+             xmlns:format="http://schemas.xmlsoap.org/wsdl/formatbinding/"
+             xmlns:java="http://schemas.xmlsoap.org/wsdl/java/"
+             xmlns="http://schemas.xmlsoap.org/wsdl/"&gt;
+
+  &lt;!-- type defs --&gt;
+  &lt;types&gt;
+    &lt;xsd:schema
+      targetNamespace="http://wsiftypes.addressbook/"
+                xmlns:xsd="http://www.w3.org/1999/XMLSchema"&gt;
+      &lt;xsd:complexType name="phone"&gt;
+        &lt;xsd:element name="areaCode" type="xsd:int"/&gt;
+        &lt;xsd:element name="exchange" type="xsd:string"/&gt;
+        &lt;xsd:element name="number" type="xsd:string"/&gt;
+      &lt;/xsd:complexType&gt;
+
+      &lt;xsd:complexType name="address"&gt;
+        &lt;xsd:element name="streetNum" type="xsd:int"/&gt;
+        &lt;xsd:element name="streetName" type="xsd:string"/&gt;
+        &lt;xsd:element name="city" type="xsd:string"/&gt;
+        &lt;xsd:element name="state" type="xsd:string"/&gt;
+        &lt;xsd:element name="zip" type="xsd:int"/&gt;
+        &lt;xsd:element name="phoneNumber" type="typens:phone"/&gt;
+      &lt;/xsd:complexType&gt;
+    &lt;/xsd:schema&gt;
+  &lt;/types&gt;
+
+  &lt;!-- message declns --&gt;
+  &lt;message name="AddEntryWholeNameRequestMessage"&gt;
+    &lt;part name="name" type="xsd:string"/&gt;
+    &lt;part name="address" type="typens:address"/&gt;
+  &lt;/message&gt;
+
+  &lt;message name="AddEntryFirstAndLastNamesRequestMessage"&gt;
+    &lt;part name="firstName" type="xsd:string"/&gt;
+    &lt;part name="lastName" type="xsd:string"/&gt;
+    &lt;part name="address" type="typens:address"/&gt;
+  &lt;/message&gt;
+
+  &lt;message name="GetAddressFromNameRequestMessage"&gt;
+    &lt;part name="name" type="xsd:string"/&gt;
+  &lt;/message&gt;
+
+  &lt;message name="GetAddressFromNameResponseMessage"&gt;
+    &lt;part name="address" type="typens:address"/&gt;
+  &lt;/message&gt;
+
+  &lt;!-- port type declns --&gt;
+  &lt;portType name="AddressBook"&gt;
+    &lt;operation name="addEntry"&gt;
+      &lt;input name="AddEntryWholeNameRequest" message="tns:AddEntryWholeNameRequestMessage"/&gt;
+    &lt;/operation&gt;
+    &lt;operation name="addEntry"&gt;
+      &lt;input name="AddEntryFirstAndLastNamesRequest" message="tns:AddEntryFirstAndLastNamesRequestMessage"/&gt;
+    &lt;/operation&gt;
+    &lt;operation name="getAddressFromName"&gt;
+      &lt;input name="GetAddressFromNameRequest" message="tns:GetAddressFromNameRequestMessage"/&gt;
+      &lt;output name="GetAddressFromNameResponse" message="tns:GetAddressFromNameResponseMessage"/&gt;
+    &lt;/operation&gt;
+  &lt;/portType&gt;
+
+  &lt;!-- binding declns --&gt;
+  &lt;binding name="JavaBinding" type="tns:AddressBook"&gt;
+    &lt;java:binding/&gt;
+    &lt;format:typeMapping encoding="Java" style="Java"&gt;
+      &lt;format:typeMap typeName="typens:address" formatType="addressbook.wsiftypes.Address" /&gt;
+      &lt;format:typeMap typeName="xsd:string" formatType="java.lang.String" /&gt;
+    &lt;/format:typeMapping&gt;
+    &lt;operation name="addEntry"&gt;
+      &lt;java:operation
+         methodName="addEntry"
+         parameterOrder="name address"
+         methodType="instance" /&gt;
+      &lt;input name="AddEntryWholeNameRequest"/&gt;
+    &lt;/operation&gt;
+    &lt;operation name="addEntry"&gt;
+      &lt;java:operation
+         methodName="addEntry"
+         parameterOrder="firstName lastName address"
+         methodType="instance" /&gt;
+      &lt;input name="AddEntryFirstAndLastNamesRequest"/&gt;
+    &lt;/operation&gt;
+    &lt;operation name="getAddressFromName"&gt;
+      &lt;java:operation
+         methodName="getAddressFromName"
+         parameterOrder="name"
+         methodType="instance"
+         returnPart="address" /&gt;
+      &lt;input name="GetAddressFromNameRequest"/&gt;
+      &lt;output name="GetAddressFromNameResponse"/&gt;
+    &lt;/operation&gt;
+  &lt;/binding&gt;
+  
+  &lt;!-- service decln --&gt;
+  &lt;service name="AddressBookService"&gt;
+    &lt;port name="JavaPort" binding="tns:JavaBinding"&gt;
+      &lt;java:address className="addressbook.wsiftypes.AddressBook"/&gt;
+    &lt;/port&gt;
+  &lt;/service&gt;
+
+&lt;/definitions&gt;</pre></tt></p>
+<p>In the above example, an address book service is offered through the Java class <tt>addressbook.wsiftypes.AddressBook</tt>. The service offers two variants of the <tt>addEntry</tt> operation. One takes an input message consisting of a full name and an address and the other accepts an input message with a first name, a last name (as separate message parts), and an address. Both of these operations are mapped to a Java method called <tt>addEntry</tt>, but there are different parameter lists (this is an overloaded method in the implementing class). Finally, the abstract operation <tt>getAddressFromName</tt> is mapped to a Java method of the same name. The types <tt>typesns:address</tt> and <tt>xsd:string</tt> used during method invocations are mapped to Java types <tt>addressbook.wsiftypes.Address</tt> and <tt>Java.lang.String</tt> respectively. Note that the type <tt>typesns:phone</tt> does not need to be mapped to a Java type since it is contained within the address type which is represented by a known Java class. WSIF does not need to know how this class represents the information described in the schema type if all that is being done is service invocation. If we needed to inspect the information in the WSIF message and transform it in some way, we would need details on how the Java class represents the type information (see the above discussion on the Java encoding).</p>
+<p>All the methods needed for invocation are instance methods, so a client would need to create an instance of the service class. Since no classpath or class loader is specified, the client can assume that there are no special service requirements in this regard, and can just load and instantiate the class and begin using the address book service it implements.</p>
+</body></html>

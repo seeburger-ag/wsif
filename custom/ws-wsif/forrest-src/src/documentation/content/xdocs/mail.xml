@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+      <!DOCTYPE document PUBLIC "-//APACHE//DTD Documentation V1.1//EN" "document-v11.dtd">
+      <document> 
+        <header> 
+          <title>Mailing Lists</title> 
+        </header> 
+        <body>
+<section>
+<title>Mailing Lists</title>
+        
+        <p>Before subscribing to any of the mailing lists, please make sure you have
+        read and understand the <link href="http://ws.apache.org/axis/mailguide.html">guidelines</link>.</p>
+        
+        <p>While the mailing lists are not archived on Apache they are available
+        at other sites, for example <link href="http://marc.theaimsgroup.com">
+        http://marc.theaimsgroup.com</link> is pretty good.</p>
+        
+        <p>Note that WSIF related mail was exchanged on the Axis user and dev lists until
+        early 2003 (WSIF related mails had subject lines prefixed with [wsif]). So you can search 
+        those lists (also available on <link href="http://marc.theaimsgroup.com">http://marc.theaimsgroup.com</link>)
+        for old messages.</p>
+</section>
+
+<section><title>The WSIF User List</title>
+        <p>This list is for developers that are using WSIF in their own projects to 
+        ask questions, share knowledge, and discuss issues related to using WSIF.<em>(Medium Traffic)</em>
+        </p>
+        <ul>
+        <li><link href="mailto:wsif-user-subscribe@ws.apache.org">Subscribe</link></li>
+        <li><link href="mailto:wsif-user-unsubscribe@ws.apache.org">Unsubscribe</link></li>
+        <li><link href="mailto:wsif-user@ws.apache.org">Send mail to list</link></li>
+        </ul></section>
+<section><title>The WSIF Developer List</title>
+        <p>        This is the list where participating developers of the WSIF project meet 
+        and discuss issues, code changes/additions, etc. <em>(Medium Traffic)</em>
+        </p>
+        <ul>
+        <li><link href="mailto:wsif-dev-subscribe@ws.apache.org">Subscribe</link></li>
+        <li><link href="mailto:wsif-dev-unsubscribe@ws.apache.org">Unsubscribe</link></li>
+        <li><link href="mailto:wsif-dev@ws.apache.org">Send mail to list</link></li>
+        </ul></section>
+        </body>
+    </document>
+

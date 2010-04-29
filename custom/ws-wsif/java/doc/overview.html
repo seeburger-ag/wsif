@@ -1,0 +1,98 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><html><head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<meta name="Author" content="Ant Elder">
+<meta http-equiv="Content-Style-Type" content="text/css"><title>Web Services Invocation Framework for Java API - Overview</title>
+
+<link rel="stylesheet" href="wsif.css" type="text/css"></head>
+
+<body alink="#0000ff" bgcolor="#ffffff" leftmargin="2" topmargin="2" marginwidth="2" marginheight="2">
+
+<h1><a name="WSIF Overview">
+Web Services Invocation Framework: Overview</a></h1>
+
+    <p>WSIF stands for the Web Services Invocation Framework. It supports a simple Java
+      API for invoking Web services, no matter how or where the
+      services are provided. The framework allows maximum
+      flexibility for the invocation of any WSDL-described service.</p>
+
+    <p>In the WSDL specification, Web service binding descriptions are
+      <em>extensions</em> to the specification. So the SOAP binding,
+      for example, is one way to expose the abstract functionality
+      (<em>and there could be others</em>). Since WSIF mirrors WSDL
+      very closely, it also views SOAP as just one of several ways you
+      might wish to expose your software's functionality. WSDL thus
+      becomes a normalized description of software, and WSIF is the
+      natural client programming model.</p>
+
+    <p>The WSIF API allows clients to invoke services focusing on the
+      abstract service description - the
+      portion of WSDL that covers the port types, operations and
+      message exchanges without referring to real protocols. The
+      <em>abstract invocations</em> work because they are backed up by
+      protocol-specific pieces of code called <em>providers</em>. A
+      provider is what conducts the actual message exchanges according
+      to the specifics of a particular protocol - for example, the
+      SOAP provider that is packaged with WSIF uses a specific SOAP
+      engine like Axis to do the real work.</p>
+
+    <p>The decoupling of the abstract invocation from the real
+      provider that does the work results in a flexible programming
+      model that allows dynamic invocation, late binding, clients
+      being unaware of large scale changes to services - such as
+      service migration, change of protocols, etc. WSIF also allows
+      new providers to be registered dynamically, so you could enhance
+      your client's capability without ever having to recompile its
+      code or redeploy it.</p>
+
+    <p>Using WSIF, WSDL can become the centerpiece of an integration
+    framework for accessing software running on diverse platforms and
+    using widely varying protocols. The only precondition is that you
+    need to describe your software using WSDL, and include in its
+    description a binding that your client's WSIF framework has a
+    provider for. WSIF defines and comes packaged with providers for
+    local java, EJB, JMS, and JCA protocols. That means you can define
+    an EJB or a JMS-accessible service directly as a WSDL binding and
+    access it transparently using WSIF, using the same API you would
+    for a SOAP service or even a local java class.</p>
+
+    <p>TODO: Put a picture showing WSIF client with pluggable providers to
+      access service using different protocols.</p>
+
+
+<H3>WSIF Structure</H3>
+
+In WSDL a binding defines how to map between the abstract PortType and a
+real service format and protocol. For example, the SOAP binding defines
+the encoding style, the SOAPAction header, the namespace of the body
+(the targetURI), and so forth.<BR>
+<BR>
+WSDL allows there to be multiple implementations for a Web Service,
+and multiple Ports that share the same PortType. In other words, WSDL
+allows the same interface to have bindings to for example, SOAP and
+IIOP.<BR>
+
+<BR>WSIF provides an API to allow the same client code to access any
+available binding. As the client code can then be written to the PortType
+it can be a deployment or configuration setting (or a code choice)
+which port and binding it uses.<BR>
+<BR>
+WSIF uses 'providers' to support these multiple WSDL bindings. A provider
+is a piece of code that supports a WSDL extension and allows invocation of
+the service through that particular implementation. WSIF providers use the
+J2SE JAR service provider specification making them discoverable at runtime.<BR>
+<BR>Clients can then utilize any new implementations and can delegate the
+choice of port to the infrastructure and runtime, which allows the
+implementation to be chosen on the basis of quality of service
+characteristics or business policy.
+<h3>WSDL bindings for EJBs, JMs, JCA...</h3>
+    <p>WSIF defines additional binding extensions so that EJBs, local java classes, software accessible over message queues using the JMS API and software that can be invoked using the Java Connector architecture can also be described in WSDL. WSIF is packaged with providers that allow transparent invocation of such software given the corresponding WSDL description. Here are the documents that describe these bindings:
+      <ul>
+      <li><a href="wsdl_extensions/java_extension.html">Local java binding extensions for WSDL</a></li>
+      <li><a href="wsdl_extensions/ejb_extension.html">EJB binding extensions for WSDL</a></li>
+      <li><a href="wsdl_extensions/jms_bindings.html">JMS binding extensions for WSDL</a></li>
+      <li><a href="wsdl_extensions/j2c_extensions/wsif_j2c_extensions.html">JCA binding extensions for WSDL</a></li>
+      </ul>
+    </p>
+<hr width="100%">
+<address>$Id: overview.html,v 1.1 2010/04/29 08:36:27 paskalev Exp $ </address>
+</body></html>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+      <!DOCTYPE document PUBLIC "-//APACHE//DTD Documentation V1.1//EN" "document-v11.dtd">
+      <document> 
+        <header> 
+          <title>Developer's Guide</title> 
+        </header> 
+        <body> 
+          <p>Information for people wanting to develop or customize WSIF.</p>
+       </body>
+    </document>

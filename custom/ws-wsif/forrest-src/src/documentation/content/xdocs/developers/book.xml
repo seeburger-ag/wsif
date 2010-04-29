@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book PUBLIC "-//APACHE//DTD Cocoon Documentation Book V1.0//EN" "book-cocoon-v10.dtd">
+
+<book software="WSIF"
+  title="WSIF"
+  copyright="@year@ The Apache Software Foundation"
+  xmlns:xlink="http://www.w3.org/1999/xlink">
+
+  <menu label="Development">
+    <menu-item label="Introduction" href="index.html"/>
+    <menu-item label="CVS" href="cvs.html"/>
+    <menu-item label="Building WSIF" href="building.html"/>
+    <menu-item label="Testing WSIF" href="tests.html"/>
+    <menu-item label="Customizing WSIF" href="customizing.html"/>
+    <menu-item label="Trace" href="trace.html"/>
+    <menu-item label="Mime Attachments" href="mime_attachments.html"/>
+    <menu-item label="Writing A Provider" href="how_to_provider.html"/>
+    <menu-item label="Writing WSDL Extensions" href="how_to_wsdl_extensions.html"/>
+  </menu>
+</book>

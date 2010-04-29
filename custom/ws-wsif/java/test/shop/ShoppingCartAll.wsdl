@@ -1,0 +1,337 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<definitions name="ShoppingCartSample" targetNamespace="http://www.shoppingcart.com/definitions/ShoppingCartInterface"
+  xmlns:tns="http://www.shoppingcart.com/definitions/ShoppingCartInterface"
+  xmlns="http://schemas.xmlsoap.org/wsdl/"
+  xmlns:xsd="http://www.w3.org/2000/10/XMLSchema"
+  xmlns:format="http://schemas.xmlsoap.org/wsdl/formatbinding/"
+  xmlns:ejb="http://schemas.xmlsoap.org/wsdl/ejb/"
+  xmlns:java="http://schemas.xmlsoap.org/wsdl/java/"
+  xmlns:typens="http://www.shoppingcart.com/schemas/ShoppingCartInterface" >
+
+ <!--<import namespace="http://www.shoppingcart.com/schemas/ShoppingCartInterface" location="ShoppingCart.xsd" />-->
+
+ <!-- Abstract definition: Messages, port type and operation -->
+
+ <message name="CreateRequest">
+  <part name="firstName" type="xsd:string" tns:extAttr="tns:ignored"/>
+  <part name="lastName" type="xsd:string" />
+  <part name="address" type="typens:address" />
+  <part name="customerNumber" type="xsd:string" />
+ </message>
+
+ <message name="CreateResponse">
+  <!-- no explicit out parameter here: EJB reference/handle passed to caller implicitly -->
+ </message>
+
+ <message name="CreateException">
+  <part name="createException" type="typens:createException" />
+ </message>
+ 
+ <message name="EmptyOrderRequest">
+  <part name="customerNumber" type="xsd:string" />
+ </message>
+
+ <message name="AddItemRequest">
+  <part name="itemNumber" type="xsd:string" />
+  <part name="itemName" type="xsd:string" />
+  <part name="itemQuantity" type="xsd:int" />
+ </message>
+
+ <message name="AddItemResponse">
+  <!--<part name="currentTotal" type="xsd:int" />-->
+  <part name="item" type="typens:item" />
+ </message>
+
+ <message name="InvalidItemException">
+  <part name="invalidItemException" type="typens:invalidItemException" />
+ </message>
+
+ <message name="OutOfStockException">
+  <part name="outOfStockException" type="typens:outOfStockException" />
+ </message>
+
+ <message name="SubmitOrderRequest">
+  <part name="creditCardInfo" type="typens:creditCardInfo" />
+  <part name="airMilesContainer" type="typens:airMilesContainer" />
+ </message>
+
+ <message name="SubmitOrderResponse">
+  <part name="submitOrderResult" type="typens:submitOrderResult" />
+ </message>
+
+<!-- Java messages -->
+ <message name="CreateRequestJava">
+  <part name="firstName" type="xsd:string" />
+  <part name="lastName" type="xsd:string" />
+  <part name="address" type="typens:address" />
+  <part name="customerNumber" type="xsd:string" />
+ </message>
+
+ <message name="CreateResponseJava">
+  <!-- no explicit out parameter here: object reference/serialized passed to caller implicitly -->
+ </message>
+
+ <message name="CreateExceptionJava">
+  <part name="createException" type="typens:createException" />
+ </message>
+
+ <message name="EmptyOrderRequestJava">
+  <part name="customerNumber" type="xsd:string" />
+ </message>
+ 
+ <message name="AddItemRequestJava">
+  <part name="itemNumber" type="xsd:string" />
+  <part name="itemName" type="xsd:string" />
+  <part name="itemQuantity" type="xsd:int" />
+  <part name="item" type="typens:item" />
+ </message>
+
+ <message name="AddItemResponseJava">
+  <part name="currentTotal" type="xsd:int" />
+  <part name="item" type="typens:item" />                            <!-- out parameter -->
+ </message>
+
+ <message name="InvalidItemExceptionJava">
+  <part name="invalidItemException" type="typens:invalidItemException" />
+ </message>
+
+ <message name="OutOfStockExceptionJava">
+  <part name="outOfStockException" type="typens:outOfStockException" />
+ </message>
+
+ <message name="SubmitOrderRequestJava">
+  <part name="creditCardInfo" type="typens:creditCardInfo" />        <!-- in parameter -->
+  <part name="airMilesContainer" type="typens:airMilesContainer" />  <!-- inout parameter -->
+ </message>
+
+ <message name="SubmitOrderResponseJava">
+  <part name="orderConfirmationNumber" type="xsd:long" />
+  <part name="airMilesContainer" type="typens:airMilesContainer" />  <!-- inout parameter -->
+ </message>
+
+ <message name="QueryOrdersRequestJava">
+  <part name="customerNumber" type="xsd:string" />
+ </message>
+
+ <message name="QueryOrdersResponseJava">
+  <part name="orders" type="typens:orders" />
+ </message>
+
+ <message name="EmptyResultExceptionJava">
+  <part name="emptyResultException" type="typens:emptyResultException" />
+ </message>
+
+ <portType name="ShoppingCart_EJBPortType">
+
+  <operation name="createOperation">
+   <input name="in1" message="tns:CreateRequest" />
+   <output name="out1" message="tns:CreateResponse" />
+   <fault name="ft1" message="tns:CreateException" />
+  </operation>
+
+  <operation name="addItemOperation">
+   <input name="in2" message="tns:AddItemRequest" />
+   <output name="out2" message="tns:AddItemResponse" />
+   <fault name="ft1" message="tns:InvalidItemException" />
+   <fault name="ft2" message="tns:OutOfStockException" />
+  </operation>
+
+  <operation name="submitOrderOperation">
+   <input name="in3" message="tns:SubmitOrderRequest" />
+   <output name="out3" message="tns:SubmitOrderResponse" />
+  </operation>
+
+  <operation name="emptyOrderOperation">          
+   <input name="in4" message="tns:EmptyOrderRequest" />
+  </operation>
+  
+ </portType>
+
+ <portType name="ShoppingCart_JavaPortType">
+
+  <operation name="createOperation">
+   <input name="in1" message="tns:CreateRequestJava" />
+   <output name="out1" message="tns:CreateResponseJava" />
+   <fault name="ft1" message="tns:CreateExceptionJava" />
+  </operation>
+
+  <operation name="addItemOperation">
+   <input name="in2" message="tns:AddItemRequestJava" />
+   <output name="out2" message="tns:AddItemResponseJava" />
+   <fault name="ft1" message="tns:InvalidItemExceptionJava" />
+   <fault name="ft2" message="tns:OutOfStockExceptionJava" />
+  </operation>
+
+  <operation name="submitOrderOperation">
+   <input name="in3" message="tns:SubmitOrderRequestJava" />
+   <output name="out3" message="tns:SubmitOrderResponseJava" />
+  </operation>
+
+  <operation name="queryOrdersOperation">          
+   <input name="in4" message="tns:QueryOrdersRequestJava" />
+   <output name="out4" message="tns:QueryOrdersResponseJava" />
+   <fault name="ft1" message="tns:EmptyResultExceptionJava" />
+  </operation>
+  
+  <operation name="emptyOrderOperation">          
+   <input name="in5" message="tns:EmptyOrderRequestJava" />
+  </operation>
+
+ </portType>
+
+ <!-- Bindings: signature and parameter mapping -->
+
+ <binding name="ShoppingCart_EJBBinding" type="tns:ShoppingCart_EJBPortType">
+
+  <ejb:binding ejbType="statefulSession"/>
+  <format:typeMapping encoding="Java" style="Java">
+   <format:typeMap typeName="xsd:string" formatType="char" />
+   <format:typeMap typeName="xsd:string" formatType="java.lang.String" />
+   <format:typeMap typeName="xsd:int" formatType="int" />
+   <format:typeMap typeName="typens:address" formatType="shop.Address" />
+   <format:typeMap typeName="typens:createException" formatType="shop.CreateException" />
+   <format:typeMap typeName="typens:item" formatType="shop.Item" />
+   <format:typeMap typeName="typens:submitOrderResult" formatType="shop.SubmitOrderResult" />
+   <format:typeMap typeName="typens:invalidItemException" formatType="shop.InvalidItemException" />
+   <format:typeMap typeName="typens:outOfStockException" formatType="shop.OutOfStockException" />
+   <format:typeMap typeName="typens:creditCardInfo" formatType="shop.CreditCardInfo" />
+   <format:typeMap typeName="typens:airMilesContainer" formatType="shop.AirMilesContainer" />
+  </format:typeMapping> 
+
+  <operation name="createOperation">
+   <ejb:operation
+     methodName="create"
+     parameterOrder="firstName lastName address customerNumber"
+     interface="home" />
+   <input name="in1"/>
+   <output name="out1"/>
+   <fault name="ft1"/>
+  </operation>
+     
+  <operation name="addItemOperation">
+   <ejb:operation
+     methodName="addItem"
+     parameterOrder="itemNumber itemName itemQuantity"
+     returnPart="item"
+     interface="remote" />
+   <input name="in2"/>
+   <output name="out2"/>
+   <fault name="ft1"/>
+   <fault name="ft2"/>
+  </operation>
+  
+  <operation name="submitOrderOperation">
+   <ejb:operation
+     methodName="submitOrder"
+     parameterOrder="creditCardInfo airMilesContainer"
+     returnPart="submitOrderResult"
+     interface="remote" />
+   <input name="in3"/>
+   <output name="out3"/>
+  </operation>
+
+  <operation name="emptyOrderOperation">
+   <ejb:operation
+     methodName="emptyOrder"
+     parameterOrder="customerNumber"
+     interface="remote" />
+   <input name="in4"/>
+  </operation>
+  
+ </binding>
+ 
+ <binding name="ShoppingCart_JavaBinding" type="tns:ShoppingCart_JavaPortType">
+
+  <java:binding/>
+  
+  <format:typeMapping encoding="Java" style="Java">
+   <format:typeMap typeName="xsd:string" formatType="char" />
+   <format:typeMap typeName="xsd:string" formatType="java.lang.String" />
+   <format:typeMap typeName="xsd:int" formatType="int" />
+   <format:typeMap typeName="xsd:long" formatType="long" />
+   <format:typeMap typeName="typens:address" formatType="shop.Address" />
+   <format:typeMap typeName="typens:createException" formatType="org.apache.wsif.test.shop.CreateException" />
+   <format:typeMap typeName="typens:item" formatType="shop.Item" />
+   <format:typeMap typeName="typens:submitOrderResult" formatType="shop.SubmitOrderResult" />
+   <format:typeMap typeName="typens:invalidItemException" formatType="InvalidItemException" />
+   <format:typeMap typeName="typens:outOfStockException" formatType="shop.OutOfStockException" />
+   <format:typeMap typeName="typens:creditCardInfo" formatType="shop.CreditCardInfo" />
+   <format:typeMap typeName="typens:airMilesContainer" formatType="shop.AirMilesContainer" />
+   <format:typeMap typeName="typens:orders" formatType="shop.Orders" />
+   <format:typeMap typeName="typens:emptyResultException" formatType="shop.EmptyResultException" />
+  </format:typeMapping>
+ 
+
+  <operation name="createOperation">
+   <java:operation
+     methodName="create"
+     parameterOrder="firstName lastName address customerNumber"
+     methodType="constructor" />
+   <input name="in1"/>
+   <output name="out1"/>
+   <fault name="ft1"/>
+  </operation>
+     
+  <operation name="addItemOperation">
+   <java:operation
+     methodName="addItem"
+     parameterOrder="itemNumber item itemName itemQuantity"
+     returnPart="currentTotal"
+     methodType="instance" />
+   <input name="in2"/>
+   <output name="out2"/>
+   <fault name="ft1"/>
+   <fault name="ft2"/>
+  </operation>
+  
+  <operation name="submitOrderOperation">
+   <java:operation
+     methodName="submitOrder"
+     parameterOrder="creditCardInfo airMilesContainer"
+     returnPart="orderConfirmationNumber"
+     methodType="instance" />
+   <input name="in3"/>
+   <output name="out3"/>
+  </operation>
+  
+  <operation name="queryOrdersOperation">
+   <java:operation
+     methodName="queryOrders"
+     parameterOrder="customerNumber"
+     returnPart="orders"
+     methodType="static" />
+   <input name="in4"/>
+   <output name="out4"/>
+   <fault name="ft1"/>
+  </operation>
+  
+  <operation name="emptyOrderOperation">
+   <java:operation
+     methodName="emptyOrder"
+     parameterOrder="customerNumber"
+     methodType="instance" />
+   <input name="in5"/>
+  </operation>
+
+ </binding>
+
+
+  <!-- Services -->
+
+  <service name="ShoppingCart_EJBService">
+    <documentation>EJB Invocation Sample</documentation> 
+    <port name="ShoppingCart_EJBPort" binding="tns:ShoppingCart_EJBBinding"> 
+      <ejb:address className="shop.ShoppingCartHome"
+        jndiName="ejb/ShoppingCart"/> 
+    </port> 
+  </service>
+  
+  <service name="ShoppingCart_JavaService">
+   <documentation>Java Invocation Sample</documentation>
+   <port binding="tns:ShoppingCart_JavaBinding" name="ShoppingCart_JavaPort">
+   <java:address className="shop.ShoppingCart_Java" />
+   </port>
+  </service> 
+
+</definitions>

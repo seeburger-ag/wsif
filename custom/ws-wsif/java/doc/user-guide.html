@@ -1,0 +1,43 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><html><head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<meta name="Author" content="Aleksander Slominski">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<title>Web Services Invocation Framework: User's Guide</title>
+<link rel="stylesheet" href="wsif.css" type="text/css"></head>
+
+<body alink="#0000ff" bgcolor="#ffffff" leftmargin="2" topmargin="2" marginwidth="2" marginheight="2">
+
+<h1>
+Web Services Invocation Framework: User's Guide</h1>
+<hr>
+    <ul>
+      <li><a href="#whatisit">What is WSIF?</a></li>
+      <li><a href="#usingit">How to I use WSIF to invoke various WSDL-described services, including SOAP services, EJBs, JMS, and legacy apps via the java connector framework?</a></li>
+      <li><a href="bugs.html">Reporting Bugs and getting help</a></li>
+    </ul>
+<hr>
+    <a name="whatisit"><h2>What is WSIF?</h2></a>
+    <p><em>WSIF</em> stands for the <em>Web Services Invocation
+    Framework</em>. It supports a simple, WSDL-driven Java API for
+    invoking Web services, no matter how or where the services are
+    provided. The framework allows maximum flexibility for the
+    invocation of any WSDL-described service.</p>
+    <p>For more information, read the <a href="overview.html">WSIF overview</a>.</p>
+<hr>
+    <a name="usingit"><h2>Using WSIF</h2>
+    <p>WSIF is capable of invoking any WSDL-described service. The <a href="http://www.w3.org/TR/wsdl12/">WSDL 1.2 specification</a> defines the current WSDL standard, and an associated document, <a href="http://www.w3.org/TR/2002/WD-wsdl12-bindings-20020709/">WSDL 1.2 bindings</a>, defines standard binding extensions that describe how to use the SOAP, HTTP and MIME protocols to invoke services described using WSDL.</p>
+    <p>WSIF defines additional binding extensions so that EJBs, local java classes, software accessible over message queues using the JMS API and software that can be invoked using the Java Connector architecture can also be described in WSDL. WSIF is packaged with providers that allow transparent invocation of such software given the corresponding WSDL description. Here are the documents that describe these bindings:
+      <ul>
+      <li><a href="wsdl_extensions/java_extension.html">Local java binding extensions for WSDL</a></li>
+      <li><a href="wsdl_extensions/ejb_extension.html">EJB binding extensions for WSDL</a></li>
+      <li><a href="wsdl_extensions/jms_bindings.html">JMS binding extensions for WSDL</a></li>
+      <li><a href="wsdl_extensions/j2c_extensions/wsif_j2c_extensions.html">JCA binding extensions for WSDL</a></li>
+      </ul>
+    </p>
+    <p>The WSIF distribution includes samples that show you how to invoke such services using the WSIF API. The <a href="samples.html">Samples documentation</a> describes them.</p>
+    <hr>
+    <a name="reportingbugs"><h2>Reporting bugs and getting help</h2>
+    <p>You can report bugs using Apache'sBugzilla system, as described <a href="bugs.html">here</a>. Post to the axis-user mailing list for help, as described <a href="mail.html">here</a>.</p>
+    <hr>
+<hr width="100%">
+</body></html>

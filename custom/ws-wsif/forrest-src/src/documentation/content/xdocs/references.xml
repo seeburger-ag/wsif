@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+      <!DOCTYPE document PUBLIC "-//APACHE//DTD Documentation V1.1//EN" "document-v11.dtd">
+      <document> 
+        <header> 
+          <title>References</title> 
+        </header> 
+        <body> 
+<ul>
+  <li><link href="http://www.research.ibm.com/people/b/bth/OOWS2001/duftler.pdf">WSIF Framework proposal</link> [PDF]
+  </li>
+  
+	<li>IBM developerWorks articles:
+	
+	<ul>
+	   <li><link href="http://www-106.ibm.com/developerworks/webservices/library/ws-appwsif.html?loc=dwmain">Applying 
+    	 the Web services invocation framework</link> 
+
+       </li><li><link href="http://www-106.ibm.com/developerworks/webservices/library/ws-wsif/">
+               Web service invocation sans SOAP Part 1: Introduction</link> and
+            <link href="http://www-106.ibm.com/developerworks/webservices/library/ws-wsif2/">Part 2: 
+              The architecture of Web Service Invocation Framework</link>.
+       </li>
+    </ul>
+	</li>
+	
+	<li><link href="http://www.ericleach.com/sa2002/presentations/PFremantle-IBM.pdf">A presentation from Paul Fremantle 
+	   at the 2002 Software Architecture conference</link></li>
+
+	<li>WSIF uses extensively WSDL and WSDL4J: 
+		the W3C <link href="http://www.w3.org/TR/wsdl">Web Services Description Language (WSDL) specification</link>,
+	    <link href="http://www.jcp.org/jsr/detail/110.jsp">JSR110</link> describing the Java APIs for WSDL, and the
+	    <link href="http://oss.software.ibm.com/developerworks/projects/wsdl4j">WSDL4J</link> open source site.</li>
+</ul>
+    </body>
+    </document>

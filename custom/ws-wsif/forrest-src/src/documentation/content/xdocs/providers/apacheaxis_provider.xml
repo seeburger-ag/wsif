@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+      <!DOCTYPE document PUBLIC "-//APACHE//DTD Documentation V1.1//EN" "document-v11.dtd">
+      <document> 
+        <header> 
+          <title>WSIF Apache Axis Provider</title> 
+        </header> 
+        <body>
+          <p>The Apache Axis provider allows WSIF to invoke SOAP services via the use of Apache Axis</p>
+          <p>
+The Axis provider offers a greater level of function than the Apache SOAP provider and it is for this reason that it 
+is the default soap provider i.e. the default provider for the <code>http://schemas.xmlsoap.org/wsdl/soap/</code> namespace.           
+          </p>
+     </body>
+    </document>

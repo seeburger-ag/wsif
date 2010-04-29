@@ -1,0 +1,64 @@
+package multibinding.client.stub;
+
+import org.apache.wsif.WSIFService;
+import org.apache.wsif.WSIFServiceFactory;
+import org.apache.wsif.WSIFException;
+import java.rmi.RemoteException;
+import multibinding.client.stub.com.themindelectric.www.NetXmethodsServicesStockquoteStockQuotePortType;
+
+/**
+ * Simple class that Runs the multibinding sample using a pregenerated stub interface
+ * To use this class, provide a company stock symbol and an optional port preference
+ * on the command line. WSIF should then invoke the service with this information, 
+ * using the appropriate port and returning with a recent stockquote.
+ * @author Nirmal K. Mukhi (nmukhi@us.ibm.com)
+ */
+
+public class Run {
+	
+    public static void main(String[] args) {
+        try {
+
+            if (args.length != 2 && args.length!= 3) {
+                System.out.println(
+                    "Usage: java multibinding.client.stub.Run <wsdl location> <company symbol> [StockQuoteJavaPort|StockQuoteSOAPPort]");
+                System.exit(1);
+            }
+
+            // create a service factory
+            WSIFServiceFactory factory = WSIFServiceFactory.newInstance();
+
+            // parse WSDL
+            WSIFService service =
+                factory.getService(
+                    args[0],
+                    null,
+                    null,
+                    "http://www.themindelectric.com/wsdl/net.xmethods.services.stockquote.StockQuote/",
+                    "net.xmethods.services.stockquote.StockQuotePortType");
+            // create the stub
+	    // check if the user specified a preferred port
+            NetXmethodsServicesStockquoteStockQuotePortType stub = null;
+	    if (args.length > 2)
+		stub = (NetXmethodsServicesStockquoteStockQuotePortType) 
+		    service.getStub(args[2],NetXmethodsServicesStockquoteStockQuotePortType.class);
+	    else
+		stub = (NetXmethodsServicesStockquoteStockQuotePortType) 
+		    service.getStub(NetXmethodsServicesStockquoteStockQuotePortType.class);
+
+            // do the invocation
+            // args[1] is the company symbol
+            float quote = stub.getQuote(args[1]);
+            System.out.println(quote);
+
+        } catch (WSIFException we) {
+            System.out.println(
+                "Error while executing sample, received an exception from WSIF; details:");
+            we.printStackTrace();
+        } catch (RemoteException re) {
+            System.out.println(
+                "Error while executing sample, received an exception due to remote invocation; details:");
+            re.printStackTrace();
+        }
+    }
+}

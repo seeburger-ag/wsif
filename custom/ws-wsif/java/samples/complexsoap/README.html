@@ -1,0 +1,19 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><html><head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<meta name="Author" content="Nirmal Mukhi">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<title>Web Services Invocation Framework: Samples</title>
+<link rel="stylesheet" href="wsif.css" type="text/css"></head>
+
+<body alink="#0000ff" bgcolor="#ffffff" leftmargin="2" topmargin="2" marginwidth="2" marginheight="2">
+
+<h1>
+Web Services Invocation Framework:<br>
+ComplexSOAP Sample</h1>
+<p>This sample aims to demonstrate the invocation of a SOAP service that uses custom type definitions. This is a little different from using service that exchange messages typed using primitive schema types, since we have to have native equivalents for the custom schema types and know how to serialize and deserialize these the representations between our native format and the SOAP format.</p>
+<p>The particular service we have chosen to demonstrate how to WSIF for such invocations is called <em>Zip2Geo</em>. This is a publicly available service hosted by <a href="http://www.cdyne.com">www.cdyne.com</a>. The service offers a single port type with one operation, called <tt>GetLatLong</tt>. This operation takes as input a zip code, and returns as output information about the corresponding location, such as the name of the city, state, its latitude, longitude, etc. The return value is a complex schema type. The service URL, where you can find details on the service implementation, etc. is <a href="http://www.xmethods.net/ve2/ViewListing.po?serviceid=175331">here</a>.</p>
+<p>The <a href="Zip2Geo.wsdl">WSDL file</a> in this sample directory is publicly available via the service URL and has been downloaded from there.</p>
+<p><a href="client/dynamic/README.html">Here's</a> how to invoke this service dynamically using WSIF's dynamic invocation interface (DII).</p>
+<p><a href="client/stub/README.html">Here's</a> how to invoke this service by first generating the stub interface and using this directly through WSIF's dynamic proxy, thus hiding all WSIF specifics from the client code. Note that the stub interface used is the the service interface as defined by the JAX-RPC specification.</p>
+<hr width="100%">
+</body></html>

@@ -1,0 +1,22 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><html><head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<meta name="Author" content="Nirmal Mukhi">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<title>Web Services Invocation Framework: Samples</title>
+<link rel="stylesheet" href="wsif.css" type="text/css"></head>
+
+<body alink="#0000ff" bgcolor="#ffffff" leftmargin="2" topmargin="2" marginwidth="2" marginheight="2">
+
+<h1>
+Web Services Invocation Framework:<br>
+JMS Sample</h1>
+<p>In this sample shows how we can invoke systems implemented using message-oriented middleware (MoM) using JMS through the WSIF API. As always, the WSIF API hides all the protocol-specific (in this case, JMS) details; we use the same, WSDL-driven consistent view of the software. The key here is the WSIF defines a
+<a href="../../doc/wsdl_extensions/jms_bindings.html">JMS binding</a> that lets us maps abstract messages to JMS messages, use JMS headers, properties, etc. The <tt>&lt;port&gt;</tt> section of the WSDL will then refer to a message queue as the target of the request messages, along with the required JNDI information to locate the queue dynamically.</p>
+<p>Our particular example is a very simple service. The purpose of the service is to inform users whether DSL service is available at a particular zip code or not. It exposes a single port type which offers one operation called <tt>checkAvailability</tt>. This operation takes as input a message with a single part (a string), representing the zip code, and returns as output a string whose value will be either true or false, depending on whether DSL service is available or not.</p>
+<p>The JMS binding for the service uses JMS text messages for communication. The WSIF JMS provider handles conversion of the abstract invocation to the sending of a JMS message to the desired destination queue, as specified in the WSDL. The return message is received over a temporary queue and returned to the application that made the invocation. From the application's viewpoint, it looks like a synchronous invocation; at the lower (JMS) level, it is really asynchronous.</p>
+<p><a href="ServiceAvailability.wsdl">Here</a> is the service WSDL. Note the JMS binding and the endpoint details for the service. The endpoint information specifies that the service will listen for messages sent to a queue; the queue can be looked up using the JNDI name <tt>queue/A</tt>. The initial context factory specified is vendor-specific, see instructions in the service README below that tell you how to fill in these fields for particular app server environments.</p>
+<p><a href="service/README.html">Here</a> are details on how the service is implemented and deployed so that it is accessible using JMS. These details include instructions on how to deploy the service in your favorite J2EE server.</p>
+<p>Once your service is deployed and available using JMS, you can use WSIF's dynamic invocation API to use it, as described <a href="client/dynamic/README.html">here</a>.</p>
+<p><a href="client/stub/README.html">Here</a> is how you can pre-generate stubs to access the same service using a stub API, resulting in a client application that deals with a simple service interface instead of WSIF-specific code.</p>
+<hr width="100%">
+</body></html>

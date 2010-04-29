@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE document PUBLIC "-//APACHE//DTD Documentation V1.1//EN" "document-v11.dtd">
+<document>
+  <header>
+    <title>News</title>
+  </header>
+  <body>
+    <section>
+      <title>What is new with WSIF?</title>
+      <p>2nd February 2003 - WSIF distribution files is now moved to its pernament home at
+        <link href="http://ws.apache.org/dist/wsif/">http://ws.apache.org/dist/wsif</link>.
+      </p>
+      <p>WSIF has it's own home at
+        <link href="http://ws.apache.org/wsif">http://ws.apache.org/wsif</link>
+.</p>
+      <p>27th January 2003 - The first Apache WSIF release is now available. You can download it from
+        <link href="http://cvs.apache.org/dist/axis/wsif/">http://cvs.apache.org/dist/axis/wsif/</link>.
+      </p>
+      <p>A 
+        <link href="changes.html">list of changes in this release</link> is available (you can also visit
+        <link href="http://cvs.apache.org/viewcvs/~checkout~/ws-wsif/java/doc/changes.html"> online list of changes</link>
+in the latest CVS version to monitor WSIF progress).</p>
+    </section>
+  </body>
+</document>

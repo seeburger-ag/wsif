@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+      <!DOCTYPE document PUBLIC "-//APACHE//DTD Documentation V1.1//EN" "document-v11.dtd">
+      <document> 
+        <header> 
+          <title>WSIF Providers</title> 
+        </header> 
+        <body> 
+          <p>Information on the different providers shipped with WSIF and also the WSDL extensions used by these providers</p>
+     </body>
+    </document>

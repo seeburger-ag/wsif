@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+      <!DOCTYPE document PUBLIC "-//APACHE//DTD Documentation V1.1//EN" "document-v11.dtd">
+      <document> 
+        <header> 
+          <title>Requirements</title> 
+        </header> 
+        <body> 
+<section>
+<title>Prerequisites</title>
+<p>A J2SE v1.3 SDK (eg from <link href="http://java.sun.com/j2se">Java J2SE site</link>) and the Apache Jakarta Ant tool to build wsif. 
+Ant is available at the <link href="http://jakarta.apache.org/ant">Apache ANT website</link>.
+To build WSIF the jars from the following packages are required:</p>
+<table> 
+<caption>Prerequisite jars</caption>
+<tr>
+<th>Description</th>
+<th>Jar names</th>
+</tr>
+<tr>
+<td>JAXP compliant XML parser, such as <link href="http://xml.apache.org/xerces2-j/index.html">Apache Xerces</link>.</td>
+<td>xercesImpl.jar xmlParserAPIs.jar</td>
+</tr>
+<tr>
+<td>WSDL for Java API (WSDL4J), from the <link href="http://www-124.ibm.com/developerworks/projects/wsdl4j/">IBM developerWorks site</link>.</td>
+<td>wsdl4j.jar qname.jar</td>
+</tr>
+<tr>
+<td>Apache SOAP,  from  the <link href="http://ws.apache.org/soap">Apache SOAP site</link></td>
+<td>soap.jar</td>
+</tr>
+<tr>
+<td>Apache Axis,  from  the <link href="http://xml.apache.org/axis">Apache Axis site</link></td>
+<td>axis.jar saaj.jar jaxrpc.jar commons-logging.jar</td>
+</tr>
+<tr>
+<td>J2EE  1.3 from the <link href="http://java.sun.com/j2ee/">Java J2EE site</link></td>
+<td>j2ee.jar</td>
+</tr>
+</table>
+<p>Currently, in order to successfully build WSIF, all the above prerequisites 
+are required no matter which providers are going to be used.</p>
+</section>
+        </body>
+    </document>

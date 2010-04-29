@@ -1,0 +1,72 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><html><head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<meta name="Author" content="Aleksander Slominski">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<title>Web Services Invocation Framework: How to Build</title>
+<link rel="stylesheet" href="wsif.css" type="text/css"></head>
+
+<body alink="#0000ff" bgcolor="#ffffff" leftmargin="2" topmargin="2" marginwidth="2" marginheight="2">
+
+<h1>
+Web Services Invocation Framework: How to Build</h1>
+
+
+<h2>What are requirements?</h2>
+
+<p>WSIF generally requires WSDL4J and XML parser that implements JAXP (such as 
+Xerces2). For detailed list of required and optional JAR files and how to obtain 
+them please take a look in lib/ subdirectories. Each subdirectory has short 
+README file that explains how to get needed JAR file if you do not have them 
+already on your CLASSPATH. Check detailed <a href="requirements.html">list of 
+requirements</a>.</p>
+
+<h2>How to build?</h2>
+
+<p>There are two possibilities: use your preferred verion of ANT but you are 
+responsible for setting CLASSPATH or use provided scripts that automate building 
+and CLASSPATH setting.</p>
+
+<h2>Building WSIF using ANT</h2>
+<p>Obtain all the necessary jar files as listed in the 
+<a href="requirements.html">prerequisites</a>.&nbsp; </p>
+<p>Set required environment variables, including,
+  JAVA_HOME, ANT_HOME. </p>
+<p>From the root directory of wsif (where build.xml is located), run </p>
+  <pre>ant -Dwsif.build.classpath=&lt;classpath&gt; &lt;target&gt;</pre>
+  <p>where &lt;classpath&gt; contains the location of the preequisite JAR files<br>
+  <br>
+  and, where &lt;target&gt; is one of the following:
+  <ul>
+    <li><b>compile</b>: Compiles the API
+    </li><li><b>samples</b>: Compiles the samples
+    </li><li><b>javadocs</b>: Builds the javadoc
+    </li><li><b>srcdist</b>: Creates the source distribution
+    zip file.
+    </li><li><b>dist</b>: Creates the binary distribution zip
+    file.
+    </li><li><b>clean</b>: Removes built files.
+    </li><li><b>all</b>: Cleans, creates source and binary distribution
+    zip files.
+  </li><li><b>tests</b>: Build tests</li></ul>
+
+<h2>Building WSIF by using provided scripts and JAR files</h2>
+<p>If you downloaded the source distribution you need to make sure you have all <a href="requirements.html">prerequisite jars</a> available under the <tt>lib/</tt> directory. Most of the necessary jar files are already included in lib directory (we redistribute what we can). You will only need to download the following and put them into the <tt>lib/</tt> directory.
+<ul>
+<li><b>activation.jar</b></li>
+<li><b>mail.jar</b></li>
+<li><b>jms.jar</b></li>
+<li><b>j2ee.jar</b>; if you plan to download this it includes the above three so you won't need to download those separately.</li>
+</ul>
+The <a href="../lib/README.html">dependency README</a> tells you where you can download these from and also how they are used, so you can decide for yourself which JARs you really need.</p>
+
+<p>Then use <b>build script</b> (./build.sh on UNIX or build.bat on Windows) to 
+rebuilt WSIF (see list of targets above).</p>
+
+<p>After building, if you want just to run samples you can simply call <b>classpath script</b> 
+(on Windows use classpath.bat on UNIX use source classpath.csh if you use TCSH 
+or source classpath.sh if you use BASH) and you will have all required jar files 
+on CLASSPATH, then you can proceed with <a href="samples.html">running samples</a>.</p>
+
+<hr width="100%">
+<address>$Id: build.html,v 1.1 2010/04/29 08:36:27 paskalev Exp $ </address>
+</body></html>

@@ -1,0 +1,114 @@
+<html>
+<head>
+<title>Apache WSIF 2.0 Release Notes
+</title>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="Author" content="Nirmal Mukhi, Owen Burroughs, Aleksander Slominski, Jeremy Hughes">
+</head>
+<body bgcolor="white">
+<h2>Release Notes for Apache WSIF 2.0</h2>
+
+<p> WSIF (the "Web Services Invocation Framework") is a WSDL-based API for
+    invoking WSDL-described services. WSIF developers interact with Web Services
+    at the abstract level through their WSDL descriptions. This is done
+    independently of APIs specific to a message format or network protocol
+    (eg SOAP APIs).
+</p>
+
+<p> With WSIF, developers work with the same programming model regardless of
+    how the Web service is implemented and accessed. WSIF achieves this with a
+    pluggable architecture with protocol-specific "providers" to handle
+    invocations according to a specific protocol.
+</p>
+
+<p> Apache WSIF 2.0 comes bundled with providers for SOAP (using Apache SOAP or
+    Axis), local java classes, EJBs, JMS services and applications accessible
+    via Java Connectors. WSIF also describes the specific WSDL extensions used
+    to make these kinds of applications accessible as WSDL-described services.
+</p>
+
+<p> WSIF allows stubless or completely dynamic invocation of a Web service,
+    based upon examination of the meta-data about the service at runtime. It
+    also allows updated implementations of a binding to be plugged into WSIF at
+    runtime, and it allows the calling service to defer choosing a binding until
+    runtime.
+</p>
+
+<p> This is the first release of WSIF since it was contributed to the ASF, and
+    is named 2.0 to avoid confusion with previous non-Apache licensed 1.x
+    versions.
+</p>
+
+<p> Thanks to all the committers, contributors and usersfor their efforts in
+    helping get our first release out.
+</p>
+
+<H3>Main features:</H3>
+
+<ul>
+  <li>WSDL-centric: and works with abstract definition of service (portType) 
+  hiding implementation details (protocol bindings and service location)</li>
+  <li>pluggable: allows <a href="how_to_provider.html">new providers</a> to be 
+  added so that applications can use new services just by updating WSDL, i.e. without
+  changing any application code.</li>
+  <li>extensible: it is easy to experiment with new
+  <a href="how_to_wsdl_extensions.html">extensions to WSDL</a></li>
+  <li>flexible: allows for easy <a href="customising.html">customizations</a>
+  <li>easy to integrate with JNDI to provide even greater transparency of where 
+  are services located
+  <li>multiple <a href="samples.html">samples</a> to 
+  demonstrate use of WSIF to interact with services by SOAP, EJB, JMS, JCA and 
+  local Java service providers
+  <li>and many more ...</ul>
+
+
+<H3>Recent Changes:</H3>
+
+
+<ul>
+
+<li>new <a href="samples.html">samples</a>: added JCA sample, DSL provider
+sample to demonstrate how WSIF
+can be used to interact with many services each potentially implemented with
+different protocol (EJB, JMS, SOAP, ...), added EJB sample with documentation and pre-packaged jar
+for deployment in JBoss, added JMS sample to demonstrate how WSIF
+can be used to interacts with software accessible through the JMS API, added 
+multi binding and custom factory samples to demonstrate flexibility of WSIF 
+(custom factory currently does not work depending on future changes in WSIF)</li>
+
+<li>improved documentation:
+factored out <a href="../readme.htm1">readme.htm1</a> into smaller pieces that are put in doc/ (like cvs and requirements)
+updated doc/ with factored out info about cvs and requirements and improved build instructions,
+moved wsdl_extensions to doc/ from README_files,
+simplified wsif.css (much less colors, easier to read ...), added
+<a href="faq.html">FAQ</a><li>fixed bugs:
+<a href="http://nagoya.apache.org/bugzilla/show_bug.cgi?id=13646">13646</a>
+<a href="http://nagoya.apache.org/bugzilla/show_bug.cgi?id=15134">15134</a>
+<a href="http://nagoya.apache.org/bugzilla/show_bug.cgi?id=15578">15578</a>
+<a href="http://nagoya.apache.org/bugzilla/show_bug.cgi?id=15691">15691</a>
+<a href="http://nagoya.apache.org/bugzilla/show_bug.cgi?id=15780">15780</a>
+<a href="http://nagoya.apache.org/bugzilla/show_bug.cgi?id=15837">15837</a>
+<a href="http://nagoya.apache.org/bugzilla/show_bug.cgi?id=16041">16041</a>
+<a href="http://nagoya.apache.org/bugzilla/show_bug.cgi?id=16196">16196</a>
+<a href="http://nagoya.apache.org/bugzilla/show_bug.cgi?id=16197">16197</a>
+<a href="http://nagoya.apache.org/bugzilla/show_bug.cgi?id=16199">16199</a>
+<a href="http://nagoya.apache.org/bugzilla/show_bug.cgi?id=16199">16199</a>
+<a href="http://nagoya.apache.org/bugzilla/show_bug.cgi?id=16256">16256</a>
+<a href="http://nagoya.apache.org/bugzilla/show_bug.cgi?id=16271">16271</a>
+<a href="http://nagoya.apache.org/bugzilla/show_bug.cgi?id=16334">16334</a>
+
+
+<li>changed release packaging: there are now three different release builds: 
+<b>src</b>: only source file (no binaries) - essentially all that is needed
+to compile WSIF if you downloaded all required jar files, 
+<b>bin</b>: only binaries: just download few jar files that can not be distributed
+and you are ready to run WSIF (no source code except for samples), 
+<b>all</b> = bin + src
+
+</ul>
+
+
+
+</P>
+</body>
+</html>

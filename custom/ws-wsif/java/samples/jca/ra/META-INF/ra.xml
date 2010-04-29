@@ -1,0 +1,35 @@
+<!DOCTYPE connector PUBLIC "-//Sun Microsystems, Inc.//DTD Connector 1.0//EN"
+                           "http://java.sun.com/dtd/connector_1_0.dtd">
+<connector>
+  <display-name>MyEISResourceAdapter</display-name>
+  <description>Template J2EE Resource Adapter</description>
+  <vendor-name>IBM</vendor-name>
+  <spec-version>1.0</spec-version>
+  <eis-type>MyEIS</eis-type>
+  <version>1.0</version>
+  <license>                                       
+    <description></description>
+    <license-required>true</license-required>     
+  </license>                                      
+  <resourceadapter>
+    <managedconnectionfactory-class>com.myeis.j2c.MyEISManagedConnectionFactory</managedconnectionfactory-class>
+    <connectionfactory-interface>javax.resource.cci.ConnectionFactory</connectionfactory-interface>
+    <connectionfactory-impl-class>com.myeis.j2c.MyEISConnectionFactory</connectionfactory-impl-class>
+    <connection-interface>javax.resource.cci.Connection</connection-interface>
+    <connection-impl-class>com.myeis.j2c.MyEISConnection</connection-impl-class>
+    <transaction-support>NoTransaction</transaction-support>
+	<config-property>
+      <description>Location of the repository</description>
+      <config-property-name>RepositoryLocation</config-property-name>
+      <config-property-type>java.lang.String</config-property-type>
+      <config-property-value></config-property-value>
+    </config-property>
+	<authentication-mechanism>
+      <description></description>
+      <authentication-mechanism-type>BasicPassword</authentication-mechanism-type>
+      <credential-interface>javax.resource.spi.security.PasswordCredential</credential-interface>
+    </authentication-mechanism>
+    <reauthentication-support>false</reauthentication-support>
+
+  </resourceadapter>
+</connector>

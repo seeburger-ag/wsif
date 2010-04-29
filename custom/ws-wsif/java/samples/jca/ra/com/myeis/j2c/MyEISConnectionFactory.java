@@ -1,0 +1,93 @@
+/*
+ * Copyright 2002-2004 The Apache Software Foundation.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * ====================================================================
+ *
+ * This software consists of voluntary contributions made by many
+ * individuals on behalf of the Apache Software Foundation and was
+ * originally based on software copyright (c) 2001, 2002, International
+ * Business Machines, Inc., http://www.apache.org.  For more
+ * information on the Apache Software Foundation, please see
+ * <http://www.apache.org/>.
+ */
+
+package com.myeis.j2c;
+
+import javax.naming.*;
+import javax.resource.*;
+import javax.resource.cci.*;
+import javax.resource.spi.*;
+
+public class MyEISConnectionFactory implements ConnectionFactory {
+
+	private ConnectionManager fieldConnectionManager = null;
+	private ManagedConnectionFactory fieldManagedConnectionFactory = null;
+
+	/**
+	 * Constructor
+	 */
+	public MyEISConnectionFactory(ConnectionManager connectionManager, ManagedConnectionFactory managedConnectionFactory) {
+		
+		this.fieldConnectionManager = connectionManager;
+		this.fieldManagedConnectionFactory = managedConnectionFactory;
+	}
+	
+	/**
+	 * @see ConnectionFactory#getConnection()
+	 */
+	public Connection getConnection() throws ResourceException {
+		
+		if (this.fieldConnectionManager == null) {
+			return (Connection)this.fieldManagedConnectionFactory.createManagedConnection(null, null).getConnection(null, null);
+		}
+		
+		return null;
+	}
+
+	/**
+	 * @see ConnectionFactory#getConnection(ConnectionSpec)
+	 */
+	public Connection getConnection(ConnectionSpec arg0) throws ResourceException {
+		return null;
+	}
+
+	/**
+	 * @see ConnectionFactory#getRecordFactory()
+	 */
+	public RecordFactory getRecordFactory() throws ResourceException {
+		return null;
+	}
+
+	/**
+	 * @see ConnectionFactory#getMetaData()
+	 */
+	public ResourceAdapterMetaData getMetaData() throws ResourceException {
+		return null;
+	}
+
+	/**
+	 * @see Referenceable#setReference(Reference)
+	 */
+	public void setReference(Reference arg0) {
+	}
+
+	/**
+	 * @see Referenceable#getReference()
+	 */
+	public Reference getReference() throws NamingException {
+		return null;
+	}
+
+}
+

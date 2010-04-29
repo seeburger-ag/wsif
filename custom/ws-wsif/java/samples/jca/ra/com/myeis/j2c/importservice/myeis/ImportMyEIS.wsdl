@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions name="ImportService"
+	targetNamespace="http://myeis.importservice.j2c.myeis.com/"
+	xmlns="http://schemas.xmlsoap.org/wsdl/"
+	xmlns:format="http://schemas.xmlsoap.org/wsdl/formatbinding/"
+	xmlns:myeis="http://schemas.xmlsoap.org/wsdl/myeis/"
+	xmlns:tns="http://myeis.importservice.j2c.myeis.com/"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns:xsd1="http://xml.apache.org/xml-soap"
+	xmlns:interface="http://toolplugin.jca.providers.wsif.apache.org/">
+	<import namespace="http://toolplugin.jca.providers.wsif.apache.org/"
+		location="/org/apache/wsif/providers/jca/toolplugin/Import.wsdl"></import>
+	<import namespace="http://toolplugin.jca.providers.wsif.apache.org/"
+		location="/org/apache/wsif/providers/jca/toolplugin/Import.xsd"></import>
+	<import namespace="http://xml.apache.org/xml-soap"></import>
+    <binding name="ImportMyEISBinding" type="interface:Import">
+       <myeis:binding/>
+       <format:typeMapping encoding="myeis">
+       </format:typeMapping>
+       <operation name="getDefinition">
+            <myeis:operation functionName="IMPORT_DEFINITION"/>
+            <input name="getDefinitionRequest"/>
+            <output name="getDefinitionResponse"/>
+        </operation>
+        <operation name="getPortTypes">
+            <myeis:operation functionName="IMPORT_PORTTYPES"/>
+            <input name="getPortTypesRequest"/>
+            <output name="getPortTypesResponse"/>
+        </operation>
+        <operation name="getRawEISMetaData">
+            <myeis:operation functionName="IMPORT_RAWMETADATA"/>
+            <input name="getRawEISMetaDataRequest"/>
+            <output name="getRawEISMetaDataResponse"/>
+        </operation>
+    </binding>
+    <service name="ImportService">
+        <port binding="tns:ImportMyEISBinding" name="ImportMyEISPort">
+            <myeis:address repositoryLocation="remote"/>
+        </port>
+    </service>
+</definitions>

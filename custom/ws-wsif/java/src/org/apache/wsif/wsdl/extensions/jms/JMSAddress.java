@@ -1,0 +1,186 @@
+/*
+ * Copyright 2002-2004 The Apache Software Foundation.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * ====================================================================
+ *
+ * This software consists of voluntary contributions made by many
+ * individuals on behalf of the Apache Software Foundation and was
+ * originally based on software copyright (c) 2001, 2002, International
+ * Business Machines, Inc., http://www.apache.org.  For more
+ * information on the Apache Software Foundation, please see
+ * <http://www.apache.org/>.
+ */
+
+package org.apache.wsif.wsdl.extensions.jms;
+
+import java.io.Serializable;
+
+import javax.wsdl.extensions.ExtensibilityElement;
+import javax.xml.namespace.QName;
+
+/**
+ * WSDL Jms service-port extension
+ * 
+ * @author <a href="mailto:ake@de.ibm.com">Hermann Akermann</a>
+ * @author Ant Elder <antelder@apache.org>
+ * @author Mark Whitlock <whitlock@apache.org>
+ */
+public class JMSAddress implements ExtensibilityElement, Serializable {
+
+	private static final long serialVersionUID = 1L;
+
+    protected QName fieldElementType = JMSConstants.Q_ELEM_JMS_ADDRESS;
+    // Uses the wrapper type so we can tell if it was set or not.
+    
+    protected Boolean fieldRequired = null;
+
+    protected String jmsVendorURI;
+    protected String initCxtFact;
+    protected String jndiProvURL;
+    protected String destStyle;
+    protected String jndiConnFactName;
+    protected String jndiDestName;
+    protected String jmsProvDestName;
+    protected String jmsImplSpecURI;
+    protected java.util.List propertyValues;
+
+    /**
+     * accessors
+     */
+    public String getJmsVendorURI() {
+        return jmsVendorURI;
+    }
+
+    public String getInitCxtFact() {
+        return initCxtFact;
+    }
+
+    public String getJndiProvURL() {
+        return jndiProvURL;
+    }
+
+    public String getDestStyle() {
+        return destStyle;
+    }
+
+    public String getJndiConnFactName() {
+        return jndiConnFactName;
+    }
+
+    public String getJndiDestName() {
+        return jndiDestName;
+    }
+
+    public String getJmsProvDestName() {
+        return jmsProvDestName;
+    }
+
+    public String getJmsImplSpecURI() {
+        return jmsImplSpecURI;
+    }
+
+    /**
+     * mutators
+     */
+    public void setJmsVendorURI(String rhs) {
+        jmsVendorURI = rhs;
+    }
+
+    public void setInitCxtFact(String rhs) {
+        initCxtFact = rhs;
+    }
+
+    public void setJndiProvURL(String rhs) {
+        jndiProvURL = rhs;
+    }
+
+    public void setDestStyle(String rhs) {
+        destStyle = rhs;
+    }
+
+    public void setJndiConnFactName(String rhs) {
+        jndiConnFactName = rhs;
+    }
+
+    public void setJndiDestName(String rhs) {
+        jndiDestName = rhs;
+    }
+
+    public void setJmsProvDestName(String rhs) {
+        jmsProvDestName = rhs;
+    }
+
+    public void setJmsImplSpecURI(String rhs) {
+        jmsImplSpecURI = rhs;
+    }
+
+    /**
+     * @see ExtensibilityElement#setElementType(QName)
+     */
+    public void setElementType(QName elementType) {
+        fieldElementType = elementType;
+    }
+
+    /**
+     * @see ExtensibilityElement#getElementType()
+     */
+    public QName getElementType() {
+        return fieldElementType;
+    }
+
+    /**
+     * @see ExtensibilityElement#setRequired(Boolean)
+     */
+    public void setRequired(Boolean required) {
+        fieldRequired = required;
+    }
+
+    /**
+     * @see ExtensibilityElement#getRequired()
+     */
+    public Boolean getRequired() {
+        return fieldRequired;
+    }
+
+    public String toString() {
+        StringBuffer strBuf = new StringBuffer(super.toString());
+
+        strBuf.append("\nJmsAddress (" + fieldElementType + "):");
+        strBuf.append("\nrequired=" + fieldRequired);
+
+        strBuf.append("\njmsVendorURI=" + jmsVendorURI == null ? "null" : jmsVendorURI);
+        strBuf.append("\ninitCxtFact=" + initCxtFact == null ? "null" : initCxtFact);
+        strBuf.append("\njndiProvURL=" + jndiProvURL == null ? "null" : jndiProvURL);
+        strBuf.append("\ndestStyle=" + destStyle == null ? "null" : destStyle);
+        strBuf.append(
+            "\njndiConnFactName=" + jndiConnFactName == null ? "null" : jndiConnFactName);
+        strBuf.append("\njndiDestName=" + jndiDestName == null ? "null" : jndiDestName);
+        strBuf.append(
+            "\njmsProvDestName=" + jmsProvDestName == null ? "null" : jmsProvDestName);
+        strBuf.append(
+            "\njmsImplSpecURI=" + jmsImplSpecURI == null ? "null" : jmsImplSpecURI);
+
+        return strBuf.toString();
+    }
+
+    public void addJMSPropertyValue(JMSPropertyValue jmsPropertyValue) {
+        getJMSPropertyValues().add(jmsPropertyValue);
+    }
+
+    public java.util.List getJMSPropertyValues() {
+        if (propertyValues == null)
+            propertyValues = new java.util.ArrayList();
+        return propertyValues;
+    }
+}

@@ -1,0 +1,126 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><html><head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<meta name="Author" content="Mark Whitlock">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<title>JMS Bindings</title>
+<link rel="stylesheet" href="wsif.css" type="text/css"></head>
+<body alink="#0000ff" bgcolor="#ffffff" leftmargin="2" topmargin="2" marginwidth="2" marginheight="2">
+
+<h1>WSDL Bindings for Jms</h1>
+<h2>Overview</h2>
+<p>
+WSIF defines extra WSDL extensions that are not part of WSDL4J itself. Amongst
+others, these WSDL extensions are needed for JMS. You should use WSIF to read
+in your WSDL, rather than using WSDL4J directly, because WSIF adds in its
+own extension registries that understand these extra WSDL extensions. For example
+you can use WSIFUtils.readWSDL to do this. This page describes WSIF's WSDL
+extensions for JMS. Currently, these WSDL extensions are valid for Soap over Jms,
+Axis over Jms and NativeJms. The jms namespace must be 
+<code>
+xmlns:jms="http://schemas.xmlsoap.org/wsdl/jms/"
+</code>
+</p>
+
+<h2>Jms address</h2>
+<p>
+&lt;jms:address describes a target port that is accessible via JMS.
+</p>
+<p><code>
+&lt;jms:address jmsVendorURI="xxx"<br>
+&nbsp;&nbsp;&nbsp;&nbsp;jndiDestinationName="xxx"<br>
+&nbsp;&nbsp;&nbsp;&nbsp;destinationStyle="xxx"<br>
+&nbsp;&nbsp;&nbsp;&nbsp;jndiConnectionFactoryName="xxx"<br>
+&nbsp;&nbsp;&nbsp;&nbsp;initialContextFactory="xxx"<br>
+&nbsp;&nbsp;&nbsp;&nbsp;jndiProviderURL="xxx"<br>
+&nbsp;&nbsp;&nbsp;&nbsp;jmsProviderDestinationName="xxx"<br>
+&nbsp;&nbsp;&nbsp;&nbsp;jmsImplementationSpecificURI="xxx" /&gt;
+</code>
+<p>
+<ul>
+<li>this must go in the port</li>
+<li>jmsVendorURI is optional and unused by WSIF. It allows to the client 
+to check the JMS implementation.</li>
+<li>either destinationStyle or jmsImplementationSpecificURI must be 
+specified, but not both.</li>
+<li>jmsImplementationSpecificURI specifies the queue manager and queues 
+in a implementation specific format. This is currently unimplemented by WSIF.</li>
+<li>destinationStyle must either be queue or topic, but topics aren't yet 
+implemented by WSIF.</li>
+<li>if destinationStyle is specified, then either jndiDestinationName or 
+jmsProviderDestinationName must be specified but not both.</li>
+<li>jndiDestinationName is the JNDI name of the JMS queue that WSIF will 
+send requests to.</li>
+<li>jmsProviderDestinationName is the JMS name of the JMS queue that WSIF 
+will send requests to.</li>
+<li>if jndiDestinationName is specified then jndiConnectionFactoryName must 
+also be specified.</li>
+<li>if jmsProviderDestinationName is specified then jndiConnectionFactoryName may
+also be specified. jndiConnectionFactoryName would be needed if the JNDI name
+of a replyTo queue is passed to WSIF.</li>
+<li>jndiConnectionFactoryName is the JNDI name of the connection factory 
+that WSIF will use.</li>
+<li>if destinationStyle is specified then either both jndiProviderURL and 
+initialContextFactory or neither must be specified.</li>
+</ul></p>
+<p>
+WSIF uses the following order to lookup queues and queue managers in JNDI
+<ul>
+<li>Lookup java:comp/env/&lt;name&gt; in the default (local) JNDI</li>
+<li>Lookup java:comp/env/&lt;name&gt; in the JNDI specified by the WSDL</li>
+<li>Lookup &lt;name&gt; in the default (local) JNDI</li>
+<li>Lookup &lt;name&gt; in the JNDI specified by the WSDL.</li>
+</ul></p>
+<p>
+This allows a client administrator to override the JNDI definition specified 
+in the WSDL.
+</p>
+
+<h2>Jms binding</h2>
+<p>
+TODO
+</p>
+
+<h2>Jms property</h2>
+<p><code>
+&lt;jms:property name="&lt;name&gt;" part="&lt;part&gt;" /&gt;
+</code></p>
+<p><ul>
+<li>this must go in the input or output section of the binding operation. 
+Output jms properties are not yet implemented in WSIF.</li>
+<li>the &lt;name&gt; may be the name of a property defined by JMS, or 
+the name of a property defined by the JMS implementation, or the name of 
+a user property.</li>
+<li>the &lt;part&gt; must be the name of a part in the message.</li>
+<li>JMS user properties that are objects are not implemented by WSIF.</li>
+<li>When using stubs to invoke WSIF, this property appears as a parameter 
+on the stub's signature, but will not appear on the web service's 
+method signature.</li>
+</ul></p>
+
+<h2>Jms property value</h2>
+<p><code>
+&lt;jms:propertyValue name="&lt;name&gt;" type="&lt;type&gt;" 
+value="&lt;value&gt;" /&gt;
+</code></p>
+<p><ul>
+<li>this must go in either the &lt;jms:address or in the input section 
+of the binding operation.</li>
+<li>the &lt;name&gt; may be the name of a property defined by JMS, or 
+the name of a property defined by the JMS implementation, or the name of 
+a user property.</li>
+<li>the &lt;type&gt; is the datatype of the &lt;value&gt; that hardcodes 
+the value of this property in the WSDL.</li>
+<li>JMS user properties that are objects are not implemented by WSIF.</li>
+</ul></p>
+<p>
+JMS properties can also be set on the message context, without being 
+defined in the WSDL.
+</p>
+
+<h2>Jms fault, fault property and fault indicator</h2>
+<p>
+TODO
+</p>
+
+<hr width="100%">
+</body></html>

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+      <!DOCTYPE document PUBLIC "-//APACHE//DTD Documentation V1.1//EN" "document-v11.dtd">
+      <document> 
+        <header> 
+          <title>How to write your own WSDL extensions</title> 
+        </header> 
+        <body> 
+<section>
+<title>How to write your own WSDL extensions and plug them into WSDL4J</title>
+
+<p>To Implement new WSDL extension using WSDL4J it is necessary to:</p>
+    <ul>
+      <li>decide on what namespace will be used for WSDL extension: for example 
+      EJB provider is using <link href="http://schemas.xmlsoap.org/wsdl/ejb/">http://schemas.xmlsoap.org/wsdl/ejb/</link></li>
+      <li>write a subclass of javax.wsdl.extensions.ExtensibilityElement</li>
+      <li>write class which implements ExtensionSerializer and ExtensionDeserializer 
+      and is responsible for converting Java object representing extension to 
+      XML (serializer) and for converting XML into Java object (deserialize)</li>
+      <li>write new extension registry - this clss must extend javax.wsdl.extensions.ExtensionRegistry 
+      and is used to inform WSDL4J on how to handle new extension</li>
+    </ul>
+<p>You can find examples of all these for the existing providers in the various org.apache.wsif.wsdl.extensions.* packages</p>
+<p>TODO: more details based on example</p>
+</section>
+        </body>
+    </document>
+

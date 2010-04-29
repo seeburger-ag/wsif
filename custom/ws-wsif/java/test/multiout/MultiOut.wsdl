@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<definitions name="CharTest" targetNamespace="http://test.multiout/"
+  xmlns:tns="http://test.multiout/"
+  xmlns:types="http://types.multiout/"
+  xmlns="http://schemas.xmlsoap.org/wsdl/"
+  xmlns:xsd="http://www.w3.org/2000/10/XMLSchema"
+  xmlns:format="http://schemas.xmlsoap.org/wsdl/formatbinding/"
+  xmlns:ejb="http://schemas.xmlsoap.org/wsdl/ejb/"
+  xmlns:java="http://schemas.xmlsoap.org/wsdl/java/">
+
+ <message name="GetMORequest">
+  <part name="in" type="xsd:string"/>
+ </message>
+
+ <message name="GetMOResponse">
+  <part name="surname" type="xsd:string"/>
+  <part name="firstname" type="xsd:string"/>
+  <part name="age" type="xsd:int"/>
+  <part name="initial" type="xsd:string"/>
+  <part name="details" type="types:stringbuffer"/>      
+ </message>
+
+ <message name="GetMO2Request">
+  <part name="in" type="xsd:string"/>
+ </message>
+
+ <message name="GetMO2Response">
+  <part name="person" type="types:map"/>
+  <part name="firstname" type="xsd:string"/>
+  <part name="age" type="xsd:int"/>
+  <part name="initial" type="xsd:string"/>
+  <part name="details" type="types:stringbuffer"/>      
+ </message>
+
+ <portType name="PortType">
+
+  <operation name="getMOOperation">
+   <input name="in1" message="tns:GetMORequest" />
+   <output name="out1" message="tns:GetMOResponse" />
+  </operation>
+
+  <operation name="getMO2Operation">
+   <input name="in2" message="tns:GetMO2Request" />
+   <output name="out2" message="tns:GetMO2Response" />
+  </operation>
+
+ </portType>
+
+ <binding name="EJBBinding" type="tns:PortType">
+  <ejb:binding/>
+  
+  <format:typeMapping encoding="Java" style="Java">  
+   <format:typeMap typeName="xsd:string" formatType="java.lang.String" />
+   <format:typeMap typeName="xsd:int" formatType="int" /> 
+   <format:typeMap typeName="types:stringbuffer" formatType="java.lang.StringBuffer" />     
+   <format:typeMap typeName="types:map" formatType="java.util.Map" />   
+  </format:typeMapping>
+ 
+  <operation name="getMOOperation">
+   <ejb:operation
+     methodName="getMultiOut"
+     parameterOrder="in"
+     interface="remote"
+     returnPart="surname" />
+   <input name="in1"/>
+   <output name="out1"/>
+  </operation>
+  
+  <operation name="getMO2Operation">
+   <ejb:operation
+     methodName="getMultiOutOld"
+     parameterOrder="in"
+     interface="remote"
+     returnPart="person" />
+   <input name="in2"/>
+   <output name="out2"/>
+  </operation>
+ </binding>  
+
+
+ <binding name="JavaBinding" type="tns:PortType">
+  <java:binding/>
+  
+  <format:typeMapping encoding="Java" style="Java">  
+   <format:typeMap typeName="xsd:string" formatType="java.lang.String" />
+   <format:typeMap typeName="xsd:int" formatType="int" />
+   <format:typeMap typeName="types:stringbuffer" formatType="java.lang.StringBuffer" />     
+   <format:typeMap typeName="types:map" formatType="java.util.Map" />
+  </format:typeMapping>
+ 
+  <operation name="getMOOperation">
+   <java:operation
+     methodName="getMultiOut"
+     parameterOrder="in"
+     methodType="instance"
+     returnPart="surname" />
+   <input name="in1"/>
+   <output name="out1"/>
+  </operation>
+
+  <operation name="getMO2Operation">
+   <java:operation
+     methodName="getMultiOutOld"
+     parameterOrder="in"
+     methodType="instance"
+     returnPart="person" />
+   <input name="in2"/>
+   <output name="out2"/>
+  </operation>
+ </binding>
+ 
+  <service name="EJBService">
+   <documentation></documentation>
+   <port binding="tns:EJBBinding" name="EJBPort">
+      <ejb:address className="multiout.ejb.TestHome"
+        jndiName="ejb/MultiOut"/>    
+   </port>
+  </service> 
+
+  <service name="JavaService">
+   <documentation></documentation>
+   <port binding="tns:JavaBinding" name="JavaPort">
+      <java:address className="multiout.java.Test_Java"/>    
+   </port>
+  </service>
+
+</definitions>

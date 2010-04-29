@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions name="CustomerInfoMYEISBinding"
+    targetNamespace="http://customer.myeis.com/"
+    xmlns="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:format="http://schemas.xmlsoap.org/wsdl/formatbinding/"
+    xmlns:myeis="http://schemas.xmlsoap.org/wsdl/myeis/"
+    xmlns:tns="http://customer.myeis.com/"
+    xmlns:tns2="http://services.myeis.com/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <import location="CustomerInfo.wsdl" namespace="http://customer.myeis.com/"/>
+    <binding name="CustomerInfoMYEISBinding" type="tns:CustomerInfo">
+        <myeis:binding/>
+        <format:typeMapping encoding="myeis">
+            <format:typeMap formatType="" typeName="xsd:string"/>
+            <format:typeMap formatType="" typeName="tns2:Address"/>
+            <format:typeMap formatType="" typeName="tns2:Customer"/>
+        </format:typeMapping>
+        <operation name="getCustomer">
+            <myeis:operation functionName="CUSTOMERINFO_getCustomer"/>
+            <input name="getCustomerRequest"/>
+            <output name="getCustomerResponse"/>
+        </operation>
+    </binding>
+</definitions>

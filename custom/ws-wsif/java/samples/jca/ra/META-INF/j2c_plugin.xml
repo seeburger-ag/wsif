@@ -1,0 +1,22 @@
+<j2c_plugin tns="http://schemas.xmlsoap.org/wsdl/myeis/"  name="MyEIS">
+	<Description>MyEIS</Description>
+	<version>0.0.1</version>
+	<wsdl_extensions>
+		<address classname="com.myeis.wsdl.extensions.j2c.myeis.MyEISAddress"/> 
+		<binding classname="com.myeis.wsdl.extensions.j2c.myeis.MyEISBinding"/>  
+		<operation classname="com.myeis.wsdl.extensions.j2c.myeis.MyEISOperation"/>
+		<extension_registry classname="com.myeis.wsdl.extensions.j2c.myeis.MyEISExtensionRegistry" />
+	</wsdl_extensions>
+
+	<wsif_extensions classname="com.myeis.wsif.providers.j2c.myeis.WSIFProvider_MyEIS" />
+
+	<import>
+		<service wsdlfile="com/myeis/j2c/importservice/myeis/ImportMyEIS.wsdl" servicename="ImportService" >
+		</service>
+	</import>	
+ 
+	<formathandler>
+		<generator encoding="myeis" classname="com.myeis.j2c.formathandler.MyEISFormatHandlerGenerator" />
+	</formathandler>
+</j2c_plugin>
+ 

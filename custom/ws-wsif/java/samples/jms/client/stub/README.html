@@ -1,0 +1,23 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><html><head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<meta name="Author" content="Nirmal Mukhi">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<title>Web Services Invocation Framework: Samples</title>
+<link rel="stylesheet" href="wsif.css" type="text/css"></head>
+
+<body alink="#0000ff" bgcolor="#ffffff" leftmargin="2" topmargin="2" marginwidth="2" marginheight="2">
+
+<h2>
+Web Services Invocation Framework:<br>
+Invoking the JMS Sample through a high level stub interface</h2>
+<p>First you need to <a href="../../../../doc/samples.html">set up the CLASSPATH in your environment</a>. Beyond the standard classpath setting, you also need to add the J2EE client jar files to your classpath. The set of J2EE client JARs is vendor specific. We have included below instructions for some app servers, follow that link if you happen to be using one of those, otherwise refer to the documentation in your application server on how to set up the environment for a JMS client.</p>
+<p><b>Setting up the client on some app servers</b>
+<ul>
+      <li><a href="../jboss_setup/README.html">JBoss setup</a></li>
+</ul></p>
+<p><b>Running the client</b>
+<p>This directory contains a file called <tt>Run.java</tt> that contains the <tt>main</tt> method. This is the logic that uses the generated stub interface to run the sample. So you can run this class, specifying on the command line the location of the WSDL file for the sample and the zip code you are interested in. For example, <br>
+<tt>java jms.client.stub.Run samples/jms/ServiceAvailability.wsdl 10050</tt></p>
+<p>To generate the stub interface, you can use any tool that generates Java interfaces for WSDL services using their port type descriptions. WSDL2Java, which is packaged with Axis, unfortunately does not work since the presence of a JMS binding in the WSDL confuses it, so we actually wrote our stub interface by hand. It is available <a href="org/apache/xml/CheckAvailabilityPortType.java">here</a>. Note that WSIF assumes a correspondence between the generated Java interface and the WSDL port type that has its abstract description as specified in the JAX-RPC specification.<br>
+<hr width="100%">
+</body></html>

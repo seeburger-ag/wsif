@@ -1,0 +1,22 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><html><head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<meta name="Author" content="Nirmal Mukhi">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<title>Web Services Invocation Framework: Samples</title>
+<link rel="stylesheet" href="wsif.css" type="text/css"></head>
+
+<body alink="#0000ff" bgcolor="#ffffff" leftmargin="2" topmargin="2" marginwidth="2" marginheight="2">
+
+<h2>
+Web Services Invocation Framework:<br>
+An EJB as a WSDL-described service</h2>
+<p>This directory contains an implementation for a session bean that provides the abstract functionality described in our <a href="../AddressBook.wsdl">AddressBook WSDL</a>. The files contained here are:
+<ul>
+      <li><tt><a href="AddressBookSession.java">AddressBookSession.java</a></tt>, the EJB interface for our session bean.</li>
+      <li><tt><a href="AddressBookSession.java">AddressBookSessionHome.java</a></tt>, the home interface for our session bean.</li>
+      <li><tt><a href="AddressBookSessionBean.java">AddressBookSessionBean.java</a></tt>, the EJBimplementation. This is as vanilla as can be, using a hash table to store a map of names to addresses.</li>
+      <li><tt><a href="addressbook">addressbook</a></tt> is a subdirectory containing the complex Java types used - these can be generated from the WSDL</li>
+      <li><tt>deploy</tt> is a subdirectory containing the things necessary to deploy this EJB to your favorite application server. Generally to deploy your EJB you will need to compile the code for this sample, then package it into a JAR along with an <tt><a href="deploy/jboss/ejb-jar.xml">ejb-jar.xml</a></tt> file. Your application server may need other files, take a look at app server specific instructions under the deploy directory. <a href="deploy/jboss/README.html">Here</a> is the README in case you use JBoss.</li>
+</ul>
+<hr width="100%">
+</body></html>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema attributeFormDefault="qualified" elementFormDefault="qualified"
+    targetNamespace="http://services.myeis.com/"
+    xmlns="http://www.w3.org/2001/XMLSchema" xmlns:xsd1="http://services.myeis.com/">
+    <complexType name="PurchaseOrder">
+        <all>
+            <element name="unitPrice" type="double"/>
+            <element name="orderNumber" type="string"/>
+            <element name="partNumber" type="string"/>
+            <element name="quantity" type="int"/>
+            <element name="description" type="string"/>
+        </all>
+    </complexType>
+</schema>

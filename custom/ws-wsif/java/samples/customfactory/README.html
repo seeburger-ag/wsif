@@ -1,0 +1,26 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><html><head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<meta name="Author" content="Nirmal Mukhi">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<title>Web Services Invocation Framework: Samples</title>
+<link rel="stylesheet" href="wsif.css" type="text/css"></head>
+
+<body alink="#0000ff" bgcolor="#ffffff" leftmargin="2" topmargin="2" marginwidth="2" marginheight="2">
+
+<h1>
+Web Services Invocation Framework:<br>
+Custom factory binding sample</h1>
+<p><b>This samples will not work; it needs a code change to <tt>WSIFServiceFactory</tt>; once that is done this sample will work as described. This note will be removed once the code change has been made.</b>
+<p>This sample aims to demonstrate a simple customization of WSIF. One of the central pieces of code in the WSIF runtime is the <tt><a href="../../src/org/apache/wsif/WSIFService.java">WSIFService</a></tt>. This interface is responsible for (amongst other things) returning the instance of the <tt><a href="../../src/org/apache/wsif/WSIFPort.java">WSIFPort</a></tt> object that will be used for invocation, through one of the available <tt>getPort</tt> methods. <tt>WSIFService</tt> objects themselves are created using a factory, the <tt><a href="../../src/org/apache/wsif/WSIFServiceFactory.java">WSIFServiceFactory</a></tt>. This is an abstract factory whose implementation we can customise.</p>
+<p>This sample employs a customised service factory, which behaves no different from the default service factory other than the fact that it returns a customised implementation of the <tt>WSIFService</tt> interface. This customised service implementation differs from the default one that comes with WSIF in one respect only. The <tt>getPort()</tt> method has been changed to return a port that uses a java binding, if there is one, in preference to any other port. The rationale is that if the same service is available as a local java binding, it's probably a lot faster to use that than to attempt to make a SOAP invocation, use an EJB, etc. Of course this is very simplistic, but the sample demonstrates how you can use your own customised algorithm for choosing between bindings at runtime. All you need to do is add the following line to your <tt>wsif.properties</tt> file:
+<br><tt>wsif.servicefactory=customfactory.client.CustomServiceFactoryImpl</tt>
+<br>You can change the class name to point to your customised factory if you like, or just omit this property for the default factory to be used.</p>
+<p>The service used to demonstrate the flexibility is the familiar stock quote example. The WSDL in this directory offers two bindings: a SOAP binding and a java binding. Through the use of trace you will be able to detect which binding is actually used. You will see that when the custom factory is used, the java binding is always picked. Try removing the custom factory by commenting out the <tt>wsif.servicefactory</tt> property from your <tt>wsif.properties</tt> file. Now the default factory will be used; its algorithm for picking a suitable port/binding is very simple: it just picks the first one. So now when you run your clients you may see the SOAP binding being picked (the actual one picked is the first port in the list of ports, and since the list is not ordered it is impossible to predict exactly which one it will be, but if it happens to be the java port, it isn't because the default service implementation did that purposefully, it just happened to be first on the list!).
+<p>The <a href="StockQuoteService.wsdl">WSDL file</a> is in this sample directory.</p>
+<p>The SOAP implementation is hosted by the good folks at <a href="http://www.xmethods.net">XMethods</a>. The service URL, where you can find details on the service implementation, etc. is <a href="http://www.xmethods.net/ve2/ViewListing.po?serviceid=2">here</a>.</p>
+<p><a href="service/README.html">Here's</a> how the local java class that implements the service functionality.</p>
+<p><a href="client/dynamic/README.html">Here's</a> how to invoke this service dynamically using WSIF's dynamic invocation interface (DII).</p>
+<p><a href="client/stub/README.html">Here's</a> how to invoke this service by first generating the stub interface and using this directly through WSIF's dynamic proxy, thus hiding all WSIF specifics from the client code. Note that the stub interface used is the the service interface as defined by the JAX-RPC specification.</p>
+<p><a href="client/CustomServiceFactoryImpl.java">Here's</a> the customised factory implementation that create our customised service, and <a href="client/CustomServiceImpl.java">here's</a> the customised service class. Note the implementation of the <tt>getPort()</tt> method in the latter class.</p>
+<hr width="100%">
+</body></html>

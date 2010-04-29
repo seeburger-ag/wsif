@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema attributeFormDefault="qualified" elementFormDefault="qualified"
+    targetNamespace="http://services.myeis.com/"
+    xmlns="http://www.w3.org/2001/XMLSchema" xmlns:xsd1="http://services.myeis.com/">
+    <complexType name="Address">
+        <all>
+            <element name="street" type="string"/>
+            <element name="zipCode" type="string"/>
+            <element name="city" type="string"/>
+            <element name="customerNumber" type="string"/>
+            <element name="state" type="string"/>
+        </all>
+    </complexType>
+    <complexType name="Customer">
+        <all>
+            <element name="lastName" type="string"/>
+            <element name="firstName" type="string"/>
+            <element name="number" type="string"/>
+        </all>
+    </complexType>
+</schema>

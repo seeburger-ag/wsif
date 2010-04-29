@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions name="Import"
+    targetNamespace="http://toolplugin.jca.providers.wsif.apache.org/"
+    xmlns="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:tns="http://toolplugin.jca.providers.wsif.apache.org/"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns:xsd1="http://toolplugin.jca.providers.wsif.apache.org/"
+    xmlns:xsd2="http://schemas.xmlsoap.org/soap/encoding/">
+    <import namespace="http://toolplugin.jca.providers.wsif.apache.org/" location="Import.xsd"/>
+    <message name="getPortTypesRequest">
+    	<documentation>
+    	 	The input message for the getPortTypes Operation
+    	</documentation>
+        <part name="queryString" type="xsd:string"/>
+        	<documentation>
+        		The input has only one part, which is the query string that is used to filter out the returned PortTypes.
+        	</documentation>
+    </message>
+    <message name="getPortTypesResponse">
+    	<documentation>
+    		The output message for the getPortTypes Operation
+    	</documentation>
+        <part name="result" type="xsd1:PortTypeArray"/>
+        	<documentation>
+        		The output has only one part, which is the PortTypeArray complex type. This type represents the array of PortTypes that match 
+        		the inputted query string.
+        	</documentation>
+    </message>
+    <message name="getRawEISMetaDataRequest">
+    	<documentation>
+    	 	The input message for the getRawEISMetaData Operation
+    	</documentation>
+        <part name="queryString" type="xsd:string"/>
+        	<documentation>
+        		The input has only one part, which is the query string that is used to filter out the returned raw metadata.
+        	</documentation>
+    </message>
+    <message name="getRawEISMetaDataResponse">
+    	<documentation>
+    	 	The output message for the getRawEISMetaData Operation
+    	</documentation>
+        <part name="result" type="xsd2:base64"/>
+        	<documentation>
+        		The output has only one part, which is the binary stream that represents the raw metadata.
+        	</documentation>
+    </message>
+    <message name="getDefinitionRequest">
+		<documentation>
+    		 The input message for the getDefinition Operation
+    	</documentation>
+        <part name="portTypeSelection" type="xsd1:PortTypeSelection"/>
+        	<documentation>
+    	 		The input has only one part which is the PortTypeSelection complex type. This type represents the selected PortType, along
+    	 		with its selected Operations, for which the getDefinition Operation should generate a WSDL definition for.
+    		</documentation>
+    </message>
+    <message name="getDefinitionResponse">
+    	<documentation>
+    	 	The output message for the getDefinition Operation
+    	</documentation>
+        <part name="result" type="xsd1:ImportDefinition"/>
+        	<documentation>
+    	 		The output has only one part which is the ImportDefinition complex type. This type will contain the WSDL definition along with
+    	 		all required XSD definitions and binary resources.
+    		</documentation>
+    </message>
+    <portType name="Import">
+    	<documentation>
+    		The PortType that represents all the operations that are part of the Import Service.
+    	</documentation>
+        <operation name="getPortTypes" parameterOrder="queryString">
+        	<documentation>
+        		The Operation that is used to discover the available PortTypes, on a given EIS, that match a given search criteria.
+    		</documentation>
+            <input name="getPortTypesRequest" message="tns:getPortTypesRequest"/>
+            <output name="getPortTypesResponse" message="tns:getPortTypesResponse"/>
+        </operation>
+        <operation name="getRawEISMetaData" parameterOrder="queryString">
+        	<documentation>
+        		The Operation that is used to retrieve a binary representation of the EIS metadata. This metadata can be cached for subsequent Import Service operation invocations.
+    		</documentation>
+            <input name="getRawEISMetaDataRequest" message="tns:getRawEISMetaDataRequest"/>
+            <output name="getRawEISMetaDataResponse" message="tns:getRawEISMetaDataResponse"/>
+        </operation>
+        <operation name="getDefinition" parameterOrder="portTypeSelection">
+        	<documentation>
+        		The Operation that is used to return a complete WSDL defintion, along with any required XSD's and binary resources, for a selected PortType and Operations.
+    		</documentation>
+            <input name="getDefinitionRequest" message="tns:getDefinitionRequest"/>
+            <output name="getDefinitionResponse" message="tns:getDefinitionResponse"/>
+        </operation>
+    </portType>
+</definitions>

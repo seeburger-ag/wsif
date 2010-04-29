@@ -1,0 +1,132 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><html><head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<meta name="Author" content="Mark Whitlock">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<title>Soap Attachments</title>
+<link rel="stylesheet" href="wsif.css" type="text/css"></head>
+
+<body alink="#0000ff" bgcolor="#ffffff" leftmargin="2" topmargin="2" marginwidth="2" marginheight="2">
+
+<h1>
+Soap Attachments using WSIF</h1>
+
+<h2>Overview</h2>
+<p>
+WSIF supports passing attachments in a Mime message using the Axis 
+provider. The attachment is a javax.activation.DataHandler, The mime:multipartRelated, 
+mime:part and mime:content tags are used to describe the attachment 
+in the WSDL.</p>
+<p>
+The WSDL extensions...<br>
+<code>
+&lt;binding name="MyBinding" type="tns:abc" &gt;<br>
+&nbsp;&lt;soap:binding style="rpc" transport="http://schemas.xmlsoap.org/soap/http"/&gt;<br>
+&nbsp;&lt;operation name="MyOperation"&gt;<br>
+&nbsp;&nbsp;&lt;soap:operation soapAction=""/&gt;<br>
+&nbsp;&nbsp;&lt;input&gt;<br>
+&nbsp;&nbsp;&nbsp;&lt;mime:multipartRelated&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;mime:part&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;soap:body use="encoded" namespace="http://mynamespace"<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;encodingStyle="http://schemas.xmlsoap.org/soap/encoding"/&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;/mime:part&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;mime:part&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;mime:content part="attch" type="text/html"/&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;/mime:part&gt;<br>
+&nbsp;&nbsp;&nbsp;&lt;/mime:multipartRelated&gt;<br>
+&nbsp;&nbsp;&lt;/input&gt;<br>
+&nbsp;&lt;/operation&gt;<br>
+&lt;/binding&gt;<br>
+</code></p>
+<p>The above WSDL demonstrates a simple operation that has one 
+attachment called <I>attch</I>. There must be a part called <I>attch</I> on 
+the input message for MyOperation. There may be other input parts 
+to MyOperation that are not attachments. In the binding input there 
+must either be a &lt;soap:body or a &lt;mime:multipartRelated, but not 
+both. For mime messages, the soap:body is inside a mime:part. There 
+must only be one mime:part that contains a soap:body in the binding 
+input and that must not contain a mime:content as well, since a 
+content type of text/xml is assumed for the soap:body. There can 
+be multiple attachments in a mime message, each described by a 
+mime:part. Each mime:part (that isn't a soap:body) contains a 
+mime:content that describes the attachment itself. The type field 
+inside the mime:content is not checked or used by WSIF. Instead it 
+is there to provide a hint to the application using WSIF as to what 
+the attachment is intended to contain. Multiple mime:contents inside 
+a single mime:part means that the backend service will expect a single 
+attachment with a type specified by one of the mime:contents inside 
+that mime:part. The parts="..." tag (optional) inside the soap:body 
+is assumed to contain the names of all the mime parts as well as the 
+names of all the soap parts in the message.
+</p>
+<h2>Passing attachments to WSIF</h2>
+<p>The following code snippet could invoke the service described by the WSDL above...</p>
+<code>
+import javax.activation.DataHandler;<br>
+. . .<br>
+DataHandler dh = new DataHandler(new FileDataSource("axis.jpg"));<br>
+WSIFServiceFactory factory = WSIFServiceFactory.newInstance();<br>
+WSIFService service = factory.getService("my.wsdl",null,null,"http://mynamespace","abc");<br>
+WSIFOperation op = service.getPort().createOperation("MyOperation");<br>
+WSIFMessage in = op.createInputMessage();<br>
+in.setObjectPart("attch",dh);<br>
+op.executeInputOnlyOperation(in);<br>
+</code>
+<p>I use tomcat with soap 2.3 as my soap server so my 
+DeploymentDescriptor.xml contains the following type mapping..</p>
+<code>
+&lt;isd:mappings&gt;<br>
+&lt;isd:map encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"<br>
+&nbsp;xmlns:x="http://mynamespace"<br>
+&nbsp;qname="x:datahandler"<br>
+&nbsp;javaType="javax.activation.DataHandler"<br>
+&nbsp;java2XMLClassName="org.apache.soap.encoding.soapenc.MimePartSerializer"<br>
+&nbsp;xml2JavaClassName="org.apache.soap.encoding.soapenc.MimePartSerializer" /&gt;<br>
+&lt;/isd:mappings&gt;
+</code>
+<p>and my backend service gets invoked with the following signature ...</p>
+<code>
+public void MyOperation(DataHandler dh);
+</code>
+<p>Attachments can also be passed in to WSIF using stubs...</p>
+<code>
+DataHandler dh = new DataHandler(new FileDataSource("axis.jpg"));<br>
+WSIFServiceFactory factory = WSIFServiceFactory.newInstance();<br>
+WSIFService service = factory.getService("my.wsdl",null,null,"http://mynamespace","abc");<br>
+MyInterface stub = (MyInterface)service.getStub(MyInterface.class);<br>
+stub.MyOperation(dh);<br>
+</code>
+<p>Attachments can also be returned from an operation, but at present 
+only one attachment can be returned as the return parameter.
+</p>
+<h2>Types and type mappings</h2>
+<p>
+By default, attachments are passed into WSIF as DataHandlers. If 
+the part on the message which is the DataHandler maps to a mime:part 
+in the WSDL, then WSIF will automatically map the fully qualified 
+name of the WSDL type to DataHandler.class and set up that type mapping 
+with Axis. </p>
+<p>In your WSDL you may have defined a schema for the attachment as a binary[] 
+for instance. Whether or not you have done this, WSIF silently ignores this 
+mapping and treats the attachment as a DataHandler, unless you have 
+explicitly issued mapType(). WSIF lets axis set the mime content type based 
+on the DataHandler's type, instead of the mime:content type specified in the WSDL.
+</p>
+<h2>Some restrictions.</h2>
+<p> These are not supported...
+<ul>
+<li>Attachments using the Apache Soap provider</li>
+<li>Mime/Axis/Jms</li>
+<li>DIME</li>
+<li>Passing in axis AttachmentParts</li>
+<li>Passing in javax.xml.transform.Source and javax.mail.internet.MimeMultipart</li>
+<li>The mime:mimeXml WSDL tag</li>
+<li>Attachments over doc-style</li>
+<li>Nesting a mime:multipartRelated inside a mime:part</li>
+<li>Types that extend DataHandler, Image, etc</li>
+<li>Types that contain DataHandler, Image, etc</li>
+<li>Arrays or Vectors of DataHandlers, Images, etc</li>
+<li>Multiple inout or output attachments</li>
+</ul>
+</p>
+<hr width="100%">
+</body></html>

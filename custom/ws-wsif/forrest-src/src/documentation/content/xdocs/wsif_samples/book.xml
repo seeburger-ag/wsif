@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book PUBLIC "-//APACHE//DTD Cocoon Documentation Book V1.0//EN" "book-cocoon-v10.dtd">
+
+<book software="WSIF"
+  title="WSIF"
+  copyright="@year@ The Apache Software Foundation"
+  xmlns:xlink="http://www.w3.org/1999/xlink">
+
+  <menu label="Samples">
+    <menu-item label="About" href="index.html"/>    
+  </menu>
+
+  <menu label="SOAP">
+    <external label="Stock Quote" href="http://cvs.apache.org/viewcvs/~checkout~/ws-wsif/java/samples/simplesoap/README.html"/>
+    <external label="Zip2Geo" href="http://cvs.apache.org/viewcvs/~checkout~/ws-wsif/java/samples/complexsoap/README.html"/>
+  </menu>
+  
+  <menu label="Java">
+    <external label="Address Book" href="http://cvs.apache.org/viewcvs/~checkout~/ws-wsif/java/samples/localjava/README.html"/>
+  </menu>
+
+  <menu label="EJB">
+    <external label="Address Book" href="http://cvs.apache.org/viewcvs/~checkout~/ws-wsif/java/samples/ejb/README.html"/>
+  </menu>
+
+  <menu label="JMS">
+    <external label="Service Availability" href="http://cvs.apache.org/viewcvs/~checkout~/ws-wsif/java/samples/jms/README.html"/>
+  </menu>
+
+  <menu label="JCA">
+    <external label="Customer Info" href="http://cvs.apache.org/viewcvs/~checkout~/ws-wsif/java/samples/jca/README.html"/>
+  </menu>
+
+  <menu label="Misc">
+    <external label="Multiple Bindings" href="http://cvs.apache.org/viewcvs/~checkout~/ws-wsif/java/samples/multibinding/README.html"/>
+    <external label="Custom Factory" href="http://cvs.apache.org/viewcvs/~checkout~/ws-wsif/java/samples/customfactory/README.html"/>
+    <external label="DSL Example" href="http://cvs.apache.org/viewcvs/~checkout~/ws-wsif/java/samples/dslprovider/README.html"/>
+  </menu>
+</book>

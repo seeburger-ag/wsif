@@ -1,0 +1,21 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><html><head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<meta name="Author" content="Nirmal Mukhi">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<title>Web Services Invocation Framework: Samples</title>
+<link rel="stylesheet" href="wsif.css" type="text/css"></head>
+
+<body alink="#0000ff" bgcolor="#ffffff" leftmargin="2" topmargin="2" marginwidth="2" marginheight="2">
+
+<h1>
+Web Services Invocation Framework:<br>
+Java Sample</h1>
+<p>This sample aims to demonstrate the invocation of the local java class through WSIF's API. Why would one want to do this, you ask? The main reason is that having a uniform view of software through WSDL necessitates this. It is also useful when developing a web service - you write your web service in java, expose it through WSDL with a java binding. Then you can test this using a client that employs WSIF's API to invoke the service. Since you are really using a java class, there is nothing to deploy, no web server to stop and start, etc. When you are satisfied that the functionality works, you can replace the binding in the WSDL with a SOAP binding, deploy the service as a SOAP service and retest with your client - which you don't need to change at all. Following this path in your Web services development reduces debugging pains one usually has with SOAP services, by making sure the basic functionality works before moving to a SOAP binding.</p>
+<p>In this particular sample, we describe an AddressBook service. For those unfamilar with it, this service offers a port type with three operations. Two of the operations add an entry to the address book, using slightly different styles for providing input information. The third operation queries the address book with a name. The service uses complex schema types for representing an address and a phone number.</p>
+<p>The abstract functionality is tied to a java binding that describes how a java class supports the abstract port type defined. This isn't a standard WSDL binding, instead this binding is defined as a part of WSIF; you can find details on how to write a java binding <a href="../../doc/wsdl_extensions/java_extension.html">here</a>.</p>
+<p>The <a href="AddressBook.wsdl">WSDL file</a> is in this sample directory.</p>
+<p><a href="service/README.html">Here's</a> how this service is implemented.</p>
+<p><a href="client/dynamic/README.html">Here's</a> how to invoke this service dynamically using WSIF's dynamic invocation interface (DII).</p>
+<p><a href="client/stub/README.html">Here's</a> how to invoke this service by first generating the stub interface and using this directly through WSIF's dynamic proxy, thus hiding all WSIF specifics from the client code. Note that the stub interface used is the the service interface as defined by the JAX-RPC specification.</p>
+<hr width="100%">
+</body></html>

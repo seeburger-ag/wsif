@@ -1,0 +1,407 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><html><head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<meta name="Author" content="Nirmal Mukhi">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<title>Web Services Invocation Framework: Samples</title>
+<link rel="stylesheet" href="wsif.css" type="text/css"></head>
+
+<body alink="#0000ff" bgcolor="#ffffff" leftmargin="2" topmargin="2" marginwidth="2" marginheight="2">
+
+<h2>
+Web Services Invocation Framework:<br>
+J2C Sample</h2>
+
+<p>
+<font face="Verdana" size="2">The sample for the J2C WSIF provider consists of two 
+elements, a sample Resource Adapter, MyEIS, and the Customer Info Service, a 
+sample service implemented by the EIS system, access through MyEIS Resource 
+Adapter, described in WSDL and executable via J2C WSIF.&nbsp; </font></p>
+
+<h4>Customer Info Service</h4>
+<p><font  face="Verdana" size="2">The Customer Info service sample illustrates the invocation of 
+the service implemented by the back end system (MyEIS). The service is described 
+in wsdl and invoked using WSIF J2C provider and MyEIS Resource Adapter. The 
+sample shows how the customer retrieval business function of the back end can be 
+described in WSDL, including complex types schama,&nbsp; the format handling 
+mechanism and the dynamic invocation. To run the the sample set the classpath to 
+include wsdl4j, wsif.jar, wsif-j2c.jar, j2ee.jar, myeis.jar and run &quot;</font><font face="Courier New" size="2">com.myeis.customer.J2C_MyEIS_CustomerInfoProxy&quot;. 
+You should see the following result: </font></p>
+<blockquote>
+  <blockquote>
+    <p><font face="Courier New" size="2" color="#0000FF">Customer number: 33333<br>
+    Customer name: Alan Turing</font></p>
+  </blockquote>
+</blockquote>
+<p><font face="Verdana" size="2">The Customer Info Sample consists of the 
+following files:</font></p>
+<ul>
+  <li><font face="Courier New" size="2">com\myeis\customer\CustomerInfo.wsdl - 
+  the service interface.</font></li>
+  <li><font face="Courier New" size="2">com\myeis\customer\CustomerInfoMYEISBinding.wsdl 
+  - the bindings.</font></li>
+  <li><font face="Courier New" size="2">com\myeis\customer\CustomerInfoMYEISService.wsdl 
+  - the service file. </font></li>
+  <li><font face="Courier New" size="2">com\myeis\customer\J2C_MyEIS_CustomerInfoProxy.java 
+  - dynamic proxy. </font></li>
+  <li><font face="Courier New" size="2">com\myeis\customer\com\myeis\services\CustomerInfo.xsd 
+  - schema file describing complex type used by the servive. </font></li>
+  <li><font face="Courier New" size="2">com\myeis\services\Customer.java - the 
+  java representation of the complex schema. </font></li>
+  <li><font face="Courier New" size="2">com\myeis\services\myeis\myeis\CustomerFormatHandler.java 
+  - the format handler for the complex type converting between java and wire 
+  representation. </font><font face="Courier New" size="1"><br>
+  </font><font face="Courier New" size="2">&nbsp;</font></li>
+</ul>
+
+<h4>
+<font face="Verdana">MyEIS Resource Adapter</font></h4>
+
+ <p><font face="Verdana" size="2">The connector provided as a sample contains the minimal set of classes 
+ necessary to execute the interaction with the MyEIS back-end system. The back 
+ end is implemented as a Java class (MyEIS) and therefore all services it 
+ provides can be accessed without any additional setup. It is not 
+ meant to provide a sample implementation of the J2C Resource Adapter but only 
+ shows the skeleton classes necessary to support Resource Adapter's pluggability 
+ into the tools, import and sample services. Because of the minimal 
+ implementation, the Resource Adapter cannot be deployed in the managed 
+ environment of the J2EE Application Server, only the non-managed use is 
+ supported.&nbsp; The Connector consists of the 
+ following classes, implementing J2EE Connector Architecture interfaces (in the com.myeis.j2c&nbsp; package):</font></p>
+ <table border="1" width="68%">
+   <tr>
+     <td width="24%"><b><font face="Verdana"  size="2">Class</font></b></td>
+     <td width="76%"><b><font  face="Verdana" size="2">Description</font></b></td>
+   </tr>
+   <tr>
+     <td width="24%"><font  face="Verdana" size="2">MyEISConnection </font> </td>
+     <td width="76%"><font  face="Verdana" size="2">Client view of the managed connection (connection handle)</font></td>
+   </tr>
+   <tr>
+     <td width="24%"><font  face="Verdana" size="2">MyEISConnectionFactory</font></td>
+     <td width="76%"><font  face="Verdana" size="2">Factory of connection handles</font></td>
+   </tr>
+   <tr>
+     <td width="24%"><font  face="Verdana" size="2">MyEISInteraction</font></td>
+     <td width="76%"><font  face="Verdana" size="2">Object providing methods to execute interactions with EIS</font></td>
+   </tr>
+   <tr>
+     <td width="24%"><font  face="Verdana" size="2">MyEISInteractionSpec</font></td>
+     <td width="76%"><font  face="Verdana" size="2">Object encapsulating properties of a specific interaction</font></td>
+   </tr>
+   <tr>
+     <td width="24%"><font face="Verdana"  size="2">MyEISManagedConnection </font> </td>
+     <td width="76%"><font  face="Verdana" size="2">Physical connection to the backend system. The 
+     implementation of this class illustrates two different possibilities of 
+     retrieving the list of PortTypes and Definition by the Resource Adapter. 
+     The first method is to ship the service (wsdl) files representing available 
+     services and definitions with the Resource Adapter. This method would be 
+     appropriate for the connector to the EIS with the infrequently changing 
+     (for example only between EIS releases) services available. In the sample 
+     implementation, the shipped wsdl files are accessed in the 
+     com.myeis.repository.Repository class implementation. The second method 
+     to get the services available is by querying the EIS (com.myeis.MyEIS 
+     class in the sample). In that case the Resource Adapter would connect to 
+     and query the EIS for available services.&nbsp; The tooling does not make 
+     any assumptions about which method is used.&nbsp; The sample connector 
+     illustrates support for both methods, switchable through the property on 
+     the Managed Connection Factory.</font></td>
+   </tr>
+   <tr>
+     <td width="24%"><font  face="Verdana" size="2">MyEISManagedConnectionFactory </font> </td>
+     <td width="76%"><font face="Verdana"  size="2">Factory of physical connections to the EIS system
+     </font> </td>
+   </tr>
+ </table>
+ <h5>Create the MyEIS specific Connector Binding</h5>
+ <p><font  face="Verdana" size="2">To enable capturing of the meta information characterizing the details of 
+ the interactions with the EIS in the wsdl model, the Resource Adapter provides 
+ Connector Bindings. These bindings consist of the following:</font></p>
+ <ul>
+   <li><font  face="Verdana" size="2">Extensibility elements for the Binding, Operation and Port</font></li>
+   <li><font face="Verdana"  size="2">Binding serializer</font></li>
+   <li><font face="Verdana"  size="2">Binding deserializer</font></li>
+   <li><font face="Verdana"  size="2">ExtensionRegistry used to register the serializer and deserializer with 
+   the run time and tools.</font></li>
+ </ul>
+ <p><font face="Verdana" size="2">The sample connector implements Connector Bindings in the 
+ com.myeis.wsdl.extensions.j2c.myeis package. The Binding extensibility element is 
+ used as a tag (has no properties) and defines the binding type. The 
+ extensibility element for the Operation captures the meta information 
+ describing a single interaction with the EIS system. The properties of this 
+ extensibility element correspond to the properties of the Resource Adapter's 
+ InteractionSpec. The Port extensibility element represents the endpoint 
+ (address) where the service is available. It contains properties corresponding 
+ to the properties of the ManagedConnectionFactory.&nbsp;&nbsp; To implement 
+ Extensibility Element, create class implementing the 
+ javax.wsdl.extensions.ExtensibilityElement and java.io.Serializable interfaces 
+ and add appropriate properties from InteractionSpec to the Operation 
+ extensibility element and from Managed Connection Factory to Port extensibility 
+ element. Next, you need to select the namespace for your bindings. The sample 
+ connector uses the following namespace URI: http://schemas.xmlsoap.org/wsdl/myeis/ 
+ with the standard prefix, followed by the connector specific last segment. The 
+ element names are left to the implementor, however the ones used in the sample 
+ connector (MyEISBinding, MyEISAddress, MyEISOperation) make the wsdl files 
+ easier to read. The next step is to provide a serializer and deserializer for 
+ your bindings. This is necessary since the wsdl file reader and writer cannot 
+ handle arbitrary extensibility elements. The serializer writes the XML format 
+ of your extensibility elements, for example Operation, the deserializer reads 
+ in and parses the XML, creating from it instances of these elements. For 
+ example to serialize MyEISOperation object from the sample connector, you need 
+ to create the following XML fragment:</font></p>
+ <p><samp>&lt;myeis:operation functionName=&quot;CUSTOMERINFO_getAddress&quot; /&gt;</samp></p>
+ <p><font face="Verdana" size="2">with the following code:</font></p>
+ <pre>  if (extension instanceof MyEISOperation) {  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                  MyEISOperation operation = (MyEISOperation) extension;  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                  pw.print( &quot;      &lt;&quot;  +  TPrefix +  &quot;:operation&quot; ); &nbsp;
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                  if (operation.getFunctionName() !=  null ) {   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                          DOMUtils.printAttribute( &quot;functionName&quot; ,
+                          operation.getFunctionName(), pw);  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                  }<font SIZE="1"> </font><font size="2">pw.println(</font><font SIZE="2" COLOR="#2a00ff">&quot;/&gt;&quot;</font><font SIZE="2">); }</pre>
+ </font>
+ <pre>  </pre>
+ <p>To deserialize the XML fragment, use the following:</p>
+ <pre>  if (MyEISBindingConstants.Q_ELEM_OPERATION.equals(elementType)) { &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                  MyEISOperation operation =  new  MyEISOperation();  
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                  String functionName = DOMUtils.getAttribute(el, &quot;functionName&quot; );  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                  if (functionName !=  null ) {   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                          operation.setFunctionName(functionName);  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                  }  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                  return operation;</pre>
+ <p><font face="Verdana"  size="2">The last component that you need to provide with your bindings is the 
+ Extension Registry. Its purpose is to provide convenient way to register 
+ serializer and deserializer for your extensibility elements with tools and run 
+ time. The class implements the javax.wsdl.extensions.ExtensionRegistry 
+ interface and registers serializer/deserializer for each element in its 
+ constructor using the following code:</font></p>
+ <pre>  MyEISBindingSerializer ser =  new  MyEISBindingSerializer();</pre>
+ <pre>  // operation
+  this.registerSerializer(javax.wsdl.BindingOperation.class, 
+     MyEISOperation. class , ser);
+  this.registerDeserializer(javax.wsdl.BindingOperation.class,
+     MyEISBindingConstants.Q_ELEM_OPERATION, ser);</pre>
+ <h5>Create the WSIF extensions for MyEIS Connector</h5>
+ <p><font face="Verdana" size="2">The WSIF requires that every binding to be executed has to provide the set 
+ of supporting classes implementing binding run time. J2C Plugin provides 
+ elements of the run time and delegates to the specific connector only these 
+ elements that cannot be handled in a generic manner for example,&nbsp; 
+ corresponding to the extensibility elements provided by the connector, Address 
+ and Operation. </font> </p>
+ <p><font face="Verdana" size="2">The J2C Plugin implements&nbsp; WSIFMessage_JCA, 
+ WSIFPort_JCA and WSIFOperation_JCA 
+ and requires the resource adapter to provide WSIFProvider and 
+ WSIFProviderJCAExtensions implementations.</font></p>
+ <p><font face="Verdana" size="2">The WSIF uses WSIFService to create a dynamic port corresponding to 
+ the endpoint at which the service is accessible. This, in turn, corresponds to 
+ the creation of the Connection to the EIS. The resource adapter implements the 
+ WSIFProvider and WSIFProviderJCAExtensions interfaces. In its 
+ createDynamicWSIFPort method, it creates the WSIFPort_JCA (part of the J2C 
+ Plugin run time) initialized with the active javax.resource.cci.Connection. 
+ The resource adapter creates the connection either using JNDI lookup or 
+ directly using Managed Connection Factory. The name used for the lookup is 
+ either 
+ built from the service namespace URI, service name and port name or specified 
+ explicitly in the Address extensibility element. The provided 
+ org.apache.wsif.util.WSIFUtils class contains a set of 
+ utility methods that should be used to construct names (for example, JNDI 
+ lookup name, Format Handler class name etc.).&nbsp; In the required implementation 
+ of the createOperation method the resource adapter creates WSIFOperation_JCA and 
+ initializes is with the instance of Connection and InteractionSpec as shown 
+ below:</font></p>
+ <font size="2">
+<pre><font face="Courier New">	BindingOperation bindingOperationModel = aPort.getBinding().getBindingOperation(aOperationName, aInputName, aOutputName);</font></pre>
+<pre><font face="Courier New">	ExtensibilityElement bindingOperationModelExtension = (ExtensibilityElement)bindingOperationModel.getExtensibilityElements().get(0);</font></pre>
+</font>
+<pre><font face="Courier New"><font SIZE="2" COLOR="#7f0055">	if</font><font SIZE="2"> (bindingOperationModelExtension == </font><font SIZE="2" COLOR="#7f0055">null</font></font><font face="Courier New" size="2">) {</font></pre>
+<pre><font face="Courier New"><font SIZE="2" COLOR="#7f0055">		throw</font><font SIZE="2"> </font><font SIZE="2" COLOR="#7f0055">new</font><font SIZE="2"> WSIFException(</font><font COLOR="#2a00ff" size="2">&quot;missing</font><font COLOR="#2a00ff" size="2"> bindingOperation extension&quot;</font></font><font face="Courier New" size="2">);</font></pre>
+<pre><font face="Courier New" size="2">	}</font></pre>
+<pre><font face="Courier New"><font SIZE="2" COLOR="#7f0055">	if</font><font SIZE="2"> (!(bindingOperationModelExtension </font><font SIZE="2" COLOR="#7f0055">instanceof</font></font><font face="Courier New" size="2"> MyEISOperation)) {</font></pre>
+<pre><font face="Courier New"><font SIZE="2" COLOR="#7f0055">		throw</font><font SIZE="2"> </font><font SIZE="2" COLOR="#7f0055">new</font><font SIZE="2"> WSIFException(</font><font COLOR="#2a00ff" size="2">&quot;invalid</font><font COLOR="#2a00ff" size="2"> extensibility element&quot;</font></font><font face="Courier New" size="2">);</font></pre>
+<font size="2">
+<pre><font face="Courier New">	}</font></pre>
+<pre><font face="Courier New">	MyEISOperation operationModelExtension = (MyEISOperation) bindingOperationModelExtension;</font></pre>
+<pre><font face="Courier New">	MyEISInteractionSpec interactionSpec = </font></font><font SIZE="2" COLOR="#7f0055" face="Courier New">new</font><font face="Courier New" size="2"> MyEISInteractionSpec();</font></pre>
+<font size="2">
+<pre><font face="Courier New">	interactionSpec.setFunctionName(operationModelExtension.getFunctionName());</font></pre>
+<pre><font face="Courier New">	operation = </font></font><font face="Courier New"><font SIZE="2" COLOR="#7f0055">new</font><font SIZE="2"> WSIFOperation_JCA(aDefinition, aService, aPort, aOperationName, aInputName, aOutputName, typeMap, jcaPort, </font><font SIZE="2" COLOR="#7f0055">this</font></font><font SIZE="2"><font face="Courier New">, aConnection, interactionSpec);</font></pre>
+</font>
+ <p><font face="Verdana"  size="2">Optionally, the Resource Adapter can provide implementation of the Message 
+ creation methods to be able to create customized messages. The default 
+ implementation uses the Streamable interface to exchange input and output data 
+ with the Connector.</font></p>
+ <h5>Create the FormatHandler Generator for MyEIS</h5>
+ <p><font  face="Verdana" size="2">The connector provides the format handler generator by implementing 
+ com.ibm.jca.formathandler.FormatHandlerGenerator interface. During connector&nbsp; 
+ deployment into the tools, the format handler generator is registered, based on 
+ the encoding and style it specifies in the&nbsp;XML file. When the service 
+ definition is deployed and the helper classes need to be generated, the 
+ encoding and style are used to lookup the format handler generator and invoke 
+ it from the tooling. The generate method is passed with the following 
+ arguments:</font></p>
+ <table border="1" width="69%" height="79">
+   <tr>
+     <td width="14%" height="19"><b><font size="2">Argument</font></b></td>
+     <td width="86%" height="19"><b><font size="2">Description</font></b></td>
+   </tr>
+   <tr>
+     <td width="14%" height="19"><font size="2">generationPackage</font></td>
+     <td width="86%" height="19"><font size="2">the fully qualified package that the generator 
+     should use to generate its classes in. This name follows the naming 
+     convention described earlier in the document. </font> </td>
+   </tr>
+   <tr>
+     <td width="14%" height="19"><font size="2">beanClass </font> </td>
+     <td width="86%" height="19"><font size="2">the fully qualified name of the Java bean class 
+     that represents the XSD type (or element) for which a format handler is 
+     being generated. </font> </td>
+   </tr>
+   <tr>
+     <td width="14%" height="19"><font size="2">aDefinition</font></td>
+     <td width="86%" height="19"><font size="2">the WSDL definition from which the XSD type is 
+     derived. </font> </td>
+   </tr>
+   <tr>
+     <td width="14%" height="19"><font size="2">aBinding</font></td>
+     <td width="86%" height="19"><font size="2">the WSDL binding element that contains the type 
+     mapping for the XSD type that is being used. </font> </td>
+   </tr>
+   <tr>
+     <td width="14%" height="19"><font size="2">anEncoding</font></td>
+     <td width="86%" height="19"><font size="2">the encoding attribute off the TypeMapping 
+     element associated with the format handler to be generated. </font> </td>
+   </tr>
+   <tr>
+     <td width="14%" height="19"><font size="2">aStyle</font></td>
+     <td width="86%" height="19"><font size="2">the style attribute off the TypeMapping element 
+     associated with the format handler to be generated </font> </td>
+   </tr>
+   <tr>
+     <td width="14%" height="19"><font size="2">xsdQname </font> </td>
+     <td width="86%" height="19"><font size="2">the QName of the XSD element (or type) for 
+     which the format handler is being generated. </font> </td>
+   </tr>
+   <tr>
+     <td width="14%" height="19"><font size="2">elementType</font></td>
+     <td width="86%" height="19"><font size="2">the type of element represented by the xsdQname 
+     parameter. This is either CustomFormatHandlerGenerator.XSD_TYPE or 
+     CustomFormatHandlerGenerator.XSD_ELEMENT </font> </td>
+   </tr>
+   <tr>
+     <td width="14%" height="19"><font size="2">generationContext</font></td>
+     <td width="86%" height="19"><font size="2">The context is an optional 
+     object that can be used by a FormatHandlerGenerator to assist in code 
+     generation, or in keeping track of <br>
+     artifacts generated. The details, and implementation, of the object are 
+     specific to each FormatHandlerGenerator.<br>
+     Tooling environments must create context, before invoking the 
+     FormatHandlerGenerator to generate code. </font> </td>
+   </tr>
+ </table>
+ <p><font face="Verdana"  size="2">The format handler generator returns a Hashtable that contains a set of&nbsp; 
+ java.io.InputStreams. Each input stream contains the generated code for a 
+ particular class generated by the format handler generator. The number of input 
+ streams returned depends on the number of classes that are generated by the 
+ format handler generator.&nbsp; The keys of the Hashtable must be the name of 
+ each class (unqualified) that is represented by its corresponding InputStream 
+ value. The class name keys are unqualified because they must all be in the 
+ generationPackage that is passed in as an input parameter.</font></p>
+ <p><font  face="Verdana" size="2">The arguments to the generate method may contain sufficient information to 
+ generate the specific format handler for example, the xsd type of the part and 
+ assumed encoding and style since these were used to locate and invoke the 
+ generator.&nbsp; In some cases, additional information may be required. In this 
+ case, the TypeMappings from the passed bindings can be used: </font> </p>
+ <pre>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  TypeMapping typeMapping =  null ;   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  Iterator iterator = aBinding.getExtensibilityElements().iterator();   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  while (iterator.hasNext()){   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+           Object element = iterator.next();   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+           if (element instanceof TypeMapping){   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    typeMapping = (TypeMapping)element;   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                     break ;  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+           }  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  } </pre>
+ <p><font  face="Verdana" size="2">When the type mappings are used, the generator should verify that type 
+ mapping has an encoding, and optionally a style it supports for example</font></p>
+ <pre>&nbsp;&nbsp;if (!typeMapping.getEncoding().equals( &quot;myeis&quot; ))  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+          return null ; </pre>
+ <p><font face="Verdana"  size="2">Finally, the generator could retrieve from the format binding the formatType 
+ string corresponding to the xsd (type or element) for which the format handler 
+ is being generated: </font> </p>
+ <pre>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  String formatType = null ; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  iterator = typeMapping.getMaps().iterator(); &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  while (iterator.hasNext()){
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TypeMap typeMap = (TypeMap)iterator.next(); &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+           if (typeMap.getTypeName().equals(xsdQname)){ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    formatType = typeMap.getFormatType();
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;break ;
+           }&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  }   </pre>
+ <p><font face="Verdana"  size="2">The formatType is a string and tools do not make any assumption about it 
+ contents. It is a specific value understood by the generator. In the sample 
+ generator, the native format for all types is Java serialization and therefore 
+ the formatType string is empty. </font> </p>
+ <p><font face="Verdana"  size="2">The sample generator: com.myeis.j2c.formathandler. 
+ MyEISFormatHandlerGenerator does not use typeMaps since the native format it 
+ generates is a simple Java serialization and therefore formatTypes in the wsdl 
+ files are empty. </font> </p>
+ <p><font face="Verdana"  size="2">In addition to handling the associated part as a Java bean, the format 
+ handler should have a capability to read and write the native format to and 
+ from the SAXSource and DOMSource. This allows the invoker of the service to 
+ pass or retrieve the data as XML. The sample format handler generator shows one 
+ of the possible methods to convert a native format, in its case a Java bean, to 
+ the &quot;javax.xml.transform.sax.SAXSource&quot; format. </font> </p>
+ <h5>Create the Import Service for MyEIS</h5>
+ <p><font face="Verdana"  size="2">The resource adapter supporting the import service is 
+ required to provide, in addition to the implementation described in the section 
+ above, the following: a service file with the bindings for the Import interface 
+ from the J2C Plugin and a set of format handlers for the 
+ conversion to native format during execution of the import service. The sample 
+ connector binding file is as follows: </font> </p>
+ <pre> 	&lt;binding name=&quot;ImportMyEISBinding&quot; type=&quot;interface:Import&quot;&gt;
+		&lt;myeis:binding/&gt;
+		&lt;format:typeMapping encoding=&quot;myeis&quot;&gt;
+		&lt;/format:typeMapping&gt;
+		&lt;operation name=&quot;getDefinition&quot;&gt;
+		&lt;myeis:operation functionName=&quot;IMPORT_DEFINITION&quot;/&gt;
+			&lt;input name=&quot;getDefinitionRequest&quot;/&gt;
+			&lt;output name=&quot;getDefinitionResponse&quot;/&gt;
+		&lt;/operation&gt;
+		&lt;operation name=&quot;getPortTypes&quot;&gt;
+		&lt;myeis:operation functionName=&quot;IMPORT_PORTTYPES&quot;/&gt;
+			&lt;input name=&quot;getPortTypesRequest&quot;/&gt;
+			&lt;output name=&quot;getPortTypesResponse&quot;/&gt;
+		&lt;/operation&gt;
+		&lt;operation name=&quot;getRawEISMetaData&quot;&gt;
+		&lt;myeis:operation functionName=&quot;IMPORT_RAWMETADATA&quot;/&gt;
+			&lt;input name=&quot;getRawEISMetaDataRequest&quot;/&gt;
+			&lt;output name=&quot;getRawEISMetaDataResponse&quot;/&gt;
+		&lt;/operation&gt;
+	&lt;/binding&gt;
+	&lt;service name=&quot;ImportService&quot;&gt;
+		&lt;port binding=&quot;tns:ImportMyEISBinding&quot; name=&quot;ImportMyEISPort&quot;&gt;
+		&lt;myeis:address repositoryLocation=&quot;remote&quot;/&gt;
+		&lt;/port&gt;
+	&lt;/service&gt;
+</pre>
+ <p><font face="Verdana"  size="2">It contains all the information needed to execute import service, for 
+ example function names (in the operation binding) and the repository location 
+ (in the port binding). The user will be able to edit these values if necessary, 
+ for example if the port binding contains the location of the target EIS system.
+ </font>
+ </p>
+ <p><font face="Verdana"  size="2">The format handlers necessary to execute the import service are no different 
+ than any other format handlers generated by the Resource Adapter and the format 
+ handler generator can be used to create them. The sample connector provides all 
+ the elements needed for the import service. </font> </p>
+ <h5>Packaging the MyEIS Connector together with the Tool Extensions</h5>
+ <p><font  face="Verdana" size="2">The sample MyEIS Connector is packaged into myeis.rar, a resource adapter 
+ archive file. It contains the &quot;META-INF/j2c_plugin.xml&quot; file, &quot;ra.xml&quot; and 
+ one jar with the connector run time and tool extensions. The rar file can 
+ contain more than one jar file so for example when the tool extensions are 
+ added to the existing connector, they could be packaged in the separate jar.&nbsp;
+ </font>
+ </p>
+
+</body></html>

@@ -1,0 +1,19 @@
+<deployment xmlns="http://xml.apache.org/axis/wsdd/"
+            xmlns:java="http://xml.apache.org/axis/wsdd/providers/java">
+
+ <service name="Mime" provider="java:RPC">
+  <parameter name="className" value="mime.MimeImpl"/>
+  <parameter name="allowedMethods" value="*"/>
+  <parameter name="scope" value="Session"/>
+  
+  <typeMapping 
+    qname="ns:datahandler" 
+    xmlns:ns="http://mime/"
+    languageSpecificType="java:javax.activation.DataHandler"
+    serializer="org.apache.axis.encoding.ser.JAFDataHandlerSerializerFactory"
+    deserializer="org.apache.axis.encoding.ser.JAFDataHandlerDeserializerFactory"
+    encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+
+ </service>
+
+</deployment>

@@ -1,0 +1,29 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><html><head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<meta name="Author" content="Nirmal Mukhi">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<title>Web Services Invocation Framework: Samples</title>
+<link rel="stylesheet" href="wsif.css" type="text/css"></head>
+
+<body alink="#0000ff" bgcolor="#ffffff" leftmargin="2" topmargin="2" marginwidth="2" marginheight="2">
+
+<h2>
+Web Services Invocation Framework:<br>
+Invoking the SimpleSOAP Sample through a high level stub interface</h2>
+<p>You must have the following on your classpath:
+<ul>
+  <li>wsif.jar</li>
+  <li>wsifsamples.jar</li>
+  <li>A JAXP compliant XML parser, such as Xerces</li>
+  <li>wsdl4j.jar</li>
+  <li>qname.jar</li>
+</ul>
+</p>
+<p>This directory contains a file called <tt>Run.java</tt> that contains the <tt>main</tt> method. This is the logic that uses the generated stub interface to run the sample. So you can run this class, specifying on the command line the location of the WSDL file for the sample. For example, <br>
+<tt>java localjava.client.stub.Run samples/localjava/AddressBook.wsdl</tt></p>
+<p>The sample code will use the stub interface to populate an addressbook with two entries and will then query the addressbook for those two addresses using the corresponding names.</p>
+<p>To generate the stub interface, you can use any tool that generates Java interfaces for WSDL services using their port type descriptions, such as WSDL2Java from Axis. WSIF assumes a correspondence between the generated Java interface and the WSDL port type that has its abstract description as specified in the JAX-RPC specification. This particular sample did not use WSDL2Java in a simple way (due to a current bug in WSDL2Java that prevents it from processing WSDLs that do not have a valid SOAP endpoint or binding. We managed to get it to work by commenting out the java binding that is currently there, and introducing a binding element that describes a SOAP binding. After doing this, we ran WSDL2Java in the following way:<br>
+<tt>java org.apache.axis.wsdl.WSDL2Java ../../AddressBook.wsdl</tt><br>
+After the tool finished running, we deleted all the generated files except <tt>AddressBook.java</tt> (this is the java interface corresponding to the port type), <tt>Address.java</tt> and <tt>Phone.java</tt> (these two are the java representations of the complex schema types used in the sample).</p>
+<hr width="100%">
+</body></html>

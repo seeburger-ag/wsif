@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+      <!DOCTYPE document PUBLIC "-//APACHE//DTD Documentation V1.1//EN" "document-v11.dtd">
+      <document> 
+        <header> 
+          <title>WSIF EJB Provider</title> 
+        </header> 
+        <body>
+          <p>The EJB provider allows the invocation of remote EJBs. It relies on two WSDL exstensions
+          </p>
+          <ul>
+          <li><link href="wsdl_extensions/ejb_extension.html">EJB extension</link></li>
+          <li><link href="wsdl_extensions/formattypemapping_extension.html">Format binding extension</link></li>
+          </ul>
+     </body>
+    </document>

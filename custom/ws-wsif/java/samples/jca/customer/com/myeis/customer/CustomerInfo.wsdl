@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions name="CustomerInfoMYEISServiceInterface"
+    targetNamespace="http://customer.myeis.com/"
+    xmlns="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:format="http://schemas.xmlsoap.org/wsdl/formatbinding/"
+    xmlns:myeis="http://schemas.xmlsoap.org/wsdl/myeis/"
+    xmlns:tns="http://customer.myeis.com/"
+    xmlns:tns2="http://services.myeis.com/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <import location="./com/myeis/services/CustomerInfo.xsd" namespace="http://services.myeis.com/"/>
+    <message name="getAddressRequest">
+        <part name="number" type="xsd:string"/>
+    </message>
+    <message name="getCustomerResponse">
+        <part name="result" type="tns2:Customer"/>
+    </message>
+    <message name="getCustomerRequest">
+        <part name="number" type="xsd:string"/>
+    </message>
+    <message name="getAddressResponse">
+        <part name="result" type="tns2:Address"/>
+    </message>
+    <portType name="CustomerInfo">
+        <operation name="getCustomer" parameterOrder="number">
+            <input message="tns:getCustomerRequest" name="getCustomerRequest"/>
+            <output message="tns:getCustomerResponse" name="getCustomerResponse"/>
+        </operation>
+    </portType>
+</definitions>

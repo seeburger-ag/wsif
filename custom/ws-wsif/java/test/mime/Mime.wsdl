@@ -1,0 +1,1222 @@
+<?xml version="1.0" ?>
+
+<definitions targetNamespace="http://mime/"
+             xmlns:tns="http://mime/"
+             xmlns:xsd="http://www.w3.org/1999/XMLSchema"
+             xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+             xmlns:jms="http://schemas.xmlsoap.org/wsdl/jms/"
+             xmlns:format="http://schemas.xmlsoap.org/wsdl/formatbinding/"
+             xmlns:java="http://schemas.xmlsoap.org/wsdl/java/"
+             xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/"
+             xmlns="http://schemas.xmlsoap.org/wsdl/">
+
+  <!-- type defs -->
+  <types>
+    <xsd:schema
+      targetNamespace="http://mime/"
+                xmlns:xsd="http://www.w3.org/1999/XMLSchema">
+      <xsd:complexType name="ArrayOfBinary">
+        <complexContent>
+          <restriction base="soapenc:Array">
+            <attribute ref="soapenc:arrayType" arrayType="xsd:binary[]"/>
+          </restriction>
+        </complexContent>
+      </xsd:complexType>
+    </xsd:schema>
+  </types>
+
+  <message name="DataHandlerMessage">
+    <part name="file" type="tns:datahandler"/>
+  </message>
+
+  <message name="DataHandler2Message">
+    <part name="file2" type="tns:datahandler"/>
+  </message>
+
+  <message name="PlainTextMessage">
+    <part name="plaintext" type="tns:plaintext"/>
+  </message>
+
+  <message name="Image1Message">
+    <part name="image1" type="tns:image"/>
+  </message>
+
+  <message name="Image2Message">
+    <part name="image2" type="tns:image"/>
+  </message>
+
+  <message name="StringMessage">
+    <part name="buff" type="xsd:string"/>
+  </message>
+
+  <message name="String2Message">
+    <part name="buff2" type="xsd:string"/>
+  </message>
+
+  <message name="BounceImage4Message">
+    <part name="shouldBounce" type="xsd:boolean"/>
+    <part name="file" type="tns:datahandler"/>
+  </message>
+
+  <message name="MultiMimePartsMessage">
+    <part name="file" type="tns:datahandler"/>
+    <part name="file2" type="tns:datahandler"/>
+  </message>
+
+  <message name="NullMessage">
+  </message>
+
+  <message name="ArrayOfBinaryMessage">
+    <part name="file" type="tns:ArrayOfBinary"/>
+  </message>
+
+  <message name="MixMimePartsMessage">
+    <part name="position1" type="xsd:string"/>
+    <part name="file1" type="tns:datahandler"/>
+    <part name="position2" type="xsd:string"/>
+    <part name="file2" type="tns:datahandler"/>
+    <part name="position3" type="xsd:string"/>
+  </message>
+
+  <!-- port type declns -->
+  <portType name="Mime">
+    <operation name="dataHandlerToString">
+      <input message="tns:DataHandlerMessage"/>
+      <output message="tns:StringMessage"/>
+    </operation>
+    <operation name="stringToDataHandler">
+      <input message="tns:StringMessage"/>
+      <output message="tns:DataHandlerMessage"/>
+    </operation>
+    <operation name="plainTextToString">
+      <input message="tns:PlainTextMessage"/>
+      <output message="tns:StringMessage"/>
+    </operation>
+    <operation name="stringToPlainText">
+      <input message="tns:StringMessage"/>
+      <output message="tns:PlainTextMessage"/>
+    </operation>
+    <operation name="bounceImage">
+      <input message="tns:Image1Message"/>
+      <output message="tns:Image2Message"/>
+    </operation>
+    <operation name="bounceImage2">
+      <input message="tns:DataHandlerMessage"/>
+      <output message="tns:DataHandler2Message"/>
+    </operation>
+    <operation name="bounceImage4">
+      <input message="tns:BounceImage4Message"/>
+      <output message="tns:DataHandler2Message"/>
+    </operation>
+    <operation name="orMultiMimeParts">
+      <input message="tns:DataHandlerMessage"/>
+      <output message="tns:StringMessage"/>
+    </operation>
+    <operation name="andMultiMimeParts">
+      <input message="tns:MultiMimePartsMessage"/>
+      <output message="tns:StringMessage"/>
+    </operation>
+    <operation name="multiOutMimeParts">
+      <input message="tns:StringMessage"/>
+      <output message="tns:MultiMimePartsMessage"/>
+    </operation>
+    <operation name="multiInoutMimeParts">
+      <input message="tns:MultiMimePartsMessage"/>
+      <output message="tns:MultiMimePartsMessage"/>
+    </operation>
+    <operation name="noContent">
+      <input message="tns:StringMessage"/>
+      <output message="tns:String2Message"/>
+    </operation>
+    <operation name="typeStar">
+      <input message="tns:DataHandlerMessage"/>
+      <output message="tns:StringMessage"/>
+    </operation>
+    <operation name="soapBodyParts1">
+      <input message="tns:BounceImage4Message"/>
+      <output message="tns:StringMessage"/>
+    </operation>
+    <operation name="soapBodyParts2">
+      <input message="tns:BounceImage4Message"/>
+      <output message="tns:StringMessage"/>
+    </operation>
+    <operation name="soapBodyParts3">
+      <input message="tns:BounceImage4Message"/>
+      <output message="tns:StringMessage"/>
+    </operation>
+    <operation name="soapBodyParts4">
+      <input message="tns:BounceImage4Message"/>
+      <output message="tns:StringMessage"/>
+    </operation>
+    <operation name="arrayOfBinary">
+      <input message="tns:ArrayOfBinaryMessage"/>
+      <output message="tns:StringMessage"/>
+    </operation>
+    <operation name="optionalSoapBody">
+      <input message="tns:DataHandlerMessage"/>
+      <output message="tns:DataHandler2Message"/>
+    </operation>
+    <operation name="mixMimeParts">
+      <input message="tns:MixMimePartsMessage"/>
+      <output message="tns:StringMessage"/>
+    </operation>
+    <operation name="unref">
+      <input message="tns:NullMessage"/>
+      <output message="tns:StringMessage"/>
+    </operation>
+    <operation name="putRefDhInputOnly">
+      <input message="tns:DataHandlerMessage"/>
+    </operation>
+    <operation name="getRefDh">
+      <input message="tns:NullMessage"/>
+      <output message="tns:DataHandlerMessage"/>
+    </operation>
+    <operation name="putUnrefDhInputOnly">
+      <input message="tns:NullMessage"/>
+    </operation>
+    <operation name="getUnrefDh">
+      <input message="tns:NullMessage"/>
+      <output message="tns:DataHandlerMessage"/>
+    </operation>
+  </portType>
+
+  <!-- binding declns -->
+  <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
+  <!--                SOAP HTTP BINDING                                      -->
+  <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
+
+  <binding name="SOAPHttpBinding" type="tns:Mime">
+    <soap:binding style="rpc"
+                  transport="http://schemas.xmlsoap.org/soap/http"/>
+    <operation name="dataHandlerToString">
+      <soap:operation soapAction=""/>
+      <input>
+        <mime:multipartRelated>
+          <mime:part>
+            <mime:content part="file" type="text/html"/>
+          </mime:part>
+        </mime:multipartRelated> 
+      </input>
+      <output>
+        <soap:body use="encoded"
+                   namespace="http://mime/"
+                   encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+      </output>
+    </operation>
+
+    <operation name="stringToDataHandler">
+      <soap:operation soapAction=""/>
+      <input>
+        <soap:body use="encoded"
+                   namespace="http://mime/"
+                   encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+      </input>
+      <output>
+        <mime:multipartRelated>
+          <mime:part>
+            <mime:content part="file" type="text/html"/>
+          </mime:part>
+        </mime:multipartRelated> 
+      </output>
+    </operation>
+
+    <operation name="plainTextToString">
+      <soap:operation soapAction=""/>
+      <input>
+        <mime:multipartRelated>
+          <mime:part>
+            <mime:content part="plaintext" type="text/plain"/>
+          </mime:part>
+        </mime:multipartRelated> 
+      </input>
+      <output>
+        <soap:body use="encoded"
+                   namespace="http://mime/"
+                   encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+      </output>
+    </operation>
+
+    <operation name="stringToPlainText">
+      <soap:operation soapAction=""/>
+      <input>
+        <soap:body use="encoded"
+                   namespace="http://mime/"
+                   encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+      </input>
+      <output>
+        <mime:multipartRelated>
+          <mime:part>
+            <mime:content part="plaintext" type="text/plain"/>
+          </mime:part>
+        </mime:multipartRelated> 
+      </output>
+    </operation>
+
+    <operation name="bounceImage">
+      <soap:operation soapAction=""/>
+      <input>
+        <mime:multipartRelated>
+          <mime:part>
+            <mime:content part="image1" type="image/jpeg"/>
+          </mime:part>
+        </mime:multipartRelated> 
+      </input>
+      <output>
+        <mime:multipartRelated>
+          <mime:part>
+            <mime:content part="image2" type="image/jpeg"/>
+          </mime:part>
+        </mime:multipartRelated> 
+      </output>
+    </operation>
+
+    <operation name="bounceImage2">
+      <soap:operation soapAction=""/>
+      <input>
+        <mime:multipartRelated>
+          <mime:part>
+            <mime:content part="file" type="image/jpeg"/>
+          </mime:part>
+        </mime:multipartRelated> 
+      </input>
+      <output>
+        <mime:multipartRelated>
+          <mime:part>
+            <mime:content part="file2" type="image/jpeg"/>
+          </mime:part>
+        </mime:multipartRelated> 
+      </output>
+    </operation>
+    
+    <!-- bounceImage4 takes a boolean as well as an image. The boolean says
+         whether the image should be returned. This allows us to test mixing
+         soap and mime parts, and passing and returning null attachments -->
+    <operation name="bounceImage4">
+      <soap:operation soapAction=""/>
+      <input>
+        <mime:multipartRelated>
+          <mime:part>
+            <mime:content part="file" type="image/jpeg"/>
+          </mime:part>
+          <mime:part>
+            <soap:body use="encoded" 
+                       parts="shouldBounce file"
+                       namespace="http://mime/"
+                       encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+          </mime:part>
+        </mime:multipartRelated> 
+      </input>
+      <output>
+        <mime:multipartRelated>
+          <mime:part>
+            <mime:content part="file2" type="image/jpeg"/>
+          </mime:part>
+        </mime:multipartRelated> 
+      </output>
+    </operation>
+    
+    <!-- orMultiMimeParts tests passing in one of two different mime parts -->
+    <operation name="orMultiMimeParts">
+      <soap:operation soapAction=""/>
+      <input>
+        <mime:multipartRelated>
+          <mime:part>
+            <mime:content part="file" type="text/html"/>
+            <mime:content part="file" type="image/jpeg"/>
+          </mime:part>
+        </mime:multipartRelated> 
+      </input>
+      <output>
+        <soap:body use="encoded"
+                   namespace="http://mime/"
+                   encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+      </output>
+    </operation>
+
+    <!-- andMultiMimeParts tests passing in two different mime parts -->
+    <operation name="andMultiMimeParts">
+      <soap:operation soapAction=""/>
+      <input>
+        <mime:multipartRelated>
+          <mime:part>
+            <mime:content part="file" type="text/plain"/>
+          </mime:part>
+          <mime:part>
+            <mime:content part="file2" type="text/plain"/>
+          </mime:part>
+        </mime:multipartRelated> 
+      </input>
+      <output>
+        <soap:body use="encoded"
+                   namespace="http://mime/"
+                   encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+      </output>
+    </operation>
+
+    <!-- multiOutMimeParts tests returning multiple output mime parts -->
+    <operation name="multiOutMimeParts">
+      <soap:operation soapAction=""/>
+      <input>
+        <soap:body use="encoded"
+                   namespace="http://mime/"
+                   encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+      </input>
+      <output>
+        <mime:multipartRelated>
+          <mime:part>
+            <mime:content part="file" type="text/plain"/>
+          </mime:part>
+          <mime:part>
+            <mime:content part="file2" type="text/plain"/>
+          </mime:part>
+        </mime:multipartRelated> 
+      </output>
+    </operation>
+
+    <!-- multiInoutMimeParts tests multiple inout mime parts -->
+    <operation name="multiInoutMimeParts">
+      <soap:operation soapAction=""/>
+      <input>
+        <mime:multipartRelated>
+          <mime:part>
+            <mime:content part="file" type="text/plain"/>
+          </mime:part>
+          <mime:part>
+            <mime:content part="file2" type="text/plain"/>
+          </mime:part>
+        </mime:multipartRelated> 
+      </input>
+      <output>
+        <mime:multipartRelated>
+          <mime:part>
+            <mime:content part="file" type="text/plain"/>
+          </mime:part>
+          <mime:part>
+            <mime:content part="file2" type="text/plain"/>
+          </mime:part>
+        </mime:multipartRelated> 
+      </output>
+    </operation>
+
+    <!-- Defining a mime message that doesn't contain any attachments is 
+         probably valid. Anyway we allow it -->
+    <operation name="noContent">
+      <soap:operation soapAction=""/>
+      <input>
+        <mime:multipartRelated>
+          <mime:part>
+            <soap:body use="encoded"
+                       namespace="http://mime/"
+                       encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+          </mime:part>
+        </mime:multipartRelated> 
+      </input>
+      <output>
+        <soap:body use="encoded"
+                   namespace="http://mime/"
+                   encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+      </output>
+    </operation>
+
+    <!-- Test out type="text/*" -->
+    <operation name="typeStar">
+      <soap:operation soapAction=""/>
+      <input>
+        <mime:multipartRelated>
+          <mime:part>
+             <mime:content part="file" type="text/*"/>
+          </mime:part>
+        </mime:multipartRelated> 
+      </input>
+      <output>
+        <soap:body use="encoded"
+                   namespace="http://mime/"
+                   encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+      </output>
+    </operation>
+
+    <!-- Test out soap:body parts="a b c" -->
+    <operation name="soapBodyParts1">
+      <soap:operation soapAction=""/>
+      <input>
+        <mime:multipartRelated>
+          <mime:part>
+            <soap:body use="encoded"
+                       namespace="http://mime/"
+                       encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+                       parts="shouldBounce file" />
+          </mime:part>
+          <mime:part>
+             <mime:content part="file" type="text/plain"/>
+          </mime:part>
+        </mime:multipartRelated> 
+      </input>
+      <output>
+        <soap:body use="encoded"
+                   namespace="http://mime/"
+                   encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+      </output>
+    </operation>
+
+    <operation name="soapBodyParts2">
+      <soap:operation soapAction=""/>
+      <input>
+        <mime:multipartRelated>
+          <mime:part>
+             <mime:content part="file" type="text/plain"/>
+          </mime:part>
+          <mime:part>
+            <soap:body use="encoded"
+                       namespace="http://mime/"
+                       encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+                       parts="file" />
+          </mime:part>
+        </mime:multipartRelated> 
+      </input>
+      <output>
+        <soap:body use="encoded"
+                   namespace="http://mime/"
+                   encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+      </output>
+    </operation>
+
+    <operation name="soapBodyParts3">
+      <soap:operation soapAction=""/>
+      <input>
+        <mime:multipartRelated>
+          <mime:part>
+            <soap:body use="encoded"
+                       namespace="http://mime/"
+                       encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+                       parts="shouldBounce" />
+          </mime:part>
+        </mime:multipartRelated> 
+      </input>
+      <output>
+        <soap:body use="encoded"
+                   namespace="http://mime/"
+                   encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+      </output>
+    </operation>
+
+    <operation name="soapBodyParts4">
+      <soap:operation soapAction=""/>
+      <input>
+        <mime:multipartRelated>
+          <mime:part>
+            <soap:body use="encoded"
+                       namespace="http://mime/"
+                       encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+                       parts="" />
+          </mime:part>
+        </mime:multipartRelated> 
+      </input>
+      <output>
+        <soap:body use="encoded"
+                   namespace="http://mime/"
+                   encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+      </output>
+    </operation>
+
+    <operation name="arrayOfBinary">
+      <soap:operation soapAction=""/>
+      <input>
+        <mime:multipartRelated>
+          <mime:part>
+            <mime:content part="file" type="text/html"/>
+          </mime:part>
+        </mime:multipartRelated> 
+      </input>
+      <output>
+        <soap:body use="encoded"
+                   namespace="http://mime/"
+                   encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+      </output>
+    </operation>
+
+    <operation name="optionalSoapBody">
+      <soap:operation soapAction=""/>
+      <input>
+        <mime:multipartRelated>
+          <mime:part>
+            <mime:content part="file" type="text/html"/>
+          </mime:part>
+          <mime:part>
+            <!-- This soap:body deliberately doesn't have a parts="" 
+                 to test that the soap body defaults to referring to the
+                 attachment but not inlining it in the soap body -->
+            <soap:body use="encoded"
+                       namespace="http://mime/"
+                       encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+          </mime:part>
+        </mime:multipartRelated> 
+      </input>
+      <output>
+        <mime:multipartRelated>
+          <mime:part>
+            <mime:content part="file2" type="text/html"/>
+          </mime:part>
+          <mime:part>
+            <soap:body use="encoded"
+                       namespace="http://mime/"
+                       encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+          </mime:part>
+        </mime:multipartRelated> 
+      </output>
+    </operation>
+
+    <operation name="mixMimeParts">
+      <soap:operation soapAction=""/>
+      <input>
+        <mime:multipartRelated>
+          <mime:part>
+            <mime:content part="file1" type="text/html"/>
+          </mime:part>
+          <mime:part>
+            <mime:content part="file2" type="text/html"/>
+          </mime:part>
+          <mime:part>
+            <soap:body use="encoded"
+                       namespace="http://mime/"
+                       encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+                       parts="position1 file1 position2 file2 position3"/>
+          </mime:part>
+        </mime:multipartRelated> 
+      </input>
+      <output>
+        <soap:body use="encoded"
+                   namespace="http://mime/"
+                   encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+      </output>
+    </operation>
+
+    <operation name="unref">
+      <soap:operation soapAction=""/>
+      <input>
+        <soap:body use="encoded"
+                   namespace="http://mime/"
+                   encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+      </input>
+      <output>
+        <soap:body use="encoded"
+                   namespace="http://mime/"
+                   encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+      </output>
+    </operation>
+
+    <operation name="putRefDhInputOnly">
+      <soap:operation soapAction=""/>
+      <input>
+        <mime:multipartRelated>
+          <mime:part>
+            <mime:content part="file" type="text/html"/>
+          </mime:part>
+        </mime:multipartRelated> 
+      </input>
+    </operation>
+
+    <operation name="getRefDh">
+      <soap:operation soapAction=""/>
+      <input>
+        <soap:body use="encoded"
+                   namespace="http://mime/"
+                   encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+      </input>
+      <output>
+        <mime:multipartRelated>
+          <mime:part>
+            <mime:content part="file" type="text/html"/>
+          </mime:part>
+        </mime:multipartRelated> 
+      </output>
+    </operation>
+
+    <operation name="putUnrefDhInputOnly">
+      <soap:operation soapAction=""/>
+      <input>
+        <soap:body use="encoded"
+                   namespace="http://mime/"
+                   encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+      </input>
+    </operation>
+
+    <operation name="getUnrefDh">
+      <soap:operation soapAction=""/>
+      <input>
+        <soap:body use="encoded"
+                   namespace="http://mime/"
+                   encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+      </input>
+      <output>
+        <mime:multipartRelated>
+          <mime:part>
+            <mime:content part="file" type="text/html"/>
+          </mime:part>
+        </mime:multipartRelated> 
+      </output>
+    </operation>
+  </binding>
+  
+  <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
+  <!--                SOAP JMS BINDING                                       -->
+  <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
+
+  <binding name="SOAPJmsBinding" type="tns:Mime">
+    <soap:binding style="rpc"
+                  transport="http://schemas.xmlsoap.org/soap/jms"/>
+    <operation name="dataHandlerToString">
+      <soap:operation soapAction=""/>
+      <input>
+        <mime:multipartRelated>
+          <mime:part>
+            <mime:content part="file" type="text/html"/>
+          </mime:part>
+        </mime:multipartRelated> 
+      </input>
+      <output>
+        <soap:body use="encoded"
+                   namespace="http://mime/"
+                   encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+      </output>
+    </operation>
+
+    <operation name="stringToDataHandler">
+      <soap:operation soapAction=""/>
+      <input>
+        <soap:body use="encoded"
+                   namespace="http://mime/"
+                   encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+      </input>
+      <output>
+        <mime:multipartRelated>
+          <mime:part>
+            <mime:content part="file" type="text/html"/>
+          </mime:part>
+        </mime:multipartRelated> 
+      </output>
+    </operation>
+
+    <operation name="plainTextToString">
+      <soap:operation soapAction=""/>
+      <input>
+        <mime:multipartRelated>
+          <mime:part>
+            <mime:content part="plaintext" type="text/plain"/>
+          </mime:part>
+        </mime:multipartRelated> 
+      </input>
+      <output>
+        <soap:body use="encoded"
+                   namespace="http://mime/"
+                   encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+      </output>
+    </operation>
+
+    <operation name="stringToPlainText">
+      <soap:operation soapAction=""/>
+      <input>
+        <soap:body use="encoded"
+                   namespace="http://mime/"
+                   encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+      </input>
+      <output>
+        <mime:multipartRelated>
+          <mime:part>
+            <mime:content part="plaintext" type="text/plain"/>
+          </mime:part>
+        </mime:multipartRelated> 
+      </output>
+    </operation>
+
+    <operation name="bounceImage">
+      <soap:operation soapAction=""/>
+      <input>
+        <mime:multipartRelated>
+          <mime:part>
+            <mime:content part="image1" type="image/jpeg"/>
+          </mime:part>
+        </mime:multipartRelated> 
+      </input>
+      <output>
+        <mime:multipartRelated>
+          <mime:part>
+            <mime:content part="image2" type="image/jpeg"/>
+          </mime:part>
+        </mime:multipartRelated> 
+      </output>
+    </operation>
+
+    <operation name="bounceImage2">
+      <soap:operation soapAction=""/>
+      <input>
+        <mime:multipartRelated>
+          <mime:part>
+            <mime:content part="file" type="image/jpeg"/>
+          </mime:part>
+        </mime:multipartRelated> 
+      </input>
+      <output>
+        <mime:multipartRelated>
+          <mime:part>
+            <mime:content part="file2" type="image/jpeg"/>
+          </mime:part>
+        </mime:multipartRelated> 
+      </output>
+    </operation>
+    
+    <!-- bounceImage4 takes a boolean as well as an image. The boolean says
+         whether the image should be returned. This allows us to test mixing
+         soap and mime parts, and passing and returning null attachments -->
+    <operation name="bounceImage4">
+      <soap:operation soapAction=""/>
+      <input>
+        <mime:multipartRelated>
+          <mime:part>
+            <mime:content part="file" type="image/jpeg"/>
+          </mime:part>
+          <mime:part>
+            <soap:body use="encoded" 
+                       parts="shouldBounce file"
+                       namespace="http://mime/"
+                       encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+          </mime:part>
+        </mime:multipartRelated> 
+      </input>
+      <output>
+        <mime:multipartRelated>
+          <mime:part>
+            <mime:content part="file2" type="image/jpeg"/>
+          </mime:part>
+        </mime:multipartRelated> 
+      </output>
+    </operation>
+    
+    <!-- orMultiMimeParts tests passing in one of two different mime parts -->
+    <operation name="orMultiMimeParts">
+      <soap:operation soapAction=""/>
+      <input>
+        <mime:multipartRelated>
+          <mime:part>
+            <mime:content part="file" type="text/html"/>
+            <mime:content part="file" type="image/jpeg"/>
+          </mime:part>
+        </mime:multipartRelated> 
+      </input>
+      <output>
+        <soap:body use="encoded"
+                   namespace="http://mime/"
+                   encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+      </output>
+    </operation>
+
+    <!-- andMultiMimeParts tests passing in two different mime parts -->
+    <operation name="andMultiMimeParts">
+      <soap:operation soapAction=""/>
+      <input>
+        <mime:multipartRelated>
+          <mime:part>
+            <mime:content part="file" type="text/plain"/>
+          </mime:part>
+          <mime:part>
+            <mime:content part="file2" type="text/plain"/>
+          </mime:part>
+        </mime:multipartRelated> 
+      </input>
+      <output>
+        <soap:body use="encoded"
+                   namespace="http://mime/"
+                   encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+      </output>
+    </operation>
+
+    <!-- multiOutMimeParts tests returning multiple output mime parts -->
+    <operation name="multiOutMimeParts">
+      <soap:operation soapAction=""/>
+      <input>
+        <soap:body use="encoded"
+                   namespace="http://mime/"
+                   encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+      </input>
+      <output>
+        <mime:multipartRelated>
+          <mime:part>
+            <mime:content part="file" type="text/plain"/>
+          </mime:part>
+          <mime:part>
+            <mime:content part="file2" type="text/plain"/>
+          </mime:part>
+        </mime:multipartRelated> 
+      </output>
+    </operation>
+
+    <!-- multiInoutMimeParts tests multiple inout mime parts -->
+    <operation name="multiInoutMimeParts">
+      <soap:operation soapAction=""/>
+      <input>
+        <mime:multipartRelated>
+          <mime:part>
+            <mime:content part="file" type="text/plain"/>
+          </mime:part>
+          <mime:part>
+            <mime:content part="file2" type="text/plain"/>
+          </mime:part>
+        </mime:multipartRelated> 
+      </input>
+      <output>
+        <mime:multipartRelated>
+          <mime:part>
+            <mime:content part="file" type="text/plain"/>
+          </mime:part>
+          <mime:part>
+            <mime:content part="file2" type="text/plain"/>
+          </mime:part>
+        </mime:multipartRelated> 
+      </output>
+    </operation>
+
+    <!-- Defining a mime message that doesn't contain any attachments is 
+         probably valid. Anyway we allow it -->
+    <operation name="noContent">
+      <soap:operation soapAction=""/>
+      <input>
+        <mime:multipartRelated>
+          <mime:part>
+            <soap:body use="encoded"
+                       namespace="http://mime/"
+                       encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+          </mime:part>
+        </mime:multipartRelated> 
+      </input>
+      <output>
+        <soap:body use="encoded"
+                   namespace="http://mime/"
+                   encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+      </output>
+    </operation>
+
+    <!-- Test out type="text/*" -->
+    <operation name="typeStar">
+      <soap:operation soapAction=""/>
+      <input>
+        <mime:multipartRelated>
+          <mime:part>
+             <mime:content part="file" type="text/*"/>
+          </mime:part>
+        </mime:multipartRelated> 
+      </input>
+      <output>
+        <soap:body use="encoded"
+                   namespace="http://mime/"
+                   encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+      </output>
+    </operation>
+
+    <!-- Test out soap:body parts="a b c" -->
+    <operation name="soapBodyParts1">
+      <soap:operation soapAction=""/>
+      <input>
+        <mime:multipartRelated>
+          <mime:part>
+            <soap:body use="encoded"
+                       namespace="http://mime/"
+                       encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+                       parts="shouldBounce file" />
+          </mime:part>
+          <mime:part>
+             <mime:content part="file" type="text/plain"/>
+          </mime:part>
+        </mime:multipartRelated> 
+      </input>
+      <output>
+        <soap:body use="encoded"
+                   namespace="http://mime/"
+                   encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+      </output>
+    </operation>
+
+    <operation name="soapBodyParts2">
+      <soap:operation soapAction=""/>
+      <input>
+        <mime:multipartRelated>
+          <mime:part>
+             <mime:content part="file" type="text/plain"/>
+          </mime:part>
+          <mime:part>
+            <soap:body use="encoded"
+                       namespace="http://mime/"
+                       encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+                       parts="file" />
+          </mime:part>
+        </mime:multipartRelated> 
+      </input>
+      <output>
+        <soap:body use="encoded"
+                   namespace="http://mime/"
+                   encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+      </output>
+    </operation>
+
+    <operation name="soapBodyParts3">
+      <soap:operation soapAction=""/>
+      <input>
+        <mime:multipartRelated>
+          <mime:part>
+            <soap:body use="encoded"
+                       namespace="http://mime/"
+                       encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+                       parts="shouldBounce" />
+          </mime:part>
+        </mime:multipartRelated> 
+      </input>
+      <output>
+        <soap:body use="encoded"
+                   namespace="http://mime/"
+                   encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+      </output>
+    </operation>
+
+    <operation name="soapBodyParts4">
+      <soap:operation soapAction=""/>
+      <input>
+        <mime:multipartRelated>
+          <mime:part>
+            <soap:body use="encoded"
+                       namespace="http://mime/"
+                       encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+                       parts="" />
+          </mime:part>
+        </mime:multipartRelated> 
+      </input>
+      <output>
+        <soap:body use="encoded"
+                   namespace="http://mime/"
+                   encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+      </output>
+    </operation>
+
+    <operation name="arrayOfBinary">
+      <soap:operation soapAction=""/>
+      <input>
+        <mime:multipartRelated>
+          <mime:part>
+            <mime:content part="file" type="text/html"/>
+          </mime:part>
+        </mime:multipartRelated> 
+      </input>
+      <output>
+        <soap:body use="encoded"
+                   namespace="http://mime/"
+                   encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+      </output>
+    </operation>
+
+    <operation name="optionalSoapBody">
+      <soap:operation soapAction=""/>
+      <input>
+        <mime:multipartRelated>
+          <mime:part>
+            <mime:content part="file" type="text/html"/>
+          </mime:part>
+          <mime:part>
+            <!-- This soap:body deliberately doesn't have a parts="" 
+                 to test that the soap body defaults to excluding the 
+                 attachment -->
+            <soap:body use="encoded"
+                       namespace="http://mime/"
+                       encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+          </mime:part>
+        </mime:multipartRelated> 
+      </input>
+      <output>
+        <mime:multipartRelated>
+          <mime:part>
+            <mime:content part="file2" type="text/html"/>
+          </mime:part>
+          <mime:part>
+            <soap:body use="encoded"
+                       namespace="http://mime/"
+                       encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+          </mime:part>
+        </mime:multipartRelated> 
+      </output>
+    </operation>
+
+    <operation name="mixMimeParts">
+      <soap:operation soapAction=""/>
+      <input>
+        <mime:multipartRelated>
+          <mime:part>
+            <mime:content part="file1" type="text/html"/>
+          </mime:part>
+          <mime:part>
+            <mime:content part="file2" type="text/html"/>
+          </mime:part>
+          <mime:part>
+            <soap:body use="encoded"
+                       namespace="http://mime/"
+                       encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"
+                       parts="position1 file1 position2 file2 position3"/>
+          </mime:part>
+        </mime:multipartRelated> 
+      </input>
+      <output>
+        <soap:body use="encoded"
+                   namespace="http://mime/"
+                   encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+      </output>
+    </operation>
+
+    <operation name="unref">
+      <soap:operation soapAction=""/>
+      <input>
+        <soap:body use="encoded"
+                   namespace="http://mime/"
+                   encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+      </input>
+      <output>
+        <soap:body use="encoded"
+                   namespace="http://mime/"
+                   encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+      </output>
+    </operation>
+
+    <operation name="putRefDhInputOnly">
+      <soap:operation soapAction=""/>
+      <input>
+        <mime:multipartRelated>
+          <mime:part>
+            <mime:content part="file" type="text/html"/>
+          </mime:part>
+        </mime:multipartRelated> 
+      </input>
+    </operation>
+
+    <operation name="getRefDh">
+      <soap:operation soapAction=""/>
+      <input>
+        <soap:body use="encoded"
+                   namespace="http://mime/"
+                   encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+      </input>
+      <output>
+        <mime:multipartRelated>
+          <mime:part>
+            <mime:content part="file" type="text/html"/>
+          </mime:part>
+        </mime:multipartRelated> 
+      </output>
+    </operation>
+
+    <operation name="putUnrefDhInputOnly">
+      <soap:operation soapAction=""/>
+      <input>
+        <soap:body use="encoded"
+                   namespace="http://mime/"
+                   encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+      </input>
+    </operation>
+
+    <operation name="getUnrefDh">
+      <soap:operation soapAction=""/>
+      <input>
+        <soap:body use="encoded"
+                   namespace="http://mime/"
+                   encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+      </input>
+      <output>
+        <mime:multipartRelated>
+          <mime:part>
+            <mime:content part="file" type="text/html"/>
+          </mime:part>
+        </mime:multipartRelated> 
+      </output>
+    </operation>
+  </binding>
+
+  <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
+  <!--                JAVA BINDING                                           -->
+  <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
+
+  <binding name="JavaBinding" type="tns:Mime">
+    <java:binding/>
+    <format:typeMapping encoding="Java" style="Java">
+      <format:typeMap 
+        typeName="tns:datahandler" 
+        formatType="javax.activation.DataHandler" />
+      <format:typeMap 
+        typeName="xsd:string" 
+        formatType="java.lang.String" />
+    </format:typeMapping>
+    <operation name="dataHandlerToString">
+      <java:operation
+         methodName="dataHandlerToString"
+         parameterOrder="file"
+         methodType="instance" />
+      <input/>
+      <output/>
+    </operation>
+    <operation name="stringToDataHandler">
+      <java:operation
+         methodName="stringToDataHandler"
+         parameterOrder="buff"
+         methodType="instance" />
+      <input/>
+      <output/>
+    </operation>
+    <operation name="unref">
+      <java:operation
+         methodName="unref"
+         methodType="instance" />
+      <input/>
+      <output/>
+    </operation>
+    <operation name="putUnrefDhInputOnly">
+      <java:operation
+         methodName="putUnrefDhInputOnly"
+         methodType="instance" />
+      <input/>
+      <output/>
+    </operation>
+    <operation name="getUnrefDh">
+      <java:operation
+         methodName="getUnrefDh"
+         methodType="instance" />
+      <input/>
+      <output/>
+    </operation>
+    <operation name="getRefDh">
+      <java:operation
+         methodName="getRefDh"
+         methodType="instance" />
+      <input/>
+      <output/>
+    </operation>
+  </binding>
+
+  <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
+  <!--                SERVICES                                               -->
+  <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
+
+  <!-- service decln -->
+  <service name="MimeService">
+    <port name="SOAPPort" binding="tns:SOAPHttpBinding">
+      <soap:address location="http://localhost:8080/soap/servlet/rpcrouter"/>
+    </port>
+    <port name="AXISPort" binding="tns:SOAPHttpBinding">
+      <soap:address location="http://localhost:8080/axis/services/Mime"/>
+    </port>
+    <port name="SOAPJMSPort" binding="tns:SOAPJmsBinding">
+      <jms:address jndiDestinationName="SoapJmsAddressBookQueue"
+                   destinationStyle="queue"
+                   jndiConnectionFactoryName="WSIFSampleQCF"
+                   initialContextFactory="com.sun.jndi.fscontext.RefFSContextFactory"
+                   jndiProviderURL="file:///JNDI-Directory">
+        <jms:propertyValue name="SOAPAction" type="xsd:string" value=" "/>
+      </jms:address>
+    </port>
+    <port name="JavaPort" binding="tns:JavaBinding">
+      <java:address className="mime.MimeImpl"/>
+    </port>
+  </service>
+
+</definitions>

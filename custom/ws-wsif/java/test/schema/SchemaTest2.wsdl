@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions name="SchemaTest1"
+    targetNamespace="http://types.wsiftest/"
+    xmlns="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:tns="http://types.wsiftest/"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <import location="SchemaTest2Import.xsd" namespace="http://types.wsiftest/"/>   
+    <message name="testRequest">
+        <part name="ints" type="tns:ArrayOfInt"/>
+        <part name="longs" type="tns:ArrayOfLong"/>
+        <part name="shorts" type="xsd:short"/>
+        <part name="byte" type="xsd:byte"/>
+    </message>
+    <message name="testResponse">
+        <part name="result" type="xsd:string"/>
+    </message>
+    
+    <portType name="TestPortType">
+        <operation name="runTest" parameterOrder="ints longs shorts byte">
+            <input message="tns:testRequest" name="testRequest"/>
+            <output message="tns:testResponse" name="testResponse"/>
+        </operation>
+    </portType>
+    
+</definitions>

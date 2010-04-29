@@ -1,0 +1,29 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><html><head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<meta name="Author" content="Nirmal Mukhi, Aleksander Slominski">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<title>Web Services Invocation Framework: How To Write Provider</title>
+<link rel="stylesheet" href="wsif.css" type="text/css"></head>
+
+<body alink="#0000ff" bgcolor="#ffffff" leftmargin="2" topmargin="2" marginwidth="2" marginheight="2">
+
+<h2>How to write your own WSDL extensions and plug them into WSDL4J</h2>
+
+<p>To Implement new WSDL extension using WSDL4J it is necessary to:</p>
+    <ul>
+      <li>decide on what namespace will be used for WSDL extension: for example 
+      EJB provider is using <a href="http://schemas.xmlsoap.org/wsdl/ejb/">http://schemas.xmlsoap.org/wsdl/ejb/</a></li>
+      <li>write a subclass of javax.wsdl.extensions.ExtensibilityElement</li>
+      <li>write class which implements ExtensionSerializer and ExtensionDeserializer 
+      and is responsible for converting Java object representing extension to 
+      XML (serializer) and for converting XML into Java object (deserialize)</li>
+      <li>write new extension registry - this clss must extend javax.wsdl.extensions.ExtensionRegistry 
+      and is used to inform WSDL4J on how to handle new extension</li>
+    </ul>
+<p>You can find examples of all these for the existing providers in the various org.apache.wsif.wsdl.extensions.* packages</p>
+    <p>&nbsp;</p>
+
+<p>TODO: more details based on example</p>
+<hr width="100%">
+<p><font style='font-size: 8pt; font-family: sans-serif' size="-3">last modified $Id: how_to_wsdl_extensions.html,v 1.1 2010/04/29 08:36:27 paskalev Exp $ </font></p>
+</body></html>

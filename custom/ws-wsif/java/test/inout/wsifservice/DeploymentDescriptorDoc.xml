@@ -1,0 +1,11 @@
+<isd:service xmlns:isd="http://xml.apache.org/xml-soap/deployment"
+             id="http://doc.wsifservice.inout/"
+             type="message" >
+  <isd:provider type="java"
+                scope="Application"
+                methods="addEntry getAddressFromName addNumbers getDate whoami">
+    <isd:java class="inout.wsiftypes.InoutDoc" static="false"/>
+  </isd:provider>
+
+  <isd:faultListener>org.apache.soap.server.DOMFaultListener</isd:faultListener>
+</isd:service>

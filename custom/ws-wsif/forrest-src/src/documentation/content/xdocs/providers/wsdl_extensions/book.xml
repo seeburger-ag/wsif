@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book PUBLIC "-//APACHE//DTD Cocoon Documentation Book V1.0//EN" "book-cocoon-v10.dtd">
+
+<book software="WSIF"
+  title="WSIF"
+  copyright="@year@ The Apache Software Foundation"
+  xmlns:xlink="http://www.w3.org/1999/xlink">
+
+  <menu label="WSIF Providers">
+    <menu-item label="Introduction" href="../index.html"/>
+    <menu-item label="Java" href="../java_provider.html"/>
+    <menu-item label="EJB" href="../ejb_provider.html"/>
+    <menu-item label="Apache SOAP" href="../apachesoap_provider.html"/>
+    <menu-item label="Apache Axis" href="../apacheaxis_provider.html"/>
+    <menu-item label="JCA" href="../jca_provider.html"/> 
+  </menu>
+  <menu label="WSDL Extensions">
+    <menu-item label="Java" href="java_extension.html"/>
+    <menu-item label="EJB" href="ejb_extension.html"/>
+    <menu-item label="JMS" href="jms_extension.html"/>
+    <menu-item label="J2C" href="j2c_extension.html"/>  
+    <menu-item label="Format type mapping" href="formattypemapping_extension.html"/>  
+  </menu>
+</book>

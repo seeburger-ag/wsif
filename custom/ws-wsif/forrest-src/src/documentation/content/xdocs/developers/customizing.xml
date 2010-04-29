@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+      <!DOCTYPE document PUBLIC "-//APACHE//DTD Documentation V1.1//EN" "document-v11.dtd">
+      <document> 
+        <header> 
+          <title>Customizing WSIF</title> 
+        </header> 
+        <body> 
+<section>
+ <title>Customizing your WSIF installation</title>
+<p>This part of documentation is meant to help developers who want to modify 
+WSIF by adding or changing its providers and implementing new protocols.</p>
+    <p>There are many points within the WSIF API that allow for
+    customization. <link href="http://cvs.apache.org/viewcvs/*checkout*/ws-wsif/java/samples/customfactory/README.html">An advanced WSIF sample</link>
+
+    demonstrates how to write your own WSIF service factory so that
+    dynamic binding selection follows your own customized
+      algorithm. The user can discover other customization points by
+      examining <link
+		   href="http://cvs.apache.org/viewcvs/*checkout*/ws-wsif/java/docs/apidocs/index.html">WSIF's core API</link>.</p>
+    <p>Larger scale customization involves finding ways to expose
+      software that uses your proprietary protocols through WSDL, so
+      that you can then access this software using WSIF's APIs. To do
+      this, you need to take care of the following:</p>
+    <ol>
+      <li><link href="how_to_wsdl_extensions.html">Writing your own WSDL
+	  extensions to support new protocols</link></li>
+      <li><link href="how_to_provider.html">Writing your own WSIF
+	  providers to support customized WSIF extensions</link></li>
+    </ol>
+
+    <p>WSIF defines binding extensions so that EJBs, local java classes, software accessible over message queues using 
+    the JMS API and software that can be invoked using the Java Connector architecture can also be described in WSDL. WSIF is packaged 
+    with providers that allow transparent invocation of such software given the corresponding WSDL description. Here are the documents that describe these bindings:</p>
+      <ul>
+      <li><link href="../providers/wsdl_extensions/java_extension.html">Local java binding extensions for WSDL</link></li>
+      <li><link href="../providers/wsdl_extensions/ejb_extension.html">EJB binding extensions for WSDL</link></li>
+      <li><link href="../providers/wsdl_extensions/jms_extension.html">JMS binding extensions for WSDL</link></li>
+      <li><link href="../providers/wsdl_extensions/j2c_extension.html">JCA binding extensions for WSDL</link></li>
+      </ul>
+
+<p>You may find also useful to read about using <link href="mime_attachments.html">Soap
+  Attachments using WSIF</link> and always important when debugging - &nbsp; <link href="trace.html">
+how to use tracing in WSIF</link>.
+</p>
+</section>
+   </body>
+    </document>

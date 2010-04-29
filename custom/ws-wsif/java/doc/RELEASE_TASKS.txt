@@ -1,0 +1,93 @@
+RELEASE PLAN for Apache WSIF 2.0: 
+* next IRC chat on (tentatively) Thursday Jan 30th about future of WSIF
+* RC4 release Friday (jan 24th) and unless major problems are discovered it is renamed to 2.0
+* after that do a 2.01 or 2.1 ASAP 
+	put the Forrest-ed web pages
+	users feedback ....
+* keep updating list of changes in doc (including new additions, bug fixes etc.)!
+* release often after 2.0 (including bug fixes and doc changes)
+  baseline would be 2.0.x then if we really have something significant change the 0
+* VERY IMPORTANT: _all_ pending tasks for final release and RCs must be in RELEASE_TASK.txt
+ - anybody working on releease should put there what is happening (including bug fixes)
+ (it is in CVS in doc/ subdirectory) - finished tasks will beused for release notes
+
+TASKS for 2.0 release (high priority):
+* no changes or new tasks until they are absolutely required as we want RC4 to be final
+* everybody check current RC4 release (soon final 2.0) and report problems
+* write release summary and detaield list of how samples were tested 
+* alek test more RC3 on linux and solaris 
+* DONE document each sample (Nirmal is doing great work here both writing and documenting samples)
+* DONE: check JAVAMAIL/JAF issue especially in context of http://java.sun.com/products/javamail/FAQ.html#free 
+	and http://java.sun.com/products/javamail/LICENSE.txt 
+  (that would greatly simplify WSIF installtion if activation.jar and mail.jar coul dbe included)
+  (note, you shouldn't need these jars to run WSIF unless you really are using attachments now)
+  RESULT: license is very anclear and it seems thay can not be distributed (alek): 
+* DONE check problem with build srcdist and zip taks that throws NPE (at least on IBM JDK)
+* DONE piotrp: expand J2C provider sample. The sample currently included in a complete 
+  rar file including all the sources of the sample J2C connector (MyEIS) using wsif j2c provider.
+  The script to build rar from the source as well as sample proxy that uses MyEIS connector
+  to execute interaction with the back end. 
+* DONE nirmal we need sample for EJB
+* DONE nirmal need sample for simple soap
+* DONE nirmal need sample for soap with comlex types
+* DONE nirmal documented simple soap sample
+* DONE nirmal documented complex soap samples 
+* DONE Jeremy: Forrest proposal check in into proposals directory in CVS
+* DONE [alek] get out an intial (alpha) release today!
+* DONE [Jeremy Sat 11a GMT (6am EST)] fixing problem with text files marked by Eclipse as binary in CVS
+* DONE [alek] but will need mroe work [alek] split README.html into smaller pices and make it addressing two communities: 
+	WSIF users and WSIF developers; README.html right now is kind of mixed up
+* DONE [alek] simplify wsif.css
+* DONE [alek] check in JAR files that we know WSIF works OK with LICENSE and README(and can be checked in)
+* DONE [alek] test process to build binary and source distributions
+* DONE [nirmal + alek] document how to run samples (step by step)
+* DONE [nirmal + alek] document how to build (step by step)
+* DONE owen: fix documentation/web pages - we need to be constistant with file extensions - always use .html rather than .htm. This is currently
+  causing broken links!! See bugzilla bug # 15691
+
+----- Post 2.0 release
+
+TASKS for next release (high priority):
+* piotrp fix build for JCA samples and make sure that GUMP build works
+* fix nightly builds (check how they are created and how they are propagated by GUMP?)
+* some limitations on DOC style w/attachments which Ant is working to 
+* add sample to demonstrate how to use WSIF async operations [as requested by Jeff Greif]
+* [ant] finish fixing problems in AXIS provider as described in bugzillas to be raised
+* [ant] working on removing some limitations on DOC style w/attachments 
+* document WSIF code and give higher level docs than just Javadocs
+* make sure that all dependencies are documented
+
+TASKS (medium priority):
+* [owen] Convert documentation to use Forrest
+* [owen] Convert web pages to use Forrest
+* [owen] Automatically generate web site from CVS
+* [jeremy] automatic generation of javadoc API on website
+* write/test sample that uses xmethods WSDL (DynamicInvoker + stub)
+* document how to run tests (step by step)
+* get the link to the API javadoc off the home page working
+* work on developer guide that explains what different methods on WSIFOperation are doing with exampels (such as executeRequestResponseAsync ...)
+* check (and edit if necessary) Javadoc on the main WSIF API (org.apache.wsif)
+* check (and edit if necessary) Javadoc on util and base (WSIFUtils and org.apache.wsif.base)
+
+TASKS (lower priority)
+* check (and edit if necessary) Javadoc for AXIS provider 
+* check (and edit if necessary) Javadoc for Apache SOAP provider
+* check (and edit if necessary) Javadoc for JMS/SOAP provider
+* [piotrp] check (and edit if necessary) Javadoc for J2C provider
+* DONE documentation for J2C binding
+* improve Javadoc for Java provider
+* improve Javadoc for EJB provider
+* figure out how to make JMS sample to use as simple as possible maybe with some locally started JMS serivce ...
+* document how to run sample interacting using JMS
+* DONE figure out how to make JCA sample to use as simple as possible maybe with some local JCA connetor,
+  the sample will run against MyEIS Connector which is included itself as a sample. 
+* [piotrp] document how to run samle interacting using JCA
+* document how to run samle interacting using EJB
+* sample showing customisation of WSIF: how to write simple code to pick your preferred port at runtime
+
+LATER
+* [nirmal, alek, Jeremy ???] for sampels it would be good to have something pernament for EJB/JMS
+	using Open Source EJBs/JMS (such as JBoss), etc. can we do that? is that feasible?		
+* [alek ...] LATER: modularisation
+* allow compiling with only AXIS jars on CLASSPATH (generate only Apapche Axis SOAP provider)
+* change classpath.sh and classpath.bat ... if j2ee.jar present then none of the split-out jars need to be (eg jaf, activation)

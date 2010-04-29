@@ -1,0 +1,110 @@
+<html>
+<head>
+<title>Apache WSIF Changes
+</title>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="Author" content="Nirmal Mukhi, Aleksander Slominski [http://www.extreme.indiana.edu/~aslom]">
+</head>
+<body bgcolor="white">
+
+<H1>Changes to Apache WSIF</H1><P>
+
+<p>Please keep changes in reverse chronological order.
+Each release should have a separate list of changes.
+Add only <b>significant</b> changes such as changing API, modifying
+implementation behavior, major bug fixes (hyperlink to <a href="bugs.html">
+Bugzilla</a>), new
+functionality. Do not give too detailed descriptions as they belong to CVS
+commit logs. Each major release should have its separate list of changes,
+name of CVS tag used: create &lt;a name=&quot;WSIF_2_0&quot;&gt;&lt;/a&gt; so it is easy to hyperlink
+to changes for particular release
+
+
+<a name="TODO"><h3>In future:</h3></a>
+<ul>
+<li>change WSIFServiceFactory to look for alternative implementations before instantiating default factory</li>
+<li>performance improvements
+<li>modularization
+</ul>
+
+<a name="WSIF_2_0"><h3>first official 2.0 release (WSIF_2_0) </h3></a>
+
+<p>current estimate: January 2003 after completing <a href="RELEASE_TASKS.txt">list of tasks scheduled for this release</a>.
+
+<ul>
+<li>1/23/04: built RC3 release (tagged as <b>WSIF_2_0_RC3</b>)
+
+<li>added JCA sample
+
+<li>fixed bugs:<br>
+<a href="http://nagoya.apache.org/bugzilla/show_bug.cgi?id=13646">13646</a> WSIFOperation_ApacheAxis fails to set up Call's Parameter list<BR>
+<a href="http://nagoya.apache.org/bugzilla/show_bug.cgi?id=15134">15134</a>  AXIS provider requires mail.jar and acivation.jar even when not using attachements<BR>
+<a href="http://nagoya.apache.org/bugzilla/show_bug.cgi?id=15578">15578</a>  WSIF incorrectly handles returned attachment from service<BR>
+<a href="http://nagoya.apache.org/bugzilla/show_bug.cgi?id=15691">15691</a>  errors in docs<BR>
+<a href="http://nagoya.apache.org/bugzilla/show_bug.cgi?id=15780">15780</a>  WSIF stub invocation for doc style with unwrapped parts don't work<BR>
+<a href="http://nagoya.apache.org/bugzilla/show_bug.cgi?id=15837">15837</a>  Attachments fail if in the wrong order<BR>
+<a href="http://nagoya.apache.org/bugzilla/show_bug.cgi?id=16041">16041</a>  There is no way to override the default (de)serializers used by the WSIF AXIS provider<BR>
+<a href="http://nagoya.apache.org/bugzilla/show_bug.cgi?id=16196">16196</a>  WSIF AXIS provider performance unacceptable<BR>
+<a href="http://nagoya.apache.org/bugzilla/show_bug.cgi?id=16197">16197</a>  axis provider messaging with attachments don't work<BR>
+<a href="http://nagoya.apache.org/bugzilla/show_bug.cgi?id=16199">16199</a>  response soap headers not passed to WSIF client<BR>
+<a href="http://nagoya.apache.org/bugzilla/show_bug.cgi?id=16199">16199</a>  WSIF AXIS provider no longer supports jms:property parts in the input message<BR>
+<a href="http://nagoya.apache.org/bugzilla/show_bug.cgi?id=16256">16256</a>  WSIF AXIS Operation uses incorrect encoding style<BR>
+<a href="http://nagoya.apache.org/bugzilla/show_bug.cgi?id=16271">16271</a>  WSIFUtils method initializeProviders should be public<BR>
+<a href="http://nagoya.apache.org/bugzilla/show_bug.cgi?id=16334">16334</a>  WSIF NPE for a document style service which is not wrapped<BR>
+
+
+<li>updated FAQ</li>
+<li>added <a href="samples.html">DSL provider</a> sample to demonstrate how WSIF
+can be used ot interact with many services each potentially implemented with
+different protocol (EJB, JMS, SOAP, ...).</li>
+<li>added <a href="samples.html">JMS</a> sample to demonstrate how WSIF
+can be used to interacts with software accessible through the JMS API.</li>
+
+<li>12/20/02: built RC1 release (tagged as <b>WSIF_2_0_RC1</b>): new samples (<b>multibinding</b>,
+<b>customfactory</b>),
+misc. updates to documentation and samples</li>
+
+<li>built BETA1 release (tagged as <b>WSIF_2_0_BETA1</b>):
+improvements to documentation that is now split in smaller pieces that
+are better fitting into <a href="http://xml.apache.org/axis/wsif/">
+http://xml.apache.org/axis/wsif/</a> website<li>added EJB sample with documentation and pre-packaged jar
+for deployment in JBoss&nbsp;
+
+<li>built ALPHA2 release (tagged as <b>WSIF_2_0_ALPHA2</b>)
+
+<li><b>changed release packaging</b>: there are now three different release builds:
+
+<ul>
+<li><b>src</b>: only source file (no binaries) - essentially all that is needed
+to compile WSIF if you downloaded all required jar files
+<li><b>bin</b>: only binaries: just download few jar files that can not be distributed
+and you are ready to run WSIF (no source code except for samples)
+<li><b>all</b> = bin + src
+</ul>
+
+<li>included samples to demonstrate invocation of SOAP service, local java and service with complex types and documentation for samples.
+
+
+<li><b>documentation changes</b>
+factored out <a href="../readme.htm1">readme.htm1</a> into smaller pieces that are put in doc/ (like cvs and requirements)
+updated doc/ with factored out info about cvs and requirements and improved build instructions,
+moved wsdl_extensions to doc/ from README_files,
+simplified wsif.css (much less colors, easier to read ...)
+
+<li>preparing first official release: added <a href="RELEASE_TASKS.txt">
+RELEASE_TASKS.txt</a><li>work on first alpha release
+
+</ul>
+
+
+
+</P>
+<P><BR>
+</P>
+&nbsp;<hr>
+<address>
+Nirmal Mukhi,
+<a href="http://www.extreme.indiana.edu/~aslom/">Aleksander Slominski</a>
+<br>Last modified: $Id: changes.html,v 1.1 2010/04/29 08:36:27 paskalev Exp $</address>
+</body>
+</html>

@@ -1,0 +1,185 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <title>EJB binding</title>
+  </head>
+
+  <body>
+    <h2>EJB binding</h2>
+    <hr>
+<p>The EJB binding is a WSDL binding that allows abstract functionality in the abstract service description (messages, operations and port types) to be mapped to functionality offered by an enterprise java bean directly. This means that an EJB can be described using WSDL, and can be accessed as a WSDL-described service through WSIF.</p>
+
+<p>The EJB binding extends WSDL with the following extensibility elements:</p>
+
+<p><tt><pre>
+&lt;definitions .... &gt; 
+
+    &lt;!-- EJB binding --&gt; 
+    &lt;binding ... &gt; 
+        &lt;ejb:binding/&gt; 
+        &lt;format:typeMapping style="uri" encoding="..."/&gt;? 
+            &lt;format:typeMap typeName="qname"|elementName="qname" formatType="nmtoken"/&gt;* 
+        &lt;/format:typeMapping&gt; 
+        &lt;operation&gt;* 
+            &lt;ejb:operation 
+                methodName="nmtoken" 
+                parameterOrder="nmtoken"? 
+		returnPart="nmtoken"?
+                interface="home|remote"? /&gt;? 
+            &lt;input name="nmtoken"? /&gt;? 
+            &lt;output name="nmtoken"? /&gt;? 
+            &lt;fault name="nmtoken"? /&gt;? 
+        &lt;/operation&gt; 
+    &lt;/binding&gt; 
+
+    &lt;service ... &gt; 
+        &lt;port&gt;* 
+             &lt;ejb:address 
+                 className="nmtoken" 
+                 jndiName="nmtoken"? 
+                 initialContextFactory="nmtoken"?
+                 jndiProviderURL="url"?
+                 archive="nmtoken"? /&gt; 
+        &lt;/port&gt; 
+    &lt;/service&gt; 
+&lt;/definitions&gt; 
+</pre></tt></p>
+
+<p>Each element is described in detail below.</p>
+
+<ul>
+<li><b><tt>ejb:binding</tt></b>
+<p>This indicates that the binding is an EJB binding.</p></li>
+
+<li><b><tt>format:typemapping</tt></b>
+<p>This element allows the specification of a mapping from abstract types used in WSDL message parts (within the abstract service description) to java types that can represent the same information. The style attribute is used to say something about the target type system (i.e. the native type system being used to represent the abstract information); in the case of the java type system the value here must be "Java". This use of this attribute allows this extension to be reused for other kinds of bindings. The encoding attribute must be a URI which is used to denote the specific way in which the native type corresponds to the abstract type. We define a special encoding, the "Java" encoding, with the rules that tell us how to create a java class corresponding to an abstract schema type that can be used through the WSDL java binding. Details on the "Java" encoding follow. Having the encoding attribute allows us to map abstract types to java types in other convenient ways by using a customized encoding.</p></li>
+
+<p><b>Java encoding</b><br>
+The java encoding used by WSIF is unspecified. The reason it does not need to be specified is that encoding information is useful only when the information contained within the java object is transformed in some way - serialized to a SOAP message, or converted to a representation in another type system for example. If all we do with a WSIF message containing parts belonging to the java type system is invoke the corresponding java service, we don't need to do anything more than verify that each message part is is represented using a java object of the correct type (as specified by the typemapping element in the java binding).<br>
+Of course, we envisage the need for transforming messages from one representation to another, but we leave the complete specification of the java encoding for a later release.</p>
+
+<li><b><tt>format:typemap</tt></b>
+<p>Each typemap element maps an abstract type to a type in some more convenient type system; in the case of the EJB binding this is the java type system. The typeName attribute is a qualified name for the abstract type being mapped (this must be one of the predefined schema types recognised in WSDL, or a type defined under the <types> section in the WSDL). The elementName attribute may be used to specify an element instead of a type (since WSDL message parts can be described either way). The formatType attribute is the java type corresponding to that abstract type or element. It values must be one of the primitive java types (char, byte, short, int, long, float, double) or the fully qualified name of a java class.</p></li>
+
+<li><b><tt>ejb:operation</tt></b>
+<p>This element maps an abstract WSDL operation to a method offered by an EJB interface. The <em>methodName</em> attribute specifies the name of the java method corresponding to the abstract operation. The <em>parameterOrder</em> attribute is similar to and overrides the <em>parameterOrder</em> specification in the abstract operation. It specifies the ordering of the input message parts for the invocation; in the EJB binding case it identifies the method signature. Having a <em>parameterOrder</em> attribute here allows us to map an abstract operation to an EJB method even if their signatures aren't compatible in the ordering of parts. The <em>returnPart</em> is that part of the abstract output message which corresponds to the return value of the java method. The <em>ejbInterface</em> attribute specifies whether the method is offered through the home interface or the remote interface of the EJB; by default the client will assume that it is a method on the remote interface.</p></li>
+
+<li><b><tt>ejb:address</tt></b>
+<p>This element is an extension under the WSDL <em>port</em> element that allows specification of an EJB object as an endpoint for a service available via the EJB binding. The port whose address is specified this way must be associated with an EJB binding only.</p>
+<p>The <em>className</em> attribute specifies the fully qualified name of the home interface class of the EJB. The <em>jndiName</em> attribute specifies the name under which this EJB can be looked up in a JNDI context.  The optional <em>initialContextFactory</em> and <em>jndiProviderURL</em> attributes complete the set if information required to perform a JNDI lookup for the EJB. It is upto the service provider to insure that all java methods used for mapping abstract operations must be publicly available through the specified interface in the EJB.</p>
+</ul>
+
+<h4>Example:</h4>
+
+<p><tt><pre>
+&lt;?xml version="1.0" ?&gt;
+
+&lt;definitions targetNamespace="http://wsifservice.addressbook/"
+             xmlns:tns="http://wsifservice.addressbook/"
+             xmlns:typens="http://wsiftypes.addressbook/"
+             xmlns:xsd="http://www.w3.org/2000/10/XMLSchema"
+             xmlns:format="http://schemas.xmlsoap.org/wsdl/formatbinding/"
+             xmlns:java="http://schemas.xmlsoap.org/wsdl/java/"
+             xmlns="http://schemas.xmlsoap.org/wsdl/"&gt;
+
+  &lt;!-- type defs --&gt;
+  &lt;types&gt;
+    &lt;xsd:schema
+      targetNamespace="http://wsiftypes.addressbook/"
+                xmlns:xsd="http://www.w3.org/1999/XMLSchema"&gt;
+      &lt;xsd:complexType name="phone"&gt;
+        &lt;xsd:element name="areaCode" type="xsd:int"/&gt;
+        &lt;xsd:element name="exchange" type="xsd:string"/&gt;
+        &lt;xsd:element name="number" type="xsd:string"/&gt;
+      &lt;/xsd:complexType&gt;
+
+      &lt;xsd:complexType name="address"&gt;
+        &lt;xsd:element name="streetNum" type="xsd:int"/&gt;
+        &lt;xsd:element name="streetName" type="xsd:string"/&gt;
+        &lt;xsd:element name="city" type="xsd:string"/&gt;
+        &lt;xsd:element name="state" type="xsd:string"/&gt;
+        &lt;xsd:element name="zip" type="xsd:int"/&gt;
+        &lt;xsd:element name="phoneNumber" type="typens:phone"/&gt;
+      &lt;/xsd:complexType&gt;
+    &lt;/xsd:schema&gt;
+  &lt;/types&gt;
+
+  &lt;!-- message declns --&gt;
+  &lt;message name="AddEntryWholeNameRequestMessage"&gt;
+    &lt;part name="name" type="xsd:string"/&gt;
+    &lt;part name="address" type="typens:address"/&gt;
+  &lt;/message&gt;
+
+  &lt;message name="AddEntryFirstAndLastNamesRequestMessage"&gt;
+    &lt;part name="firstName" type="xsd:string"/&gt;
+    &lt;part name="lastName" type="xsd:string"/&gt;
+    &lt;part name="address" type="typens:address"/&gt;
+  &lt;/message&gt;
+
+  &lt;message name="GetAddressFromNameRequestMessage"&gt;
+    &lt;part name="name" type="xsd:string"/&gt;
+  &lt;/message&gt;
+
+  &lt;message name="GetAddressFromNameResponseMessage"&gt;
+    &lt;part name="address" type="typens:address"/&gt;
+  &lt;/message&gt;
+
+  &lt;!-- port type declns --&gt;
+  &lt;portType name="AddressBook"&gt;
+    &lt;operation name="addEntry"&gt;
+      &lt;input name="AddEntryWholeNameRequest" message="tns:AddEntryWholeNameRequestMessage"/&gt;
+    &lt;/operation&gt;
+    &lt;operation name="addEntry"&gt;
+      &lt;input name="AddEntryFirstAndLastNamesRequest" message="tns:AddEntryFirstAndLastNamesRequestMessage"/&gt;
+    &lt;/operation&gt;
+    &lt;operation name="getAddressFromName"&gt;
+      &lt;input name="GetAddressFromNameRequest" message="tns:GetAddressFromNameRequestMessage"/&gt;
+      &lt;output name="GetAddressFromNameResponse" message="tns:GetAddressFromNameResponseMessage"/&gt;
+    &lt;/operation&gt;
+  &lt;/portType&gt;
+
+  &lt;!-- binding declns --&gt;
+  &lt;binding name="EJBBinding" type="tns:AddressBook"&gt;
+    &lt;ejb:binding/&gt;
+    &lt;format:typeMapping encoding="Java" style="Java"&gt;
+      &lt;format:typeMap typeName="typens:address" formatType="addressbook.wsiftypes.Address" /&gt;
+      &lt;format:typeMap typeName="xsd:string" formatType="java.lang.String" /&gt;
+    &lt;/format:typeMapping&gt;
+    &lt;operation name="addEntry"&gt;
+      &lt;ejb:operation
+         methodName="addEntry"
+         parameterOrder="name address"
+         interface="remote" /&gt;
+      &lt;input name="AddEntryWholeNameRequest"/&gt;
+    &lt;/operation&gt;
+    &lt;operation name="addEntry"&gt;
+      &lt;ejb:operation
+         methodName="addEntry"
+         parameterOrder="firstName lastName address"
+         interface="remote" /&gt;
+      &lt;input name="AddEntryFirstAndLastNamesRequest"/&gt;
+    &lt;/operation&gt;
+    &lt;operation name="getAddressFromName"&gt;
+      &lt;ejb:operation
+         methodName="getAddressFromName"
+         parameterOrder="name"
+         interface="remote"
+         returnPart="address" /&gt;
+      &lt;input name="GetAddressFromNameRequest"/&gt;
+      &lt;output name="GetAddressFromNameResponse"/&gt;
+    &lt;/operation&gt;
+  &lt;/binding&gt;
+  
+  &lt;!-- service decln --&gt;
+  &lt;service name="AddressBookService"&gt;
+    &lt;port name="EJBPort" binding="tns:EJBBinding"&gt;
+      &lt;ejb:address className="addressbook.wsiftypes.AddressBookHome"
+                       jndiName="/services/addressbook"
+                       initialContextFactory="com.mycompany.server.MyappInitialContext"
+                       jndiProviderURL="ormi://myserver.mycompany.com/ejbsample"/&gt;
+    &lt;/port&gt;
+  &lt;/service&gt;
+
+&lt;/definitions&gt;</pre></tt></p>
+<p>In the above example, an address book service is offered through an EJB. The EJB object is looked up through the specified context factory using the provider URL and lookup name. The service offers two variants of the <tt>addEntry</tt> operation. One takes an input message consisting of a full name and address and the other accepts an input message with a first name and last name (as separate message parts) and an address. Both of these operations are mapped to a java method called <tt>addEntry</tt>, but there are different parameter lists (this is an overloaded method in the implementing class). Finally, the abstract operation <tt>getAddressFromName</tt> is mapped to a java method of the same name. All of these methods are offered through the remote interface of the EJB. The types <tt>typesns:address</tt> and <tt>xsd:string</tt> used during method invocations are mapped to java types <tt>addressbook.wsiftypes.Address</tt> and <tt>java.lang.String</tt> respectively. Note that the type <tt>typesns:phone</tt> does not need to be mapped to a java type since it is contained within the address type which is represented by a known java class. WSIF does not need to know how this class represents the information described in the schema type if that is being done is service invocation. If we needed to inspect the information in the WSIF message and transform it in some way, we would need details on how the java class represents the type information (see the above discussion on the java encoding).</p>
+</body></html>
