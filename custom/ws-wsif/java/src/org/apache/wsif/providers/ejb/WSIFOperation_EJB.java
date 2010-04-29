@@ -274,9 +274,9 @@ public class WSIFOperation_EJB
 
                 if (formatType instanceof Vector) {
                     Vector types = (Vector) formatType;
-                    Enumeration enum = types.elements();
-                    while (enum.hasMoreElements()) {
-                        String type = (String) enum.nextElement();
+                    Enumeration enum_ = types.elements();
+                    while (enum_.hasMoreElements()) {
+                        String type = (String) enum_.nextElement();
                         // Add new fault message information to the map
                         fieldFaultMessageInfos.put(
                             type,
@@ -550,9 +550,9 @@ public class WSIFOperation_EJB
                     if (obj instanceof Vector) {
                         Vector v = (Vector) obj;
                         Vector argv = new Vector();
-                        Enumeration enum = v.elements();
-                        while (enum.hasMoreElements()) {
-                            String cls = (String) enum.nextElement();
+                        Enumeration enum_ = v.elements();
+                        while (enum_.hasMoreElements()) {
+                            String cls = (String) enum_.nextElement();
                             argv.addElement(getClassForName(cls));
                         }
                         methodReturnClass = argv;
@@ -679,9 +679,9 @@ public class WSIFOperation_EJB
                 if (obj instanceof Vector) {
                     Vector v = (Vector) obj;
                     Vector argv = new Vector();
-                    Enumeration enum = v.elements();
-                    while (enum.hasMoreElements()) {
-                        String cls = (String) enum.nextElement();
+                    Enumeration enum_ = v.elements();
+                    while (enum_.hasMoreElements()) {
+                        String cls = (String) enum_.nextElement();
                         argv.addElement(getClassForName(cls));
                     }
                     argTypes.add(argv);

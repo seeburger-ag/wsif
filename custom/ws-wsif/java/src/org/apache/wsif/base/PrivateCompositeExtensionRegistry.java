@@ -105,9 +105,9 @@ class PrivateCompositeExtensionRegistry extends ExtensionRegistry {
         Trc.entry(this, parentType, extensionType);
 
         ExtensionSerializer ser;
-        Enumeration enum = extRegs.elements();
-        while (enum.hasMoreElements()) {
-            ExtensionRegistry reg = (ExtensionRegistry) enum.nextElement();
+        Enumeration enum_ = extRegs.elements();
+        while (enum_.hasMoreElements()) {
+            ExtensionRegistry reg = (ExtensionRegistry) enum_.nextElement();
             try {
                 ser = reg.querySerializer(parentType, extensionType);
                 // Check that we're not looking at the default serializer
@@ -133,9 +133,9 @@ class PrivateCompositeExtensionRegistry extends ExtensionRegistry {
         Trc.entry(this, parentType, elementType);
 
         ExtensionDeserializer deser;
-        Enumeration enum = extRegs.elements();
-        while (enum.hasMoreElements()) {
-            ExtensionRegistry reg = (ExtensionRegistry) enum.nextElement();
+        Enumeration enum_ = extRegs.elements();
+        while (enum_.hasMoreElements()) {
+            ExtensionRegistry reg = (ExtensionRegistry) enum_.nextElement();
             try {
                 deser = reg.queryDeserializer(parentType, elementType);
                 // Check that we're not looking at the default deserializer
@@ -161,9 +161,9 @@ class PrivateCompositeExtensionRegistry extends ExtensionRegistry {
         Trc.entry(this, parentType, elementType);
 
         ExtensibilityElement ee;
-        Enumeration enum = extRegs.elements();
-        while (enum.hasMoreElements()) {
-            ExtensionRegistry reg = (ExtensionRegistry) enum.nextElement();
+        Enumeration enum_ = extRegs.elements();
+        while (enum_.hasMoreElements()) {
+            ExtensionRegistry reg = (ExtensionRegistry) enum_.nextElement();
             try {
                 ee = reg.createExtension(parentType, elementType);
                 Trc.exit(ee);

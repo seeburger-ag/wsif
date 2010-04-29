@@ -221,9 +221,9 @@ public class SchemaTest extends TestCase {
     }
     
     private void checkResult(String wsdl, Hashtable results, Hashtable expected) {
-    	Enumeration enum = expected.keys();
+    	Enumeration enum_ = expected.keys();
     	while(enum.hasMoreElements()) {
-    		QName key = (QName) enum.nextElement();
+    		QName key = (QName) enum_.nextElement();
     		String value = (String) expected.get(key);
     		if (results.containsKey(key)) {
     			String resultVal = (String) results.get(key);

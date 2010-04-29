@@ -222,9 +222,9 @@ public class WSIFJMSProperties extends HashMap {
             put(TIMESTAMP, new Long(message.getJMSTimestamp()));
             put(TYPE, message.getJMSType());
     
-            Enumeration enum = message.getPropertyNames();
-            while (enum.hasMoreElements()) {
-                String name = (String) enum.nextElement();
+            Enumeration enum_ = message.getPropertyNames();
+            while (enum_.hasMoreElements()) {
+                String name = (String) enum_.nextElement();
                 put(name, message.getObjectProperty(name));
             }
         } catch (JMSException je) {
