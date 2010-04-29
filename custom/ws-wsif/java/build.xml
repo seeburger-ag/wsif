@@ -44,6 +44,7 @@ Author:
 <project default="compile" basedir=".">
 
   <target name="init">
+  	<echoproperties/>
     <property name="Name" value="WSIF"/>
     <property name="name" value="wsif"/>
     <property name="dynamic.name" value="wsif-dynamic"/>
