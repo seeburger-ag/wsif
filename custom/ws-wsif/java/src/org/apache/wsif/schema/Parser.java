@@ -503,11 +503,26 @@ public class Parser {
         if (types != null) {
             Iterator extEleIt = types.getExtensibilityElements().iterator();
 
-            while (extEleIt.hasNext()) {
-                UnknownExtensibilityElement typesElement =
-                    (UnknownExtensibilityElement) extEleIt.next();
+            while (extEleIt.hasNext()) 
+            {
+              Element schemaEl = null;
+              Object nextEl = extEleIt.next();
+              
+              if(nextEl instanceof javax.wsdl.extensions.schema.Schema) 
+              {
+                  javax.wsdl.extensions.schema.Schema typesElement = (javax.wsdl.extensions.schema.Schema)nextEl;
+                  schemaEl = typesElement.getElement();
+              } 
+              else if (nextEl instanceof UnknownExtensibilityElement) 
+              {
+                  UnknownExtensibilityElement typesElement = (UnknownExtensibilityElement) nextEl;
+                  schemaEl = typesElement.getElement();
+              } 
+              else 
+              {
+                  continue;
+              }
 
-                Element schemaEl = typesElement.getElement();
                 if (QNameUtils.matches(schema2001, schemaEl)
                     || QNameUtils.matches(schema2000, schemaEl)
                     || QNameUtils.matches(schema1999, schemaEl)) {

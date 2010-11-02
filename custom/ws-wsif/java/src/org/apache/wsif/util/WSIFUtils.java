@@ -505,13 +505,10 @@ public class WSIFUtils {
             Trc.exception(e);
             MessageLogger.log("WSIF.0002E", documentBase);
             throw e;
-        } finally {
-        	try {
-        		if (lo != null) lo.close();
-        	} catch (IOException ioe) {
-        		//ignore
-        		Trc.ignoredException(ioe);
-        	}
+        } 
+        finally 
+        {
+        	if (lo != null) lo.close();
         }
     }
 
@@ -552,13 +549,10 @@ public class WSIFUtils {
             Trc.exception(e);
             MessageLogger.log("WSIF.0002E", wsdlLoc);
             throw e;
-        } finally {
-        	try {
-        		if (lo != null) lo.close();
-        	} catch (IOException ioe) {
-        		//ignore
-        		Trc.ignoredException(ioe);
-        	}
+        } 
+        finally 
+        {
+        	if (lo != null) lo.close();
         }
     }
 

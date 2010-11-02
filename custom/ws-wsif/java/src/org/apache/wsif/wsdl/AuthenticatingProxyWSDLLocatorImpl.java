@@ -303,9 +303,14 @@ public class AuthenticatingProxyWSDLLocatorImpl implements javax.wsdl.xml.WSDLLo
      * Close any Reader or stream objects that have been created
      * @throws IOException If a call to close() on one of the Reader or stream objects fails
      */
-    public void close() throws IOException {
-   		if (baseReader != null) baseReader.close();
-  		if (importInputStream != null) importInputStream.close();
-  		if (baseInputStream != null) baseInputStream.close();
+    public void close()
+    {
+    	try
+    	{
+	   		if (baseReader != null) baseReader.close();
+	  		if (importInputStream != null) importInputStream.close();
+	  		if (baseInputStream != null) baseInputStream.close();
+    	}
+    	catch (Exception e) {};
     }   
 }
