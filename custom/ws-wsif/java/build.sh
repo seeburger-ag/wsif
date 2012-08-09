@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: build.sh,v 1.1.4.1 2010/10/11 09:28:49 schuster Exp $
+# $Id: build.sh,v 1.2 2011/03/28 07:35:04 Neubauer Exp $
 
 # You can set JAVA_HOME to point ot JDK 1.3 
 # or shell will try to deterine java location using which

@@ -1,6 +1,6 @@
 @echo off
 
-REM $Id: build.bat,v 1.1.4.1 2010/10/11 09:28:49 schuster Exp $
+REM $Id: build.bat,v 1.2 2011/03/28 07:35:04 Neubauer Exp $
 REM
 REM REQUIRED: Please make sure that JAVA_HOME points to JDK top level dire
 REM   and make sure that JAVA_HOME\lib contains tools.jar !!!!

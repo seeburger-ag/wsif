@@ -6,7 +6,7 @@ book2menu.xsl generates the HTML menu. It outputs XML/HTML of the form:
   </div>
 which is then merged with other HTML by site2xhtml.xsl
 
-$Id: book2menu.xsl,v 1.2 2011/03/28 07:35:04 Neubauer Exp $
+$Id: book2menu.xsl,v 1.2.2.1 2012/08/09 14:05:56 kolev Exp $
 -->
 
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">

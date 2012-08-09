@@ -10,7 +10,7 @@ ext: return the last extension of the filename in a path
 filename-noext: return the file part of a path without its last extension
 
 @author Jeff Turner <jefft@apache.org>
-$Id: pathutils.xsl,v 1.2 2011/03/28 07:35:04 Neubauer Exp $
+$Id: pathutils.xsl,v 1.2.2.1 2012/08/09 14:05:56 kolev Exp $
 -->
 
 <!-- Returns the directory part of a path.  Equivalent to Unix 'dirname'.
