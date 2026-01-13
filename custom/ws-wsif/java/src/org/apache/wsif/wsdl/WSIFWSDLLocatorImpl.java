@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.net.URI;
 import java.net.URL;
 
 import org.apache.wsif.logging.Trc;
@@ -104,7 +105,7 @@ public class WSIFWSDLLocatorImpl implements javax.wsdl.xml.WSDLLocator, Closable
                             if (wsdlLocation.indexOf(":") == -1) 
                                 url = new URL("file", null, wsdlLocation); 
                             else 
-                                url = new URL(wsdlLocation); 
+                                url = URI.create(wsdlLocation).toURL(); 
                         } 
                         String wsdlRelativeLocation = url.getPath(); 
                         if (wsdlRelativeLocation.startsWith("/")) 

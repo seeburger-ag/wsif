@@ -57,7 +57,8 @@ import com.ibm.wsdl.extensions.PopulatedExtensionRegistry;
  */
 
 class PrivateCompositeExtensionRegistry extends ExtensionRegistry {
-	private static final long serialVersionUID = 1L;
+    @Serial
+    private static final long serialVersionUID = 1L;
     private Vector extRegs = new Vector();
 
     PrivateCompositeExtensionRegistry() {

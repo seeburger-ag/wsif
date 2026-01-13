@@ -263,13 +263,13 @@ public class DynamicInvoker {
                 if (c.equals(String.class)) {
                     value = arg;
                 } else if (c.equals(Double.TYPE)) {
-                    value = new Double(arg);
+                    value = Double.valueOf(arg);
                 } else if (c.equals(Float.TYPE)) {
-                    value = new Float(arg);
+                    value = Float.valueOf(arg);
                 } else if (c.equals(Integer.TYPE)) {
-                    value = new Integer(arg);
+                    value = Integer.valueOf(arg);
                 } else if (c.equals(Boolean.TYPE)) {
-                    value = new Boolean(arg);
+                    value = Boolean.valueOf(arg);
                 } else {
                     throw new RuntimeException("not know how to convert '" + arg + "' into " + c);
                 }

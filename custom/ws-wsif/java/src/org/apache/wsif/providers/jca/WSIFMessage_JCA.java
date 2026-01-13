@@ -36,7 +36,8 @@ import javax.wsdl.*;
 
 public class WSIFMessage_JCA extends org.apache.wsif.base.WSIFDefaultMessage implements javax.resource.cci.Record {
 
-	private static final long serialVersionUID = 1L;
+    @Serial
+    private static final long serialVersionUID = 1L;
 	public static final int INPUT_MESSAGE = 1;
 	public static final int OUTPUT_MESSAGE = 2;
 	public static final int FAULT_MESSAGE = 3;

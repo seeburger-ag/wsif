@@ -35,7 +35,8 @@ import javax.xml.namespace.QName;
 public class InstanceEstablishment
     implements ExtensibilityElement, java.io.Serializable {
 
-	private static final long serialVersionUID = 1L;
+    @Serial
+    private static final long serialVersionUID = 1L;
         
     protected QName elementType = InstanceConstants.Q_ELEM_ESTABLISHMENT;
     // Uses the wrapper type so we can tell if it was set or not.

@@ -162,11 +162,11 @@ public class WSIFDefaultMapper implements WSIFMapper {
                 arrays.add(st);
             } else {
                 // Deal with elements
-                if (st instanceof ElementType) {
-                    QName baseType = ((ElementType) st).getElementType();
+                if (st instanceof ElementType type) {
+                    QName baseType = type.getElementType();
 
                     if (baseType != null) {
-                        if (((ElementType) st).isNillable()) {
+                        if (type.isNillable()) {
                             String wrapperClass = getWrapperClassName(baseType);
                             if (wrapperClass != null) {
                                 table.put(typeName, wrapperClass);
@@ -310,8 +310,8 @@ public class WSIFDefaultMapper implements WSIFMapper {
                 continue;
 
             QName baseType = null;
-            if (st instanceof ElementType) {
-                baseType = ((ElementType) st).getElementType();
+            if (st instanceof ElementType type) {
+                baseType = type.getElementType();
             }
             if (baseType != null) {
                 String baseClassName = (String) typeMappings.get(baseType);

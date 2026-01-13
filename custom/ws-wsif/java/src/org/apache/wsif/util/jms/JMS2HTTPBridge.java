@@ -30,6 +30,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -123,8 +124,8 @@ public class JMS2HTTPBridge {
             readQueue,
             httpURL,
             startType,
-            new Integer(syncTimeout),
-            new Boolean(verbose));
+            Integer.valueOf(syncTimeout),
+            Boolean.valueOf(verbose));
 
         if (verbose)
             System.out.println(
@@ -231,7 +232,7 @@ public class JMS2HTTPBridge {
                 httpURL = args[idx];
             } else if (args[idx].equals("-t")) {
                 idx++;
-                syncTimeout = new Integer(args[idx]).intValue();
+                syncTimeout = Integer.valueOf(args[idx]).intValue();
             } else if (args[idx].equals("-v")) {
                 verbose = true;
             } else
@@ -279,15 +280,15 @@ public class JMS2HTTPBridge {
             if (verbose)
                 System.out.println("JMS2HTTPBridge Caught a message!");
 
-            if (msg instanceof TextMessage) {
-                String body = ((TextMessage) msg).getText();
+            if (msg instanceof TextMessage message) {
+                String body = message.getText();
                 if (body != null) {
                     if (verbose)
                         System.out.println(
                             "JMS2HTTPBridge Message contained '" + body + "'");
 
                     String url = getServiceURL(msg);
-                    URL tmpUrl = new URL(url);
+                    URL tmpUrl = URI.create(url).toURL();
                     String host = tmpUrl.getHost();
                     int port = tmpUrl.getPort();
 
@@ -427,10 +428,10 @@ public class JMS2HTTPBridge {
             url,
             otherHeaders,
             host,
-            new Integer(port),
+            Integer.valueOf(port),
             useFullURL,
             ct,
-            new Long(cl),
+            Long.valueOf(cl),
             action);
 
         String userID = null;
@@ -488,7 +489,7 @@ public class JMS2HTTPBridge {
 
         // byte[] request = reqEnv.getBytes();
         header.append(HTTPConstants.HEADER_POST).append(" ").append(
-            new URL(url).getFile());
+            URI.create(url).toURL().getFile());
 
         //        Message reqMessage = msgContext.getRequestMessage();
 
@@ -873,7 +874,7 @@ public class JMS2HTTPBridge {
                         tmp = tmp.substring(0, end);
                     }
                     returnCode = Integer.parseInt(tmp);
-                    statusCode = new Integer(returnCode);
+                    statusCode = Integer.valueOf(returnCode);
                     //                    msgContext.setProperty(HTTPConstants.MC_HTTP_STATUS_CODE,
                     //                            new Integer(returnCode));
                     statusMessage = name.substring(start + end + 1);
@@ -1004,7 +1005,7 @@ public class JMS2HTTPBridge {
         int cl = 0;
         if (contentLength != null)
             try {
-                cl = new Integer(contentLength).intValue();
+                cl = Integer.valueOf(contentLength).intValue();
             } catch (Exception e) {
                 Trc.ignoredException(e);
             }

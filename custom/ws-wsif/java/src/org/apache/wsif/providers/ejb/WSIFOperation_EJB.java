@@ -74,7 +74,8 @@ public class WSIFOperation_EJB
     extends WSIFDefaultOperation
     implements WSIFOperation {
 
-	private static final long serialVersionUID = 1L;
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     protected javax.wsdl.Port fieldPortModel;
     protected WSIFPort_EJB fieldPort;
@@ -129,8 +130,7 @@ public class WSIFOperation_EJB
             fieldEJBOperationModel =
                 (EJBOperation) fieldBindingOperationModel
                     .getExtensibilityElements()
-                    .get(
-                    0);
+                    .getFirst();
         } catch (Exception e) {
         	Trc.exception(e);
             throw new WSIFException(
@@ -272,8 +272,7 @@ public class WSIFOperation_EJB
                             + "' not found in document");
                 }
 
-                if (formatType instanceof Vector) {
-                    Vector types = (Vector) formatType;
+                if (formatType instanceof Vector types) {
                     Enumeration enum_ = types.elements();
                     while (enum_.hasMoreElements()) {
                         String type = (String) enum_.nextElement();
@@ -338,8 +337,7 @@ public class WSIFOperation_EJB
                     }
                 }
                 if (!tryAMap) {
-                    if (retClass != null && retClass instanceof Vector) {
-                        Vector vec = (Vector) retClass;
+                    if (retClass != null && retClass instanceof Vector vec) {
                         boolean found = false;
                         for (int p = 0; p < vec.size(); p++) {
                             Class cl = (Class) vec.get(p);
@@ -365,8 +363,7 @@ public class WSIFOperation_EJB
                 boolean match = true;
                 for (int j = 0; j < params.length; j++) {
                     Object obj = args[j];
-                    if (obj instanceof Vector) {
-                        Vector vec = (Vector) obj;
+                    if (obj instanceof Vector vec) {
                         boolean found = false;
                         for (int p = 0; p < vec.size(); p++) {
                             Class cl = (Class) vec.get(p);
@@ -439,8 +436,8 @@ public class WSIFOperation_EJB
          */
         while (bindingIterator.hasNext()) {
             Object next = bindingIterator.next();
-            if (next instanceof TypeMapping) {
-                typeMapping = (TypeMapping) next;
+            if (next instanceof TypeMapping mapping) {
+                typeMapping = mapping;
                 if (("Java".equals(typeMapping.getEncoding())
                     || "EJB".equals(typeMapping.getEncoding()))
                     && "Java".equals(typeMapping.getStyle()))
@@ -474,8 +471,8 @@ public class WSIFOperation_EJB
                 if (fieldTypeMaps.containsKey(typeName)) {
                     Vector v = null;
                 	Object obj = fieldTypeMaps.get(typeName);                	
-                	if (obj instanceof Vector) {
-                		v = (Vector) obj;
+                	if (obj instanceof Vector vector) {
+                		v = vector;
                 	} else {
                 		v = new Vector();
 	                    v.addElement(obj);
@@ -547,8 +544,7 @@ public class WSIFOperation_EJB
                                 + returnPart.getName() == null 
                                     ? "<null>" : returnPart.getName());
                                 
-                    if (obj instanceof Vector) {
-                        Vector v = (Vector) obj;
+                    if (obj instanceof Vector v) {
                         Vector argv = new Vector();
                         Enumeration enum_ = v.elements();
                         while (enum_.hasMoreElements()) {
@@ -676,8 +672,7 @@ public class WSIFOperation_EJB
                             + " to a java type. Part name was "
                             + part.getName() == null ? "<null>" : part.getName());
                 
-                if (obj instanceof Vector) {
-                    Vector v = (Vector) obj;
+                if (obj instanceof Vector v) {
                     Vector argv = new Vector();
                     Enumeration enum_ = v.elements();
                     while (enum_.hasMoreElements()) {
@@ -716,7 +711,7 @@ public class WSIFOperation_EJB
                         && returnPart != null
                         && partName.equals(returnPart)) {
                         // Put return part first in the list
-                        argNames.add(0, partName);
+                        argNames.addFirst(partName);
                     } else {
                         argNames.add((String) part.getName());
                     }
@@ -1112,9 +1107,9 @@ public class WSIFOperation_EJB
                                         // message. If not, throw an exception to say the map
                                         // does not contain the missing part.
                                         if (returnClass != null
-                                            && returnClass instanceof Class
+                                            && returnClass instanceof Class class1
                                             && Map.class.isAssignableFrom(
-                                                (Class) returnClass)) {
+                                                class1)) {
                                             Map m = new HashMap();
                                             m.put(
                                                 fieldOutParameterNames[0],

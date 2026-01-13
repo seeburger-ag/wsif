@@ -49,7 +49,8 @@ import org.apache.wsif.wsdl.extensions.jms.JMSConstants;
  * @author <a href="mailto:antelder@apache.org">Ant Elder</a>
  */
 public class JMSMessage extends WSIFDefaultMessage {
-	private static final long serialVersionUID = 1L;
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     // FIXME Derive these constants from Format Binding?
     private static String XML_ENCODING = "XML";
@@ -151,10 +152,10 @@ public class JMSMessage extends WSIFDefaultMessage {
         if (!isCorrectMessageType(message))
             throw new WSIFException("Incorrect message type");
 
-        if (message instanceof javax.jms.TextMessage)
-            write((javax.jms.TextMessage) message);
-        else if (message instanceof javax.jms.ObjectMessage)
-            write((javax.jms.ObjectMessage) message);
+        if (message instanceof javax.jms.TextMessage textMessage)
+            write(textMessage);
+        else if (message instanceof javax.jms.ObjectMessage objectMessage)
+            write(objectMessage);
         else
             throw new WSIFException(
                 "Unsupported Message Type: " + message.getClass().getName());
@@ -396,10 +397,10 @@ public class JMSMessage extends WSIFDefaultMessage {
         if (!isCorrectMessageType(message))
             throw new WSIFException("Incorrect message type");
 
-        if (message instanceof javax.jms.TextMessage)
-            read((javax.jms.TextMessage) message);
-        else if (message instanceof javax.jms.ObjectMessage)
-            read((javax.jms.ObjectMessage) message);
+        if (message instanceof javax.jms.TextMessage textMessage)
+            read(textMessage);
+        else if (message instanceof javax.jms.ObjectMessage objectMessage)
+            read(objectMessage);
         else
             throw new WSIFException(
                 "Unsupported Message Type: " + message.getClass().getName());
@@ -586,11 +587,9 @@ public class JMSMessage extends WSIFDefaultMessage {
                 return;
 
             // Check to see if it is a known format
-            if (object instanceof java.util.Map) {
+            if (object instanceof java.util.Map map) {
                 // Need to make the message mutable			
                 message.clearBody();
-
-                java.util.Map map = (java.util.Map) object;
 
                 // Cycle through the parts of the model
                 for (int i = 0; i < partNames.length; i++) {
@@ -682,8 +681,7 @@ public class JMSMessage extends WSIFDefaultMessage {
         while (iterator.hasNext()) {
             javax.wsdl.extensions.ExtensibilityElement ee =
                 (javax.wsdl.extensions.ExtensibilityElement) iterator.next();
-            if (ee instanceof TypeMapping) {
-                TypeMapping typeMapping = (TypeMapping) ee;
+            if (ee instanceof TypeMapping typeMapping) {
                 String s = typeMapping.getEncoding();
                 Trc.exit(s);
                 return s;
@@ -760,8 +758,7 @@ public class JMSMessage extends WSIFDefaultMessage {
         while (iterator.hasNext()) {
             javax.wsdl.extensions.ExtensibilityElement ee =
                 (javax.wsdl.extensions.ExtensibilityElement) iterator.next();
-            if (ee instanceof JMSBinding) {
-                JMSBinding jmsBinding = (JMSBinding) ee;
+            if (ee instanceof JMSBinding jmsBinding) {
                 int type = jmsBinding.getJmsMessageType();
                 Trc.exit(type);
                 return type;

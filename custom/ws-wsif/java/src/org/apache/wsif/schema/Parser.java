@@ -161,7 +161,7 @@ public class Parser {
         boolean includeStandardMappings,        
         WSDLLocator loc) throws WSIFException {
 
-		Trc.entry(null, def, table, new Boolean(includeStandardMappings), loc);
+		Trc.entry(null, def, table, Boolean.valueOf(includeStandardMappings), loc);
 		if (loc == null) {
 			loc = new WSIFWSDLLocatorImpl((String) null, (String) null, null);
 		}
@@ -231,11 +231,11 @@ public class Parser {
                         arrays.add(st);
                     } else {
                     	// Deal with elements
-                        if (st instanceof ElementType) {
-                            QName baseType = ((ElementType) st).getElementType();
+                        if (st instanceof ElementType type) {
+                            QName baseType = type.getElementType();
 
                             if (baseType != null) {
-                            	if (((ElementType) st).isNillable()) {
+                            	if (type.isNillable()) {
                                 	String wrapperClass = getWrapperClassName(baseType);
                                 	if (wrapperClass != null) {
                                 		table.put(typeName, wrapperClass);
@@ -369,8 +369,8 @@ public class Parser {
                 continue;
 
             QName baseType = null;
-            if (st instanceof ElementType) {
-                baseType = ((ElementType) st).getElementType();
+            if (st instanceof ElementType type) {
+                baseType = type.getElementType();
             }
             if (baseType != null) {
                 String baseClassName = (String) table.get(baseType);
@@ -508,14 +508,12 @@ public class Parser {
               Element schemaEl = null;
               Object nextEl = extEleIt.next();
               
-              if(nextEl instanceof javax.wsdl.extensions.schema.Schema) 
+              if(nextEl instanceof javax.wsdl.extensions.schema.Schema typesElement) 
               {
-                  javax.wsdl.extensions.schema.Schema typesElement = (javax.wsdl.extensions.schema.Schema)nextEl;
                   schemaEl = typesElement.getElement();
               } 
-              else if (nextEl instanceof UnknownExtensibilityElement) 
+              else if (nextEl instanceof UnknownExtensibilityElement typesElement) 
               {
-                  UnknownExtensibilityElement typesElement = (UnknownExtensibilityElement) nextEl;
                   schemaEl = typesElement.getElement();
               } 
               else 
@@ -613,8 +611,8 @@ public class Parser {
             }
         } catch (Exception e) {
         	Trc.exception(e);
-        	if (e instanceof WSIFException) {
-        		throw (WSIFException) e;
+        	if (e instanceof WSIFException exception) {
+        		throw exception;
         	} else {
         		throw new WSIFException("Error when getting imported schemas", e);
         	}

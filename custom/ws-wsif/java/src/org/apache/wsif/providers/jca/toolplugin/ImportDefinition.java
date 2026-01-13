@@ -35,7 +35,8 @@ import javax.wsdl.*;
  */
 public class ImportDefinition implements java.io.Serializable {
 
-	private static final long serialVersionUID = 1L;
+    @Serial
+    private static final long serialVersionUID = 1L;
 	private Definition fieldDefinition = null;
 	private ImportXSD[] fieldImportXSDs = null;
 	private ImportResource[] fieldImportResources = null;

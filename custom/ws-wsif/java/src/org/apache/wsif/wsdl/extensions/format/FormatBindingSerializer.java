@@ -51,7 +51,8 @@ public class FormatBindingSerializer
         javax.wsdl.extensions.ExtensionDeserializer,
         javax.wsdl.extensions.ExtensionSerializer,
         Serializable {
-	private static final long serialVersionUID = 1L;
+    @Serial
+    private static final long serialVersionUID = 1L;
     /**
      * ConnectorBindingSerializer constructor comment.
      */
@@ -79,8 +80,7 @@ public class FormatBindingSerializer
             return;
         }
 
-        if (extension instanceof TypeMapping) {
-            TypeMapping typeMapping = (TypeMapping) extension;
+        if (extension instanceof TypeMapping typeMapping) {
             pw.print("         <format:typeMapping");
 
             String style = typeMapping.getStyle();

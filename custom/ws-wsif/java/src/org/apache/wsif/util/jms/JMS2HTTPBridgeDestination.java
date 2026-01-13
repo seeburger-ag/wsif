@@ -65,9 +65,9 @@ public class JMS2HTTPBridgeDestination extends WSIFJMSDestination {
             this,
             finder,
             altDestName,
-            new Long(timeout),
+            Long.valueOf(timeout),
             startType,
-            new Boolean(verbose));
+            Boolean.valueOf(verbose));
 
         this.verbose = verbose;
         

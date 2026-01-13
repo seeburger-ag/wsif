@@ -33,7 +33,8 @@ import org.apache.wsif.WSIFCorrelationId;
  * @author Ant Elder <ant.elder@uk.ibm.com>
  */
 public class WSIFJMSCorrelationId implements WSIFCorrelationId {
-	private static final long serialVersionUID = 1L;
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     private String id;
 
@@ -78,8 +79,8 @@ public class WSIFJMSCorrelationId implements WSIFCorrelationId {
      *         otherwise false;
      */
     public boolean equals(Object cid) {
-        if (cid != null && cid instanceof WSIFCorrelationId) {
-            return this.id.equals(((WSIFCorrelationId) cid).getCorrelationId());
+        if (cid != null && cid instanceof WSIFCorrelationId correlationId) {
+            return this.id.equals(correlationId.getCorrelationId());
         } else {
             return false;
         }

@@ -60,8 +60,9 @@ import org.apache.wsif.providers.WSIFDynamicTypeMap;
  * @author Alekander Slominski
  */
 public class WSIFPort_SoapRMI extends WSIFDefaultPort {
-	
-	private static final long serialVersionUID = 1L;
+
+    @Serial
+    private static final long serialVersionUID = 1L;
 	
     protected Map operationInstances = new HashMap();
 
@@ -204,7 +205,7 @@ public class WSIFPort_SoapRMI extends WSIFDefaultPort {
                 if (encodingStyles != null) {
                     if (encodingStyles.size() == 0) {
                     }
-                    opInst.setInputEncodingStyle((String) encodingStyles.get(0));
+                    opInst.setInputEncodingStyle((String) encodingStyles.getFirst());
                     // quietly ignore if encodingStyles.size() > 1 ...
                 }
                 List parts = soapInputBody.getParts();
@@ -237,7 +238,7 @@ public class WSIFPort_SoapRMI extends WSIFDefaultPort {
                 //List encodingStyles = soapInputBody.getEncodingStyles();
                 List parts = soapInputBody.getParts();
                 if (parts != null && parts.size() > 0) {
-                    opInst.setReturnName((String) parts.get(0));
+                    opInst.setReturnName((String) parts.getFirst());
                 }
             }
             soapHeader =

@@ -438,7 +438,7 @@ public class WSIFJavaTestCaseWriter extends JavaClassWriter {
                 emitter.getCurrentDefinition(),
                 parts,
                 op.getName() + "Response");
-            Part p = (Part) parts.get(0);
+            Part p = (Part) parts.getFirst();
             returnPartName = p.getName();
             if (JavaUtils.isJavaKeyword(returnPartName)) {
                 returnPartName = "_" + returnPartName;

@@ -32,7 +32,8 @@ import javax.xml.namespace.QName;
  * @author Jeremy Hughes <hughesj@apache.org>
  */
 public class TypeMap implements java.io.Serializable, ExtensibilityElement {
-    
+
+    @Serial
     private static final long serialVersionUID = 1L;
     
     protected QName fieldElementType =

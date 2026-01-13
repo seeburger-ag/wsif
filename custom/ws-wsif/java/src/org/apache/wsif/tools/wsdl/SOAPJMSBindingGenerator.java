@@ -89,8 +89,7 @@ public class SOAPJMSBindingGenerator extends ModelBindingGenerator {
         List extEls = b.getExtensibilityElements();
         for (Iterator i = extEls.iterator(); !wanted && i.hasNext();) {
             Object o = i.next();
-            if (o instanceof SOAPBinding) {
-                SOAPBinding sb = (SOAPBinding) o;
+            if (o instanceof SOAPBinding sb) {
                 if (JMSConstants.NS_URI_SOAPJMS.equals(sb.getTransportURI())) {
                     wanted = false;
                 } else {
@@ -138,8 +137,8 @@ public class SOAPJMSBindingGenerator extends ModelBindingGenerator {
         List ees = oldBinding.getExtensibilityElements();
         for (Iterator i = ees.iterator(); i.hasNext();) {
             ExtensibilityElement ee = (ExtensibilityElement) i.next();
-            if (ee instanceof SOAPBinding) {
-                ee = createSOAPJMSBinding((SOAPBinding) ee);
+            if (ee instanceof SOAPBinding binding) {
+                ee = createSOAPJMSBinding(binding);
             }
             newBinding.addExtensibilityElement(ee);
         }

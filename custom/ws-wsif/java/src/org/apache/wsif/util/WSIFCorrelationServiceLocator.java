@@ -66,8 +66,8 @@ public class WSIFCorrelationServiceLocator {
         try {
             Context ctx = new InitialContext();
             Object o = ctx.lookup(WSIFConstants.CORRELATION_SERVICE_NAMESPACE);
-            if (o != null && o instanceof WSIFCorrelationService) {
-                cs = (WSIFCorrelationService) o;
+            if (o != null && o instanceof WSIFCorrelationService service) {
+                cs = service;
             }
         } catch (Exception ex) {
             Trc.ignoredException(ex);

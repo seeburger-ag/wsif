@@ -87,7 +87,8 @@ public class WSIFOperation_Jms
 	extends WSIFDefaultOperation
 	implements WSIFOperation {
 
-	private static final long serialVersionUID = 1L;
+    @Serial
+    private static final long serialVersionUID = 1L;
 
 	protected Port fieldBasePort;
 	protected BindingOperation fieldBindingOperation;
@@ -659,14 +660,12 @@ public class WSIFOperation_Jms
 		Iterator it = bindingFault.getExtensibilityElements().iterator();
 		while (it.hasNext()) {
 			Object ele = it.next();
-			if (ele instanceof JMSFaultIndicator) {
-				JMSFaultIndicator indic = (JMSFaultIndicator) ele;
+			if (ele instanceof JMSFaultIndicator indic) {
 				List fProps = indic.getJMSFaultProperties();
 				Iterator itFProp = fProps.iterator();
 				while (itFProp.hasNext()) {
 					Object next = itFProp.next();
-					if (next instanceof JMSFaultProperty) {
-						JMSFaultProperty fProp = (JMSFaultProperty) next;
+					if (next instanceof JMSFaultProperty fProp) {
 						String partName = fProp.getPart();
 						String propName = fProp.getName();
 
@@ -680,8 +679,7 @@ public class WSIFOperation_Jms
 							}
 					}
 				}
-			} else if (ele instanceof JMSProperty) {
-				JMSProperty prop = (JMSProperty) ele;
+			} else if (ele instanceof JMSProperty prop) {
 				String partName = prop.getPart();
 				String propName = prop.getName();
 
@@ -798,15 +796,15 @@ public class WSIFOperation_Jms
 				while (inputIterator.hasNext()) {
 					ExtensibilityElement ele =
 						(ExtensibilityElement) inputIterator.next();
-					if (ele instanceof JMSInput) {
-						fieldInput = (JMSInput) ele;
-					} else if (ele instanceof JMSProperty) {
+					if (ele instanceof JMSInput input) {
+						fieldInput = input;
+					} else if (ele instanceof JMSProperty property) {
 						fieldInputJmsProperties.put(
-							((JMSProperty) ele).getPart(),
-							((JMSProperty) ele).getName());
-					} else if (ele instanceof JMSPropertyValue) {
+							property.getPart(),
+							property.getName());
+					} else if (ele instanceof JMSPropertyValue value) {
 						fieldInputJmsPropertyValues.put(
-							((JMSPropertyValue) ele).getName(),
+							value.getName(),
 							ele);
 					}
 				}
@@ -825,12 +823,12 @@ public class WSIFOperation_Jms
 				while (outputIterator.hasNext()) {
 					ExtensibilityElement ele =
 						(ExtensibilityElement) outputIterator.next();
-					if (ele instanceof JMSOutput) {
-						fieldOutput = (JMSOutput) ele;
-					} else if (ele instanceof JMSProperty) {
+					if (ele instanceof JMSOutput output) {
+						fieldOutput = output;
+					} else if (ele instanceof JMSProperty property) {
 						fieldOutputProperties.put(
-							((JMSProperty) ele).getPart(),
-							((JMSProperty) ele).getName());
+							property.getPart(),
+							property.getName());
 					}
 				}
 
@@ -1089,10 +1087,10 @@ public class WSIFOperation_Jms
     		List extEls = bout.getExtensibilityElements();
     		for (Iterator i = extEls.iterator(); i.hasNext(); ) {
     			ExtensibilityElement ele = (ExtensibilityElement) i.next();
-				if (ele instanceof JMSProperty) {
+				if (ele instanceof JMSProperty property) {
     				jmsProperties.put(
-    				    ((JMSProperty) ele).getPart(),
-						((JMSProperty) ele).getName());
+    				    property.getPart(),
+						property.getName());
 				}
 			}
 		}

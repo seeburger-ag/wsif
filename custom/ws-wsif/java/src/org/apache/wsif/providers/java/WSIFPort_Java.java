@@ -68,6 +68,7 @@ import org.apache.wsif.wsdl.extensions.java.JavaAddress;
  */
 public class WSIFPort_Java extends WSIFDefaultPort implements Serializable {
 
+    @Serial
     private static final long serialVersionUID = 1L;
 
     private Definition fieldDefinition;
@@ -218,8 +219,7 @@ public class WSIFPort_Java extends WSIFDefaultPort implements Serializable {
         if (serviceObjectClass == null) {
 
             ExtensibilityElement portExtension =
-                (ExtensibilityElement) fieldPortModel.getExtensibilityElements().get(
-                    0);
+                (ExtensibilityElement) fieldPortModel.getExtensibilityElements().getFirst();
 
             if (portExtension == null) {
                 throw new WSIFException("missing port extension");
@@ -333,8 +333,8 @@ public class WSIFPort_Java extends WSIFDefaultPort implements Serializable {
         // Ignore any other typeMap's that have other encodings and styles.
         while (bindingIterator.hasNext()) {
             Object next = bindingIterator.next();
-            if (next instanceof TypeMapping) {
-                typeMapping = (TypeMapping) next;
+            if (next instanceof TypeMapping mapping) {
+                typeMapping = mapping;
                 if ("Java".equals(typeMapping.getEncoding())
                     && "Java".equals(typeMapping.getStyle())) {
                     break;
@@ -366,8 +366,8 @@ public class WSIFPort_Java extends WSIFDefaultPort implements Serializable {
                 if (fieldTypeMaps.containsKey(typeName)) {
                     Vector v = null;
                     Object obj = fieldTypeMaps.get(typeName);
-                    if (obj instanceof Vector) {
-                        v = (Vector) obj;
+                    if (obj instanceof Vector vector) {
+                        v = vector;
                     } else {
                         v = new Vector();
                         v.addElement(obj);

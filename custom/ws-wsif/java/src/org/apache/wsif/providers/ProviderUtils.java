@@ -86,10 +86,9 @@ public class ProviderUtils {
     			((Object[]) ret)[i] = temp;
     		}
     		return ret;
-    	} else if (obj instanceof String) {
-    		String s = (String) obj;
+    	} else if (obj instanceof String s) {
     		if (s.length() == 1) {
-    			ret = new Character(s.charAt(0));
+    			ret = Character.valueOf(s.charAt(0));
     			return ret;
     		} else {
     			throw new WSIFException("String is longer than 1 character");
@@ -138,10 +137,9 @@ public class ProviderUtils {
     			}
     		}
     		return ret;
-    	} else if (obj instanceof String) {
-    		String s = (String) obj;
+    	} else if (obj instanceof String s) {
     		if (s.length() == 1) {
-    			ret = new Character(s.charAt(0));
+    			ret = Character.valueOf(s.charAt(0));
     			return ret;
     		} else {
     			throw new WSIFException("String is longer than 1 character");
@@ -212,11 +210,10 @@ public class ProviderUtils {
 	 */
     protected static Object charArrayToStringArray(Object obj, Object ret) throws WSIFException {
     	if (obj.getClass().isArray()) {
-    		if (obj instanceof char[]) {
-    			char[] ca = (char[]) obj;
+    		if (obj instanceof char[] ca) {
     			Character[] chra = new Character[ca.length];
     			for (int j=0; j<ca.length; j++) {
-    				chra[j] = new Character(ca[j]);
+    				chra[j] = Character.valueOf(ca[j]);
     			}
     			obj = chra;
     		}    		
@@ -248,7 +245,7 @@ public class ProviderUtils {
     public static Character stringToCharacter(String str) {
         if (str.length() != 1)
             return null;
-        return new Character(str.charAt(0));
+        return Character.valueOf(str.charAt(0));
     }
 
 	/**
@@ -265,23 +262,23 @@ public class ProviderUtils {
 			return null;
 		} else if (cls.isPrimitive()) {
 			if (cls.getName().equals("int")) {
-				return new Integer(0);
+				return Integer.valueOf(0);
 			} else if (cls.getName().equals("char")) {
-				return new Character('0');
+				return Character.valueOf('0');
 			} else if (cls.getName().equals("long")) {
-				return new Long(0);
+				return Long.valueOf(0);
 			} else if (cls.getName().equals("short")) {
 				short s = 0;
-				return new Short(s);
+				return Short.valueOf(s);
 			} else if (cls.getName().equals("double")) {
-				return new Double(0);
+				return Double.valueOf(0);
 			} else if (cls.getName().equals("boolean")) {
-				return new Boolean(false);
+				return Boolean.valueOf(false);
 			} else if (cls.getName().equals("byte")) {
 				byte b = 0;
-				return new Byte(b);
+				return Byte.valueOf(b);
 			} else {
-				return new Float(0);
+				return Float.valueOf(0);
 			}
 		} else {
 			return null;
@@ -410,7 +407,7 @@ public class ProviderUtils {
     	if (children == null || children.size() < 1) {
        	    ct = getComplexType(l, et.getElementType() );
 	    } else {
-	        ct = (ComplexType) children.get(0);
+	        ct = (ComplexType) children.getFirst();
     	}
         if (ct == null) {
 	        throw new WSIFException("cannot find complex type from ElementType: " + et);
@@ -441,10 +438,10 @@ public class ProviderUtils {
     	ElementType et = null;
 		for (int i=0; i<l.size() && et==null; i++ ){
 			Object o = l.get(i);
-			if ( o instanceof ElementType ) {
-                QName etQN = ((ElementType)o).getTypeName();
+			if ( o instanceof ElementType type ) {
+                QName etQN = type.getTypeName();
 				if ( qn.equals(etQN) ){
-					et = (ElementType)o;
+					et = type;
 				}
 			}
 		}
@@ -457,9 +454,9 @@ public class ProviderUtils {
     		String name = type.getLocalPart();
 	    	for (int i=0; i<l.size() && ct==null; i++ ) {
 		    	Object o = l.get(i);
-		    	if (o instanceof ComplexType) {
-    			    if (name.equals(  ((ComplexType)o).getTypeName().getLocalPart() )){
-	    			    ct = (ComplexType)o;
+		    	if (o instanceof ComplexType complexType) {
+    			    if (name.equals(  complexType.getTypeName().getLocalPart() )){
+	    			    ct = complexType;
 		    	    }
 		    	}
 		    }

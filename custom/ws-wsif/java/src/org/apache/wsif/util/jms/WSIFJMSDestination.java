@@ -91,7 +91,7 @@ public class WSIFJMSDestination {
     public WSIFJMSDestination(WSIFJMSFinder finder, long timeout)
         throws WSIFException {
         this(finder, null, timeout);
-        Trc.entry(this, finder, new Long(timeout));
+        Trc.entry(this, finder, Long.valueOf(timeout));
         Trc.exit();
     }
 
@@ -106,7 +106,7 @@ public class WSIFJMSDestination {
         String altDestName,
         long timeout)
         throws WSIFException {
-        Trc.entry(this, finder, altDestName, new Long(timeout));
+        Trc.entry(this, finder, altDestName, Long.valueOf(timeout));
 
         inProps = new WSIFJMSProperties(WSIFJMSProperties.IN);
         outProps = new WSIFJMSProperties(WSIFJMSProperties.OUT);
@@ -341,8 +341,8 @@ public class WSIFJMSDestination {
         Message msg = receive(id, timeout);
         String s = null;
         try {
-            if (msg instanceof TextMessage)
-                s = ((TextMessage) msg).getText();
+            if (msg instanceof TextMessage message)
+                s = message.getText();
             else
                 throw new WSIFException(
                     "Reply message was not a TextMessage:msg="
@@ -548,7 +548,7 @@ public class WSIFJMSDestination {
 
     public static Message createMessage(Session session, int msgType)
         throws WSIFException {
-        Trc.entry(null, session, new Integer(msgType));
+        Trc.entry(null, session, Integer.valueOf(msgType));
         Message jmsMsg = null;
 
         try {

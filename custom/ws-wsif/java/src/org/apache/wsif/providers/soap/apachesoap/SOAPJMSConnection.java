@@ -93,13 +93,13 @@ public class SOAPJMSConnection implements SOAPTransport {
 
     public long getSyncTimeout() {
         Trc.entry(this);
-        Trc.exit(new Long(syncTimeout));
+        Trc.exit(Long.valueOf(syncTimeout));
         return syncTimeout;
     }
 
     public long getAsyncTimeout() {
         Trc.entry(this);
-        Trc.exit(new Long(asyncTimeout));
+        Trc.exit(Long.valueOf(asyncTimeout));
         return asyncTimeout;
     }
 
@@ -249,13 +249,13 @@ public class SOAPJMSConnection implements SOAPTransport {
     }
 
     public void setSyncTimeout(long timeout) {
-        Trc.entry(this, new Long(timeout));
+        Trc.entry(this, Long.valueOf(timeout));
         syncTimeout = timeout;
         Trc.exit();
     }
 
     public void setAsyncTimeout(long timeout) {
-        Trc.entry(this, new Long(timeout));
+        Trc.entry(this, Long.valueOf(timeout));
         asyncTimeout = timeout;
         Trc.exit();
     }

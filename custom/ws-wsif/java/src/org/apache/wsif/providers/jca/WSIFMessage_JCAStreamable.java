@@ -45,8 +45,9 @@ import javax.wsdl.extensions.ExtensibilityElement;
  */
  
 public class WSIFMessage_JCAStreamable extends org.apache.wsif.providers.jca.WSIFMessage_JCA implements javax.resource.cci.Streamable {
-	
-	private static final long serialVersionUID = 1L;
+
+    @Serial
+    private static final long serialVersionUID = 1L;
 	private Message fieldMessageModel = null;
 	private java.util.HashMap fieldPartNameFormatHandlerMapping = new java.util.HashMap();
 
@@ -103,8 +104,7 @@ public class WSIFMessage_JCAStreamable extends org.apache.wsif.providers.jca.WSI
 				Iterator inputIterator = list.iterator();
 				while (inputIterator.hasNext()) {
 					ExtensibilityElement ele = (ExtensibilityElement)inputIterator.next();
-					if (ele instanceof WSIFBindingOperation_JCAProperty) {
-						WSIFBindingOperation_JCAProperty prop = (WSIFBindingOperation_JCAProperty)ele;
+					if (ele instanceof WSIFBindingOperation_JCAProperty prop) {
 						String partName = prop.getPartName();
 						partsToNotProcess.put(partName,partName);
 					}
@@ -157,8 +157,7 @@ public class WSIFMessage_JCAStreamable extends org.apache.wsif.providers.jca.WSI
 				Iterator inputIterator = list.iterator();
 				while (inputIterator.hasNext()) {
 					ExtensibilityElement ele = (ExtensibilityElement) inputIterator.next();
-					if (ele instanceof WSIFBindingOperation_JCAProperty) {
-						WSIFBindingOperation_JCAProperty prop = (WSIFBindingOperation_JCAProperty) ele;
+					if (ele instanceof WSIFBindingOperation_JCAProperty prop) {
 						String partName = prop.getPartName();
 						partsToNotProcess.put(partName, partName);
 					}
@@ -172,8 +171,7 @@ public class WSIFMessage_JCAStreamable extends org.apache.wsif.providers.jca.WSI
 					continue;
 				Object oPart = this.parts.get(partName);
 				WSIFFormatHandler_JCA formatHandler = null;
-				if (oPart instanceof WSIFFormatPart) {
-					WSIFFormatPart jcaPart = (WSIFFormatPart) oPart;
+				if (oPart instanceof WSIFFormatPart jcaPart) {
 					if (jcaPart._getFormatHandler() != null) {
 						formatHandler = (WSIFFormatHandler_JCA) jcaPart._getFormatHandler();
 						this.fieldPartNameFormatHandlerMapping.put(partName, formatHandler);

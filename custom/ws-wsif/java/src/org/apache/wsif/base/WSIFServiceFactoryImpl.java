@@ -352,7 +352,7 @@ public class WSIFServiceFactoryImpl extends WSIFServiceFactory {
      */
     public void cachingOn(boolean on) {
     	Trc.entry(this,on);
-        setFeature(WSIFConstants.WSIF_FEATURE_SERVICE_CACHING, new Boolean(on));
+        setFeature(WSIFConstants.WSIF_FEATURE_SERVICE_CACHING, Boolean.valueOf(on));
         Trc.exit();
     }
    
@@ -362,14 +362,14 @@ public class WSIFServiceFactoryImpl extends WSIFServiceFactory {
     public void setFeature(String name, Object value) {
         Trc.entry(this, name, value);
         if (WSIFConstants.WSIF_FEATURE_SERVICE_CACHING.equals(name)) {
-        	if (value != null && value instanceof Boolean) {
-        		if (((Boolean) value).booleanValue()) {
+        	if (value != null && value instanceof Boolean boolean1) {
+        		if (boolean1.booleanValue()) {
         			useCache = true;
 					if (cache == null) {
 						int size = 100;
 						Object tempInt = getFeature(WSIFConstants.WSIF_FEATURE_SERVICE_CACHE_SIZE);
-						if (tempInt != null && tempInt instanceof Integer) {
-							size = ((Integer) tempInt).intValue();
+						if (tempInt != null && tempInt instanceof Integer integer) {
+							size = integer.intValue();
 						}
 						cache = new WSIFServiceCache(size);
 					}
@@ -379,8 +379,8 @@ public class WSIFServiceFactoryImpl extends WSIFServiceFactory {
         		}
         	}
         } else if (WSIFConstants.WSIF_FEATURE_SERVICE_CACHE_SIZE.equals(name)) {        	
-        	if (value != null && value instanceof Integer && cache != null) {
-        		int size = ((Integer) value).intValue();
+        	if (value != null && value instanceof Integer integer && cache != null) {
+        		int size = integer.intValue();
         		cache.setCacheSize(size);
         	}
         } 
@@ -397,14 +397,14 @@ public class WSIFServiceFactoryImpl extends WSIFServiceFactory {
         features.putAll(map);
         if (map.containsKey(WSIFConstants.WSIF_FEATURE_SERVICE_CACHING)) {
         	Object value = map.get(WSIFConstants.WSIF_FEATURE_SERVICE_CACHING);        	
-        	if (value != null && value instanceof Boolean) {
-        		if (((Boolean) value).booleanValue()) {
+        	if (value != null && value instanceof Boolean boolean1) {
+        		if (boolean1.booleanValue()) {
         			useCache = true;
         			if (cache == null) {
         				int size = 100;
 						Object tempInt = getFeature(WSIFConstants.WSIF_FEATURE_SERVICE_CACHE_SIZE);
-						if (tempInt != null && tempInt instanceof Integer) {
-							size = ((Integer) tempInt).intValue();
+						if (tempInt != null && tempInt instanceof Integer integer) {
+							size = integer.intValue();
 						}
 						cache = new WSIFServiceCache(size);
         			}
@@ -416,8 +416,8 @@ public class WSIFServiceFactoryImpl extends WSIFServiceFactory {
         }
         if (map.containsKey(WSIFConstants.WSIF_FEATURE_SERVICE_CACHE_SIZE)) {
         	Object value = map.get(WSIFConstants.WSIF_FEATURE_SERVICE_CACHE_SIZE);        	
-        	if (value != null && value instanceof Integer && cache != null) {
-        		int size = ((Integer) value).intValue();
+        	if (value != null && value instanceof Integer integer && cache != null) {
+        		int size = integer.intValue();
         		cache.setCacheSize(size);
         	}
         }        

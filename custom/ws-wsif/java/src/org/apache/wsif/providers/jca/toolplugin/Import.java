@@ -91,8 +91,8 @@ public abstract class Import {
 			importPortType = serviceDefintion.getPortType(new QName(IMPORT_SERVICE_BASE_NAMESPACE, IMPORT_SERVICE_BASE_PORTTYPE_NAME));
 			importService = serviceDefintion.getService(new QName(serviceDefintion.getTargetNamespace(), aServiceName));
 		} catch (Exception e) {
-			if (e instanceof WSIFException)
-				throw (WSIFException) e;
+			if (e instanceof WSIFException exception)
+				throw exception;
 			else
 				throw new WSIFException(e.getMessage(), e);
 		}
@@ -123,8 +123,8 @@ public abstract class Import {
 			port.close();
 			return portTypeArray;
 		} catch (Exception e) {
-			if (e instanceof WSIFException)
-				throw (WSIFException) e;
+			if (e instanceof WSIFException exception)
+				throw exception;
 			else
 				throw new WSIFException(e.getMessage(), e);
 		}
@@ -154,8 +154,8 @@ public abstract class Import {
 
 			return importDefinition;
 		} catch (Exception e) {
-			if (e instanceof WSIFException)
-				throw (WSIFException) e;
+			if (e instanceof WSIFException exception)
+				throw exception;
 			else
 				throw new WSIFException(e.getMessage(), e);
 		}
@@ -187,8 +187,8 @@ public abstract class Import {
 			port.close();
 			return byteArray;
 		} catch (Exception e) {
-			if (e instanceof WSIFException)
-				throw (WSIFException) e;
+			if (e instanceof WSIFException exception)
+				throw exception;
 			else
 				throw new WSIFException(e.getMessage(), e);
 

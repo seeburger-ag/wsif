@@ -37,7 +37,8 @@ import javax.xml.namespace.QName;
  */
 public class EJBBinding implements ExtensibilityElement, Serializable {
 
-	private static final long serialVersionUID = 1L;
+    @Serial
+    private static final long serialVersionUID = 1L;
     
     protected QName fieldElementType = EJBBindingConstants.Q_ELEM_EJB_BINDING;
     // Uses the wrapper type so we can tell if it was set or not.

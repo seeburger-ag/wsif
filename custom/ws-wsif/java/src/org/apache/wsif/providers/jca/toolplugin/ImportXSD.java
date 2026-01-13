@@ -30,7 +30,8 @@ package org.apache.wsif.providers.jca.toolplugin;
  */
 public class ImportXSD implements java.io.Serializable {
 
-	private static final long serialVersionUID = 1L;
+    @Serial
+    private static final long serialVersionUID = 1L;
 	private String fieldNamespace = null;
 	private String fieldLocation = null;
 	private String fieldSource = null;

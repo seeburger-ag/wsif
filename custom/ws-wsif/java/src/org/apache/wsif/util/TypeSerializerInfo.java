@@ -35,7 +35,8 @@ import org.apache.wsif.logging.Trc;
  */
 public class TypeSerializerInfo implements Serializable {
 
-	private static final long serialVersionUID = 1L;
+    @Serial
+    private static final long serialVersionUID = 1L;
 
 	protected QName elementType;
 	protected Class javaType;

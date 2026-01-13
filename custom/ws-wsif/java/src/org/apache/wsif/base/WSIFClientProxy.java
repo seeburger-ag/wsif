@@ -274,15 +274,15 @@ public class WSIFClientProxy implements InvocationHandler {
                 Iterator it = wsifFaultMessage.getParts();
                 while (it.hasNext()) {
                     Object fault = it.next();
-                    if (fault instanceof Throwable) {
+                    if (fault instanceof Throwable throwable) {
                         Class[] exs = method.getExceptionTypes();
                         for (int e = 0; e < exs.length; e++) {
                             if (exs[e].isAssignableFrom(fault.getClass())) {
-                                throw (Throwable) fault;
+                                throw throwable;
                             }
                         }
                         throw new WSIFException("Operation failed, fault message contains a non-declared throwable", 
-                            (Throwable) fault);
+                            throwable);
                     } else {
                         throw new WSIFException(
                             "Operation failed and a non-throwable fault message part was returned: "

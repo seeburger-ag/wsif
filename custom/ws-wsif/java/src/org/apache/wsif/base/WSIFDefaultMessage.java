@@ -56,8 +56,9 @@ import org.apache.wsif.logging.Trc;
 
  */
 public class WSIFDefaultMessage implements WSIFMessage {
-	
-	private static final long serialVersionUID = 1L;
+
+    @Serial
+    private static final long serialVersionUID = 1L;
 	
     protected Map parts;
     protected String name;
@@ -224,11 +225,11 @@ public class WSIFDefaultMessage implements WSIFMessage {
     }
 
     public void setBytePart(String name, byte part) {
-        Trc.entry(this, name, new Byte(part));
+        Trc.entry(this, name, Byte.valueOf(part));
         if (parts == null) {
             parts = new HashMap();
         }
-        parts.put(name, new Byte(part));
+        parts.put(name, Byte.valueOf(part));
         Trc.exit();
     }
 
@@ -272,11 +273,11 @@ public class WSIFDefaultMessage implements WSIFMessage {
     }
 
     public void setCharPart(String name, char part) {
-        Trc.entry(this, name, new Character(part));
+        Trc.entry(this, name, Character.valueOf(part));
         if (parts == null) {
             parts = new HashMap();
         }
-        parts.put(name, new Character(part));
+        parts.put(name, Character.valueOf(part));
         Trc.exit();
     }
 
@@ -302,11 +303,11 @@ public class WSIFDefaultMessage implements WSIFMessage {
     }
 
     public void setIntPart(String name, int part) {
-        Trc.entry(this, name, new Integer(part));
+        Trc.entry(this, name, Integer.valueOf(part));
         if (parts == null) {
             parts = new HashMap();
         }
-        parts.put(name, new Integer(part));
+        parts.put(name, Integer.valueOf(part));
         Trc.exit();
     }
 
@@ -316,7 +317,7 @@ public class WSIFDefaultMessage implements WSIFMessage {
             handleNoPartsException(name, "long");
         try {
             long l = ((Long) parts.get(name)).longValue();
-            Trc.exit(new Long(l));
+            Trc.exit(Long.valueOf(l));
             return l;
         } catch (NullPointerException ne) {
         	Trc.exception(ne);
@@ -332,11 +333,11 @@ public class WSIFDefaultMessage implements WSIFMessage {
     }
 
     public void setLongPart(String name, long part) {
-        Trc.entry(this, name, new Long(part));
+        Trc.entry(this, name, Long.valueOf(part));
         if (parts == null) {
             parts = new HashMap();
         }
-        parts.put(name, new Long(part));
+        parts.put(name, Long.valueOf(part));
         Trc.exit();
     }
 
@@ -362,11 +363,11 @@ public class WSIFDefaultMessage implements WSIFMessage {
     }
 
     public void setShortPart(String name, short part) {
-        Trc.entry(this, name, new Short(part));
+        Trc.entry(this, name, Short.valueOf(part));
         if (parts == null) {
             parts = new HashMap();
         }
-        parts.put(name, new Short(part));
+        parts.put(name, Short.valueOf(part));
         Trc.exit();
     }
 
@@ -376,7 +377,7 @@ public class WSIFDefaultMessage implements WSIFMessage {
             handleNoPartsException(name, "float");
         try {
             float f = ((Float) parts.get(name)).floatValue();
-            Trc.exit(new Float(f));
+            Trc.exit(Float.valueOf(f));
             return f;
         } catch (NullPointerException ne) {
         	Trc.exception(ne);
@@ -392,11 +393,11 @@ public class WSIFDefaultMessage implements WSIFMessage {
     }
 
     public void setFloatPart(String name, float part) {
-        Trc.entry(this, name, new Float(part));
+        Trc.entry(this, name, Float.valueOf(part));
         if (parts == null) {
             parts = new HashMap();
         }
-        parts.put(name, new Float(part));
+        parts.put(name, Float.valueOf(part));
         Trc.exit();
     }
 
@@ -406,7 +407,7 @@ public class WSIFDefaultMessage implements WSIFMessage {
             handleNoPartsException(name, "double");
         try {
             double d = ((Double) parts.get(name)).doubleValue();
-            Trc.exit(new Double(d));
+            Trc.exit(Double.valueOf(d));
             return d;
         } catch (NullPointerException ne) {
         	Trc.exception(ne);
@@ -422,11 +423,11 @@ public class WSIFDefaultMessage implements WSIFMessage {
     }
 
     public void setDoublePart(String name, double part) {
-        Trc.entry(this, name, new Double(part));
+        Trc.entry(this, name, Double.valueOf(part));
         if (parts == null) {
             parts = new HashMap();
         }
-        parts.put(name, new Double(part));
+        parts.put(name, Double.valueOf(part));
         Trc.exit();
     }
 
@@ -452,11 +453,11 @@ public class WSIFDefaultMessage implements WSIFMessage {
     }
 
     public void setBooleanPart(String name, boolean part) {
-        Trc.entry(this, name, new Boolean(part));
+        Trc.entry(this, name, Boolean.valueOf(part));
         if (parts == null) {
             parts = new HashMap();
         }
-        parts.put(name, new Boolean(part));
+        parts.put(name, Boolean.valueOf(part));
         Trc.exit();
     }
 

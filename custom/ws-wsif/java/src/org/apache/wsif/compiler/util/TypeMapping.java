@@ -37,8 +37,9 @@ import javax.xml.namespace.QName;
  * @deprecated
  */
 public class TypeMapping implements Serializable {
-	
-	private static final long serialVersionUID = 1L;
+
+    @Serial
+    private static final long serialVersionUID = 1L;
 	
     public QName elementType;
     public String javaType;

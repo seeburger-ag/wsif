@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -79,7 +80,8 @@ import org.apache.wsif.wsdl.extensions.jms.JMSPropertyValue;
  */
 public class WSIFPort_ApacheSOAP extends WSIFDefaultPort {
 
-	private static final long serialVersionUID = 1L;
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     transient protected Map operationInstances = new HashMap();
     protected Port port;
@@ -146,7 +148,7 @@ public class WSIFPort_ApacheSOAP extends WSIFDefaultPort {
 
             String s = sa.getLocationURI();
             try {
-                url = new URL(s);
+                url = URI.create(s).toURL();
             } catch (MalformedURLException meu) {
 	        	Trc.exception(meu);
                 throw new WSIFException(
@@ -573,7 +575,7 @@ public class WSIFPort_ApacheSOAP extends WSIFDefaultPort {
                         if (encodingStyles.size() == 0) {
                         }
                         operation.setInputEncodingStyle(
-                            (String) encodingStyles.get(0));
+                            (String) encodingStyles.getFirst());
                         // quietly ignore if encodingStyles.size() > 1 ...
                     }
                     List parts = soapInputBody.getParts();
@@ -631,7 +633,7 @@ public class WSIFPort_ApacheSOAP extends WSIFDefaultPort {
                         //List encodingStyles = soapInputBody.getEncodingStyles();
                         List parts = soapOutputBody.getParts();
                         if (parts != null && parts.size() > 0) {
-                            operation.setReturnName((String) parts.get(0));
+                            operation.setReturnName((String) parts.getFirst());
                         }
                     }
                     soapHeader =
@@ -693,8 +695,8 @@ public class WSIFPort_ApacheSOAP extends WSIFDefaultPort {
      */
     public void close() throws WSIFException {
         Trc.entry(this);
-        if (st != null && st instanceof SOAPJMSConnection)
-             ((SOAPJMSConnection) st).close();
+        if (st != null && st instanceof SOAPJMSConnection connection)
+             connection.close();
         Trc.exit();
     }
 

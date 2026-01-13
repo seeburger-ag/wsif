@@ -49,7 +49,8 @@ import org.apache.wsif.logging.Trc;
  * @author Mark Whitlock <whitlock@apache.org>
  */
 public class WSIFJMSProperties extends HashMap {
-	private static final long serialVersionUID = 1L;
+    @Serial
+    private static final long serialVersionUID = 1L;
     public static final String IN = "in";
     public static final String OUT = "out";
     private static final ArrayList allDirections =
@@ -212,14 +213,14 @@ public class WSIFJMSProperties extends HashMap {
         clear();
         try {
             put(CORRELATIONID, message.getJMSCorrelationID());
-            put(DELIVERYMODE, new Integer(message.getJMSDeliveryMode()));
+            put(DELIVERYMODE, Integer.valueOf(message.getJMSDeliveryMode()));
             put(DESTINATION, message.getJMSDestination());
-            put(EXPIRATION, new Long(message.getJMSExpiration()));
+            put(EXPIRATION, Long.valueOf(message.getJMSExpiration()));
             put(MESSAGEID, message.getJMSMessageID());
-            put(PRIORITY, new Integer(message.getJMSPriority()));
-            put(REDELIVERED, new Boolean(message.getJMSRedelivered()));
+            put(PRIORITY, Integer.valueOf(message.getJMSPriority()));
+            put(REDELIVERED, Boolean.valueOf(message.getJMSRedelivered()));
             put(REPLYTO, message.getJMSReplyTo());
-            put(TIMESTAMP, new Long(message.getJMSTimestamp()));
+            put(TIMESTAMP, Long.valueOf(message.getJMSTimestamp()));
             put(TYPE, message.getJMSType());
     
             Enumeration enum_ = message.getPropertyNames();

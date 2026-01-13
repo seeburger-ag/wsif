@@ -39,7 +39,8 @@ import org.apache.wsif.logging.Trc;
  * @author Nirmal Mukhi
  */
 public class WSIFException extends RemoteException {
-	private static final long serialVersionUID = 1L;
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     public WSIFException(String msg) {
         super(msg);

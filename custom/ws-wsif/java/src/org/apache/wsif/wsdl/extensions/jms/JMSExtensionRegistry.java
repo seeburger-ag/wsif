@@ -35,7 +35,8 @@ import org.apache.wsif.logging.Trc;
  * @author Mark Whitlock <whitlock@apache.org>
  */
 public class JMSExtensionRegistry extends ExtensionRegistry {
-	private static final long serialVersionUID = 1L;
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     public JMSExtensionRegistry() {
         super();

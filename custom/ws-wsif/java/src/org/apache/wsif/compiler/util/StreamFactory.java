@@ -30,6 +30,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URI;
 import java.net.URL;
 import java.net.MalformedURLException;
 
@@ -112,8 +113,8 @@ public class StreamFactory {
 
         if (content == null) {
             throw new IllegalArgumentException("No content at '" + fileName + "'.");
-        } else if (content instanceof InputStream) {
-            return (InputStream) content;
+        } else if (content instanceof InputStream stream) {
+            return stream;
         } else {
             throw new IOException("The content of '" + fileName + "' is not a stream.");
         }
@@ -132,7 +133,7 @@ public class StreamFactory {
                 throw new MalformedURLException("This file was not found: " + url);
             }
         } catch (MalformedURLException e1) {
-            url = new URL("file", "", spec);
+            url = new URI("file", null, "", -1, spec, null, null).toURL();
     
             try {
                 url.openStream();
@@ -143,7 +144,7 @@ public class StreamFactory {
     
                     if (parentName != null && recursiveDepth < 3) {
                         return getURL(
-                            new URL("file", "", parentName + '/'),
+                            new URI("file", null, "", -1, parentName + '/', null, null).toURL(),
                             spec,
                             recursiveDepth + 1);
                     }

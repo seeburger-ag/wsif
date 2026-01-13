@@ -590,8 +590,8 @@ abstract public class ModelWSIFPort implements WSIFPort {
         // Ignore any other typeMap's that have other encodings and styles.
         while (bindingIterator.hasNext()) {
             Object next = bindingIterator.next();
-            if (next instanceof TypeMapping) {
-                typeMapping = (TypeMapping) next;
+            if (next instanceof TypeMapping mapping) {
+                typeMapping = mapping;
                 if ("Java".equals(typeMapping.getEncoding())
                     && "Java".equals(typeMapping.getStyle())) {
                     break;

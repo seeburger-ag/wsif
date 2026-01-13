@@ -55,7 +55,8 @@ import org.apache.wsif.wsdl.extensions.jms.JMSAddress;
  */
 public class WSIFPort_Jms extends WSIFDefaultPort implements Serializable {
 
-	private static final long serialVersionUID = 1L;
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     private Definition fieldDefinition = null;
     private Port fieldPortModel = null;
@@ -216,7 +217,7 @@ public class WSIFPort_Jms extends WSIFDefaultPort implements Serializable {
 
             try {
                 ExtensibilityElement portExtension =
-                    (ExtensibilityElement) fieldPortModel.getExtensibilityElements().get(0);
+                    (ExtensibilityElement) fieldPortModel.getExtensibilityElements().getFirst();
 
                 if (portExtension == null) {
                     throw new WSIFException("Jms missing port extension");

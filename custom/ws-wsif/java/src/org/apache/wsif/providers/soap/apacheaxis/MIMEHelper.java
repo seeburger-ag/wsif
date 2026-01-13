@@ -69,14 +69,14 @@ public class MIMEHelper {
 		Trc.entry(null, call, o);
 		boolean ok;
 		
-		if (o instanceof DataHandler) {
-            call.addAttachmentPart(new AttachmentPart((DataHandler)o));
+		if (o instanceof DataHandler handler) {
+            call.addAttachmentPart(new AttachmentPart(handler));
             ok = true;
 		} else {
 			ok = false;
 		}
                     
-		Trc.exit(new Boolean(ok));
+		Trc.exit(Boolean.valueOf(ok));
 		return ok;
     }
 
@@ -84,12 +84,12 @@ public class MIMEHelper {
         throws WSIFException {
         Trc.entry(null, o);
         AttachmentPart ap = null;
-        if (o instanceof WSIFAttachmentPart) {
-            ap = WSIFAXISUtils.wsifToAxisAttachmentPart((WSIFAttachmentPart) o);
-        } else if (o instanceof DataHandler) {
-            ap = new AttachmentPart((DataHandler) o);
-        } else if (o instanceof AttachmentPart) {
-            ap = (AttachmentPart) o;
+        if (o instanceof WSIFAttachmentPart part) {
+            ap = WSIFAXISUtils.wsifToAxisAttachmentPart(part);
+        } else if (o instanceof DataHandler handler) {
+            ap = new AttachmentPart(handler);
+        } else if (o instanceof AttachmentPart part) {
+            ap = part;
         } else {
             throw new WSIFException("Object is not a DataHandler: " + o);
         }

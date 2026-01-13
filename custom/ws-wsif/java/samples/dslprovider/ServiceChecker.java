@@ -103,11 +103,11 @@ public class ServiceChecker {
 				String city, String state, String zip) throws Exception { 
 	// create an address
 	Address address = new Address();
-	address.setStreetNum(new Integer(streetNum).intValue());
+	address.setStreetNum(Integer.valueOf(streetNum).intValue());
 	address.setStreetName(streetName);
 	address.setCity(city);
 	address.setState(state);
-	address.setZip(new Integer(zip).intValue());
+	address.setZip(Integer.valueOf(zip).intValue());
 	address.setPhoneNumber(null);
 	// add an entry to the addressbook
 	addressBook.addEntry(name,address);

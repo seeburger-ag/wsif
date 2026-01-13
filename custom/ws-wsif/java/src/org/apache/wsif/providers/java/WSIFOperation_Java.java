@@ -71,7 +71,8 @@ import org.apache.wsif.wsdl.extensions.java.JavaOperation;
 public class WSIFOperation_Java
         extends WSIFDefaultOperation
         implements WSIFOperation {
-        	
+
+    @Serial
     private static final long serialVersionUID = 1L;
         	
     protected javax.wsdl.Port fieldPortModel;
@@ -123,7 +124,7 @@ public class WSIFOperation_Java
 
         try {
             fieldJavaOperationModel =
-                (JavaOperation) fieldBindingOperationModel.getExtensibilityElements().get(0);
+                (JavaOperation) fieldBindingOperationModel.getExtensibilityElements().getFirst();
         } catch (Exception e) {
         	Trc.exception(e);
             throw new WSIFException(
@@ -177,8 +178,8 @@ public class WSIFOperation_Java
             m,
             c,
             outMName,
-            new Boolean(isSttc),
-            new Boolean(isCnstr),
+            Boolean.valueOf(isSttc),
+            Boolean.valueOf(isCnstr),
             tMap);
         Trc.event(this, "mulOP was " + mulOP + ", retCl was " + retCl);            
 
@@ -293,8 +294,7 @@ public class WSIFOperation_Java
             boolean match = true;
             for (int j = 0; j < params.length; j++) {
                 Object obj = args[j];
-                if (obj instanceof Vector) {
-                    Vector vec = (Vector) obj;
+                if (obj instanceof Vector vec) {
                     boolean found = false;
                     for (int p = 0; p < vec.size(); p++) {
                         Class cl = (Class) vec.get(p);
@@ -368,8 +368,7 @@ public class WSIFOperation_Java
                         "formatType for typeName '" + part.getName() + "' not found in document");
                 }
 
-                if (formatType instanceof Vector) {
-                    Vector types = (Vector) formatType;
+                if (formatType instanceof Vector types) {
                     Enumeration enum_ = types.elements();
                     while (enum_.hasMoreElements()) {
                         String type = (String) enum_.nextElement();
@@ -441,8 +440,7 @@ public class WSIFOperation_Java
                         }
                     }
                     if (!tryAMap) {
-                        if (retClass != null && retClass instanceof Vector) {
-                            Vector vec = (Vector) retClass;
+                        if (retClass != null && retClass instanceof Vector vec) {
                             boolean found = false;
                             for (int p = 0; p < vec.size(); p++) {
                                 Class cl = (Class) vec.get(p);
@@ -471,8 +469,7 @@ public class WSIFOperation_Java
                     boolean match = true;
                     for (int j = 0; j < params.length; j++) {
                         Object obj = args[j];
-                        if (obj instanceof Vector) {
-                            Vector vec = (Vector) obj;
+                        if (obj instanceof Vector vec) {
                             boolean found = false;
                             for (int p = 0; p < vec.size(); p++) {
                                 Class cl = (Class) vec.get(p);
@@ -509,8 +506,8 @@ public class WSIFOperation_Java
             Trc.exit(methods);
             return methods;
         } catch (Exception e) {
-            if (e instanceof WSIFException) {
-                throw (WSIFException) e;
+            if (e instanceof WSIFException exception) {
+                throw exception;
             } else {
                 throw new WSIFException(
                     "Failure to get list of possible methods for Java service"
@@ -587,8 +584,7 @@ public class WSIFOperation_Java
                                 + returnPart.getName() == null 
                                     ? "<null>" : returnPart.getName());
                                 
-                    if (obj instanceof Vector) {
-                        Vector v = (Vector) obj;
+                    if (obj instanceof Vector v) {
                         Vector argv = new Vector();
                         Enumeration enum_ = v.elements();
                         while (enum_.hasMoreElements()) {
@@ -710,8 +706,7 @@ public class WSIFOperation_Java
                             + " to a java type. Part name was "
                             + part.getName() == null ? "<null>" : part.getName());
                 
-                if (obj instanceof Vector) {
-                    Vector v = (Vector) obj;
+                if (obj instanceof Vector v) {
                     Vector argv = new Vector();
                     Enumeration enum_ = v.elements();
                     while (enum_.hasMoreElements()) {
@@ -743,7 +738,7 @@ public class WSIFOperation_Java
                     String partName = part.getName();
                     if (partName != null && returnPart != null && partName.equals(returnPart)) {
                     	// Put return part first in the list of output parts
-                    	argNames.add(0, partName);
+                    	argNames.addFirst(partName);
                     } else {                    
                         argNames.add((String) part.getName());
                     }
@@ -1264,9 +1259,9 @@ public class WSIFOperation_Java
                                     // message. If not, throw an exception to say the map
                                     // does not contain the missing part.
                                     if (returnClass != null
-                                        && returnClass instanceof Class
+                                        && returnClass instanceof Class class1
                                         && Map.class.isAssignableFrom(
-                                            (Class) returnClass)) {
+                                            class1)) {
                                         Map m = new HashMap();
                                         m.put(
                                             fieldOutParameterNames[0],

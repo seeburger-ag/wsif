@@ -38,7 +38,8 @@ import org.apache.wsif.logging.Trc;
  * @author Owen Burroughs <owenb@apache.org>
  */
 public class WSIFDynamicTypeMapping implements Externalizable {
-	private static final long serialVersionUID = 1L;
+    @Serial
+    private static final long serialVersionUID = 1L;
     protected QName xmlType;
     protected Class javaType;
 

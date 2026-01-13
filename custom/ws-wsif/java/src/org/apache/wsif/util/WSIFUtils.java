@@ -30,6 +30,7 @@ import java.io.StringReader;
 import java.io.Writer;
 import java.net.MalformedURLException;
 import java.net.PasswordAuthentication;
+import java.net.URI;
 import java.net.URL;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
@@ -106,7 +107,7 @@ public class WSIFUtils {
     private static final String lookupPrefix = "java:comp/env/";
     private static final String emptyString = "";
     
-    private static Boolean providersInitialized = new Boolean(false);
+    private static Boolean providersInitialized = Boolean.valueOf(false);
     private static boolean simpleTypesMapCreated = false;
     private static HashMap simpleTypesMap = new HashMap();
 	private static HashMap keywordMap = null;
@@ -408,8 +409,8 @@ public class WSIFUtils {
             throw e;
         } finally {
         	try {
-        		if (lo != null && lo instanceof ClosableLocator) {
-        		    ((ClosableLocator) lo).close();
+        		if (lo != null && lo instanceof ClosableLocator locator) {
+        		    locator.close();
         		}
         	} catch (IOException ioe) {
         		//ignore
@@ -712,7 +713,7 @@ public class WSIFUtils {
         synchronized (providersInitialized) {
             if (!providersInitialized.booleanValue()) {
                 WSIFPluggableProviders.getProvider("/");
-                providersInitialized = new Boolean(true);
+                providersInitialized = Boolean.valueOf(true);
             }
         }
     }
@@ -857,7 +858,7 @@ public class WSIFUtils {
                 List host = new ArrayList();
                 for (; tokenizer.hasMoreTokens();) {
                     String nextT = tokenizer.nextToken();
-                    host.add(0, nextT);
+                    host.addFirst(nextT);
                 }
                 StringBuffer buffer = new StringBuffer();
                 for (Iterator hi = host.iterator(); hi.hasNext();) {
@@ -956,9 +957,9 @@ public class WSIFUtils {
         // Remove protocol
         if (!segments.isEmpty()) {
             try {
-                URL url = new URL(namespaceURI);
-                if (segments.get(0).equals(url.getProtocol()))
-                    segments.remove(0);
+                URL url = URI.create(namespaceURI).toURL();
+                if (segments.getFirst().equals(url.getProtocol()))
+                    segments.removeFirst();
             } catch (MalformedURLException exn) {
                 Trc.ignoredException(exn);
             }
@@ -992,8 +993,7 @@ public class WSIFUtils {
         String formatPackageName = null;
         while (iterator.hasNext()) {
             ExtensibilityElement ee = (ExtensibilityElement) iterator.next();
-            if (ee instanceof TypeMapping) {
-                TypeMapping typeMapping = (TypeMapping) ee;
+            if (ee instanceof TypeMapping typeMapping) {
                 formatPackageName = typeMapping.getEncoding();
                 if (typeMapping.getStyle() != null)
                     formatPackageName += typeMapping.getStyle();
@@ -1166,7 +1166,7 @@ public class WSIFUtils {
                }
             }
             if (matchingOps.size() == 1) {
-               op = (BindingOperation) matchingOps.get(0);
+               op = (BindingOperation) matchingOps.getFirst();
             } else if (matchingOps.size() > 1) {
                op = chooseBindingOperation(matchingOps, inName, outName);
             }

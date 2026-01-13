@@ -434,7 +434,7 @@ public class CustomServiceImpl implements WSIFService {
      */
     private void mapType(QName xmlType, Class javaType, boolean force)
         throws WSIFException {
-        Trc.entry(this, xmlType, javaType, new Boolean(force));
+        Trc.entry(this, xmlType, javaType, Boolean.valueOf(force));
         typeMap.mapType(xmlType, javaType, force);
         Trc.exit();
     }

@@ -28,6 +28,8 @@ import org.w3c.dom.NodeList;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+
+import java.net.URI;
 import java.net.URL;
 
 /**
@@ -43,8 +45,8 @@ public class StockQuoteService {
 
     if ( symbol.equals("XXX") ) return( (float) 55.25 );
 
-    URL          url = new URL( "http://services.xmethods.net/" +
-                                "axis/getQuote?s="+symbol );
+    URL          url = URI.create("http://services.xmethods.net/" +
+        "axis/getQuote?s=" + symbol).toURL();
 
     DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
     DocumentBuilder        db  = dbf.newDocumentBuilder();

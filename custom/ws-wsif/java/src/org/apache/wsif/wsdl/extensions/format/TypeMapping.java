@@ -34,7 +34,8 @@ import javax.xml.namespace.QName;
 public class TypeMapping
     implements java.io.Serializable, ExtensibilityElement {
 
-	private static final long serialVersionUID = 1L;
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     protected QName fieldElementType = FormatBindingConstants.Q_ELEM_FORMAT_BINDING;
     private String fieldEncoding;

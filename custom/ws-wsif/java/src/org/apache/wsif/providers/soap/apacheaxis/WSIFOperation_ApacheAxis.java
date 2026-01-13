@@ -119,7 +119,8 @@ import com.ibm.wsdl.extensions.mime.MIMEConstants;
  */
 public class WSIFOperation_ApacheAxis extends WSIFDefaultOperation {
 
-	private static final long serialVersionUID = 2L;
+    @Serial
+    private static final long serialVersionUID = 2L;
 
 	transient protected WSIFPort_ApacheAxis wsifPort;
 	
@@ -455,12 +456,12 @@ public class WSIFOperation_ApacheAxis extends WSIFDefaultOperation {
 	private void parseSOAPHeaderElement(Object element) throws WSIFException {
 
 		List extensabilityElements;
-		if (element instanceof BindingInput) {
+		if (element instanceof BindingInput input) {
 			extensabilityElements =
-				((BindingInput) element).getExtensibilityElements();
-		} else if (element instanceof BindingOutput) {
+				input.getExtensibilityElements();
+		} else if (element instanceof BindingOutput output) {
 			extensabilityElements =
-				((BindingOutput) element).getExtensibilityElements();
+				output.getExtensibilityElements();
 		} else {
 			throw new WSIFException(
 				"internal error, unexpected object: " + element);
@@ -536,7 +537,7 @@ public class WSIFOperation_ApacheAxis extends WSIFDefaultOperation {
 	 */
 	private List parseSoapBody(SOAPBody soapbody, boolean isInput)
 		throws WSIFException {
-		Trc.entry(this, soapbody, new Boolean(isInput));
+		Trc.entry(this, soapbody, Boolean.valueOf(isInput));
 
         // get input namespace
 		if (isInput) {
@@ -562,7 +563,7 @@ public class WSIFOperation_ApacheAxis extends WSIFDefaultOperation {
 		if (isInput) {
 			List l = soapbody.getEncodingStyles();
 			if (l != null && l.size() > 0) {
-				setInputEncodingStyle((String) l.get(0));
+				setInputEncodingStyle((String) l.getFirst());
 			}
 		}
 
@@ -602,7 +603,7 @@ public class WSIFOperation_ApacheAxis extends WSIFDefaultOperation {
         if ((parts == null || parts.size() < 1)
         && (partNames != null && partNames.size() > 0)) {
    		    throw new WSIFException("part '" + 
-   		        partNames.get(0) + 
+   		        partNames.getFirst() + 
    		        "' not defined in message " + m);
         }
         
@@ -659,8 +660,7 @@ public class WSIFOperation_ApacheAxis extends WSIFDefaultOperation {
 		Iterator mimePartIt = mimeParts.iterator();
 		while (mimePartIt.hasNext()) {
 			Object nextMimePart = mimePartIt.next();
-			if (nextMimePart instanceof MIMEPart) {
-				MIMEPart mimePart = (MIMEPart) nextMimePart;
+			if (nextMimePart instanceof MIMEPart mimePart) {
 				if (!MIMEConstants
 					.NS_URI_MIME
 					.equals(mimePart.getElementType().getNamespaceURI()))
@@ -677,8 +677,7 @@ public class WSIFOperation_ApacheAxis extends WSIFDefaultOperation {
 				Iterator mimePartChildrenIt = mimePartChildren.iterator();
 				while (mimePartChildrenIt.hasNext()) {
 					Object nextChild = mimePartChildrenIt.next();
-					if (nextChild instanceof MIMEContent) {
-						MIMEContent mimeContent = (MIMEContent) nextChild;
+					if (nextChild instanceof MIMEContent mimeContent) {
 						if (!MIMEConstants
 							.NS_URI_MIME
 							.equals(
@@ -713,14 +712,14 @@ public class WSIFOperation_ApacheAxis extends WSIFDefaultOperation {
 
 						mimePartNames.add(partName);
 
-					} else if (nextChild instanceof SOAPBody) {
+					} else if (nextChild instanceof SOAPBody body) {
 						if (soapBody!=null) {
 							throw new WSIFException(
 								"Multiple soap:body tags found in a "
 									+ "mime:multipartRelated. Operation="
 									+ getName());
 						}
-						soapBody = (SOAPBody)nextChild;
+						soapBody = body;
 
 						containsSoapBody = true;
 						if (containsMimeContent)
@@ -806,7 +805,7 @@ public class WSIFOperation_ApacheAxis extends WSIFDefaultOperation {
 		if (WSIFAXISConstants.STYLE_DOCUMENT.equals(operationStyle)) {
 			String operationName = getName();
 			if (inputSOAPParts.size() == 1) {
-				Part p = (Part)inputSOAPParts.get(0);
+				Part p = (Part)inputSOAPParts.getFirst();
 				QName elementName = p.getElementName();
 				if (elementName != null && operationName.equals(elementName.getLocalPart())) {
 				   this.inputUnwrappedSOAPParts = 
@@ -815,7 +814,7 @@ public class WSIFOperation_ApacheAxis extends WSIFDefaultOperation {
 			}
 			if (outputSOAPParts.size() == 1) {
 				String s = operationName + "Response";
-				Part p = (Part)outputSOAPParts.get(0);
+				Part p = (Part)outputSOAPParts.getFirst();
 				QName elementName = p.getElementName();
 				if (elementName != null && s.equals(elementName.getLocalPart())) {
 				   this.outputUnwrappedSOAPParts = 
@@ -1194,7 +1193,7 @@ public class WSIFOperation_ApacheAxis extends WSIFDefaultOperation {
 			Vector resArgs = body.getParams();
 
 			if (resArgs != null && resArgs.size() > 0) {
-				RPCParam param = (RPCParam) resArgs.get(0);
+				RPCParam param = (RPCParam) resArgs.getFirst();
 				result = param.getValue();
 
 				if (resArgs.size() > 1) {
@@ -1225,10 +1224,9 @@ public class WSIFOperation_ApacheAxis extends WSIFDefaultOperation {
 
 		boolean respOK;
 
-		if (resp instanceof AxisFault) {
+		if (resp instanceof AxisFault f) {
 			respOK = false;
 			if (faultMsg != null) {
-				AxisFault f = (AxisFault) resp;
 				faultMsg.setName(WSIFConstants.SOAP_FAULT_MSG_NAME);
 				faultMsg.setObjectPart(WSIFConstants.SOAP_FAULT_OBJECT, f);
 			}
@@ -1258,10 +1256,10 @@ public class WSIFOperation_ApacheAxis extends WSIFDefaultOperation {
 
 			Part returnPart = null;
 			if (soapParts.size() > 0) {
-				returnPart = (Part)soapParts.get(0);
+				returnPart = (Part)soapParts.getFirst();
 				setSOAPMessagePart(outMsg,returnPart.getName(), resp);
 			} else if (outputMIMEParts.size() > 0) {
-				returnPart = (Part)outputMIMEParts.get(0);
+				returnPart = (Part)outputMIMEParts.getFirst();
 			    setMIMEMessagePart(
 				    outMsg,
 				    returnPart.getName(),
@@ -1391,8 +1389,7 @@ public class WSIFOperation_ApacheAxis extends WSIFDefaultOperation {
 		WSIFJMSDestination dest = null;
 		if (axistransport != null) {
 			call.setTransport(axistransport);
-			if (axistransport instanceof WSIFJmsTransport) {
-				WSIFJmsTransport jmst = (WSIFJmsTransport) axistransport;
+			if (axistransport instanceof WSIFJmsTransport jmst) {
 				dest = jmst.getDestination();
 				dest.setAsyncMode(isAsyncOperation());
 				jmst.setSyncTimeout(null); // reset timeouts to defaults
@@ -1653,9 +1650,9 @@ public class WSIFOperation_ApacheAxis extends WSIFDefaultOperation {
 		// setup the return part
 		Part returnPart = null;
 		if (soapParts.size() > 0) {
-		    returnPart = (Part)soapParts.get(0);
+		    returnPart = (Part)soapParts.getFirst();
 		} else if (outputMIMEParts.size() > 0) {
-		    returnPart = (Part)outputMIMEParts.get(0);
+		    returnPart = (Part)outputMIMEParts.getFirst();
 		}
 		if (returnPart == null) {
             call.setReturnType(org.apache.axis.encoding.XMLType.AXIS_VOID);
@@ -1775,8 +1772,7 @@ public class WSIFOperation_ApacheAxis extends WSIFDefaultOperation {
 		Object[] inputValues = getInputMessageValues(inMsg, null);
 		ArrayList soapBodies = new ArrayList();
 		for (int i = 0; i < inputValues.length; i++) {
-			if (inputValues[i] instanceof Element) {
-				Element el = (Element) inputValues[i];
+			if (inputValues[i] instanceof Element el) {
 				
 				if ((attachments.size() > 0) && (i == 0)) {
 					fixAttachmentPartsCID(el, attachments);
@@ -1859,8 +1855,7 @@ public class WSIFOperation_ApacheAxis extends WSIFDefaultOperation {
         NodeList childNodes = el.getChildNodes();
         for (int j = 0; j < childNodes.getLength(); j++) {
             Node n = childNodes.item(j);
-            if (n instanceof Element) {
-                Element childElement = (Element) n;
+            if (n instanceof Element childElement) {
                 String s = childElement.getAttribute("href");
                 if (s != null && s.toLowerCase().startsWith("cid:")) {
                     al.add(childElement);
@@ -1971,13 +1966,13 @@ public class WSIFOperation_ApacheAxis extends WSIFDefaultOperation {
            	QName elementType = ts.getElementType();     
            	Object tmp = ts.getSerializer();
             SerializerFactory sf = null;
-           	if (tmp instanceof SerializerFactory) {
-                sf = (SerializerFactory) tmp;
+           	if (tmp instanceof SerializerFactory factory) {
+                sf = factory;
            	}
            	tmp = ts.getDeserializer();
             DeserializerFactory df = null;
-           	if (tmp instanceof DeserializerFactory) {
-                df = (DeserializerFactory) tmp;
+           	if (tmp instanceof DeserializerFactory factory) {
+                df = factory;
            	}
            	      
         	if (javaType != null
@@ -2209,8 +2204,7 @@ public class WSIFOperation_ApacheAxis extends WSIFDefaultOperation {
                         {
                             dest.setProperty(name, value);
                         }
-                    } else if (value instanceof WSIFAttachmentPart) {
-                        WSIFAttachmentPart ap = (WSIFAttachmentPart) value;
+                    } else if (value instanceof WSIFAttachmentPart ap) {
                         axisInputs.add(ap.getDataHandler());
                     } else {
                         axisInputs.add(value);
@@ -2417,15 +2411,15 @@ public class WSIFOperation_ApacheAxis extends WSIFDefaultOperation {
         }
         
         //TODO: will there ever be more than 1?
-        RPCParam rpcParam = (RPCParam) params.get(0);        
+        RPCParam rpcParam = (RPCParam) params.getFirst();        
 
         QName qn = rpcParam.getQName();
         Part p = findPart(outputMIMEParts, qn);
 	    if (p != null) {
         	Object responseValue = rpcParam.getValue();
-	    	if (responseValue instanceof AttachmentPart) {
+	    	if (responseValue instanceof AttachmentPart part) {
 	    		try {
-                    Object attachment = ((AttachmentPart)responseValue).getDataHandler();
+                    Object attachment = part.getDataHandler();
             		String partName = p.getName();
 		            outMsg.setObjectPart(partName, attachment);
                 } catch (SOAPException e) {
@@ -2623,8 +2617,8 @@ public class WSIFOperation_ApacheAxis extends WSIFDefaultOperation {
 		name = WSIFConstants.CONTEXT_HTTP_USER;
 		try {
 			o = context.getObjectPart(name);
-			if (o instanceof String) {
-				addHTTPHeader(call, name, (String) o);
+			if (o instanceof String string) {
+				addHTTPHeader(call, name, string);
 			}
 		} catch (WSIFException ex) {
 			Trc.ignoredException(ex);
@@ -2633,8 +2627,8 @@ public class WSIFOperation_ApacheAxis extends WSIFDefaultOperation {
 		name = WSIFConstants.CONTEXT_HTTP_PSWD;
 		try {
 			o = context.getObjectPart(name);
-			if (o instanceof String) {
-				addHTTPHeader(call, name, (String) o);
+			if (o instanceof String string) {
+				addHTTPHeader(call, name, string);
 			}
 		} catch (WSIFException ex) {
 			Trc.ignoredException(ex);
@@ -2643,8 +2637,8 @@ public class WSIFOperation_ApacheAxis extends WSIFDefaultOperation {
 		try {
 			name = WSIFConstants.CONTEXT_REQUEST_SOAP_HEADERS;
 			o = context.getObjectPart(name);
-			if (o instanceof List) {
-				addSOAPHeader(call, name, (List) o);
+			if (o instanceof List list) {
+				addSOAPHeader(call, name, list);
 			}
 		} catch (WSIFException ex) {
 			Trc.ignoredException(ex);
@@ -2658,10 +2652,10 @@ public class WSIFOperation_ApacheAxis extends WSIFDefaultOperation {
 			Trc.ignoredException(ex);
 		}
     	if (o != null) {
-    	    if (o != null && o instanceof Hashtable) {
+    	    if (o != null && o instanceof Hashtable hashtable) {
         	    call.setProperty(
     	            HTTPConstants.REQUEST_HEADERS,
-    		        (Hashtable) o);
+    		        hashtable);
 	    	} else {
 		    	throw new WSIFException(
 			        "value type must be java.util.Hashtable for context part '"
@@ -2683,8 +2677,8 @@ public class WSIFOperation_ApacheAxis extends WSIFDefaultOperation {
     	try {
             Object o = ctx.getObjectPart(WSIFConstants.CONTEXT_HTTP_PROXY_USER);
             if (o != null) {
-                if ( o instanceof String) {
-                	uid = (String) o;
+                if ( o instanceof String string) {
+                	uid = string;
                 } else {
                 	throw new WSIFException(
                 	    "invalid value type for context part '"
@@ -2695,8 +2689,8 @@ public class WSIFOperation_ApacheAxis extends WSIFDefaultOperation {
             }
             o = ctx.getObjectPart(WSIFConstants.CONTEXT_HTTP_PROXY_PSWD);
             if (o != null) {
-                if ( o instanceof String) {
-                	pswd = (String) o;
+                if ( o instanceof String string) {
+                	pswd = string;
                 } else {
                 	throw new WSIFException(
                 	    "invalid value type for context part '"
@@ -2746,8 +2740,8 @@ public class WSIFOperation_ApacheAxis extends WSIFDefaultOperation {
 	private void addSOAPHeader(Call call, String name, List soapHeaders) {
 		for (Iterator i = soapHeaders.iterator(); i.hasNext();) {
 			Object o = i.next();
-			if (o instanceof Element) {
-				call.addHeader(new SOAPHeaderElement((Element) o));
+			if (o instanceof Element element) {
+				call.addHeader(new SOAPHeaderElement(element));
 			}
 		}
 	}
@@ -2762,8 +2756,7 @@ public class WSIFOperation_ApacheAxis extends WSIFDefaultOperation {
             ArrayList headers = new ArrayList();
             for(Iterator i = soapHeader.getChildElements(); i.hasNext(); ) {
           	    Object o = i.next();
-          	    if (o instanceof SOAPHeaderElement) {
-          		    SOAPHeaderElement she = (SOAPHeaderElement) o;
+          	    if (o instanceof SOAPHeaderElement she) {
           		    try {
                         headers.add(she.getAsDOM());
                     } catch (Exception e) {
@@ -2828,14 +2821,14 @@ public class WSIFOperation_ApacheAxis extends WSIFDefaultOperation {
 		try {
 			if (WSIFConstants.WSIF_PROP_SYNC_TIMEOUT.equals(propertyName)) {
 				isTimeoutProperty = true;
-				Long syncTimeout = new Long(value.toString());
+				Long syncTimeout = Long.valueOf(value.toString());
 				WSIFJmsTransport transport = (WSIFJmsTransport) getTransport();
 				transport.setSyncTimeout(syncTimeout);
 				Trc.event(this, "overridding syncTimeout to " + syncTimeout);
 			} else if (
 				WSIFConstants.WSIF_PROP_ASYNC_TIMEOUT.equals(propertyName)) {
 				isTimeoutProperty = true;
-				Long asyncTimeout = new Long(value.toString());
+				Long asyncTimeout = Long.valueOf(value.toString());
 				WSIFJmsTransport transport = (WSIFJmsTransport) getTransport();
 				transport.setAsyncTimeout(asyncTimeout);
 				Trc.event(this, "overridding asyncTimeout to " + asyncTimeout);

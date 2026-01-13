@@ -46,7 +46,8 @@ import com.ibm.wsdl.util.xml.DOMUtils;
 public class EJBBindingSerializer
         implements ExtensionSerializer, ExtensionDeserializer, Serializable {
 
-	private static final long serialVersionUID = 1L;
+    @Serial
+    private static final long serialVersionUID = 1L;
             
     public void marshall(
         Class parentType,
@@ -62,8 +63,7 @@ public class EJBBindingSerializer
             return;
         }
 
-        if (extension instanceof EJBBinding) {
-            EJBBinding ejbBinding = (EJBBinding) extension;
+        if (extension instanceof EJBBinding ejbBinding) {
             pw.print("      <ejb:binding");
 
             Boolean required = extension.getRequired();
@@ -76,8 +76,7 @@ public class EJBBindingSerializer
             }
 
             pw.println("/>");
-        } else if (extension instanceof EJBOperation) {
-            EJBOperation ejbOperation = (EJBOperation) extension;
+        } else if (extension instanceof EJBOperation ejbOperation) {
             pw.print("      <ejb:operation");
 
             if (ejbOperation.getMethodName() != null) {
@@ -109,8 +108,7 @@ public class EJBBindingSerializer
             }
 
             pw.println("/>");
-        } else if (extension instanceof EJBAddress) {
-            EJBAddress ejbAddress = (EJBAddress) extension;
+        } else if (extension instanceof EJBAddress ejbAddress) {
             pw.print("      <ejb:address");
 
             if (ejbAddress.getClassName() != null) {

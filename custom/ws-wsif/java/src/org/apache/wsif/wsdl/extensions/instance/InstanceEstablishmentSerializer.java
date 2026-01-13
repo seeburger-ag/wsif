@@ -51,7 +51,8 @@ import com.ibm.wsdl.util.xml.DOMUtils;
 public class InstanceEstablishmentSerializer
     implements ExtensionSerializer, ExtensionDeserializer, Serializable {
 
-	private static final long serialVersionUID = 1L;
+    @Serial
+    private static final long serialVersionUID = 1L;
         
     public void marshall(
         Class parentType,
@@ -113,7 +114,7 @@ public class InstanceEstablishmentSerializer
         //    }
 
         if (requiredStr != null) {
-            instanceEstablishment.setRequired(new Boolean(requiredStr));
+            instanceEstablishment.setRequired(Boolean.valueOf(requiredStr));
         }
 
         Trc.exit(instanceEstablishment);

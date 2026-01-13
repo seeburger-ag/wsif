@@ -48,7 +48,8 @@ import java.util.*;
  */
 public class WSIFPort_JCA extends WSIFDefaultPort {
 
-	private static final long serialVersionUID = 1L;
+    @Serial
+    private static final long serialVersionUID = 1L;
 	private Connection fieldConnection;
 	private Port fieldPort;
 	private Definition fieldDefinition;

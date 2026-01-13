@@ -424,10 +424,10 @@ public class WSIFServiceImpl implements WSIFService {
         this.schemaTypes = (ArrayList) svc.schemaTypes.clone();
         this.mapCon = svc.mapCon;
         this.mapper = svc.mapper;
-        if (svc.features instanceof Hashtable) {
-            this.features = (Map) ((Hashtable) svc.features).clone();
-        } else if (svc.features instanceof HashMap) {
-            this.features = (Map) ((HashMap) svc.features).clone();
+        if (svc.features instanceof Hashtable hashtable) {
+            this.features = (Map) hashtable.clone();
+        } else if (svc.features instanceof HashMap map) {
+            this.features = (Map) map.clone();
         } else {
             this.features = svc.features;
         }
@@ -511,7 +511,7 @@ public class WSIFServiceImpl implements WSIFService {
         checkWSDLForWSIF(def);
         List bindingExList = port.getBinding().getExtensibilityElements();
         ExtensibilityElement bindingFirstEx =
-            (ExtensibilityElement) bindingExList.get(0);
+            (ExtensibilityElement) bindingExList.getFirst();
         String bindingNS = bindingFirstEx.getElementType().getNamespaceURI();
         WSIFProvider provider = WSIFPluggableProviders.getProvider(bindingNS);
         if (provider == null) {
@@ -593,7 +593,7 @@ public class WSIFServiceImpl implements WSIFService {
      */
     private void mapType(QName xmlType, Class javaType, boolean force)
         throws WSIFException {
-        Trc.entry(this, xmlType, javaType, new Boolean(force));
+        Trc.entry(this, xmlType, javaType, Boolean.valueOf(force));
         typeMap.mapType(xmlType, javaType, force);
         Trc.exit();
     }
@@ -877,14 +877,14 @@ public class WSIFServiceImpl implements WSIFService {
                 List bindingExList = binding.getExtensibilityElements();
                 if (bindingExList.size() > 0) {
                     ExtensibilityElement bindingFirstEx =
-                        (ExtensibilityElement) bindingExList.get(0);
+                        (ExtensibilityElement) bindingExList.getFirst();
                     String bindingNS =
                         bindingFirstEx.getElementType().getNamespaceURI();
                     String addressNS;
                     List addressExList = port.getExtensibilityElements();
                     if (addressExList.size() > 0) {
                         ExtensibilityElement addressFirstEx =
-                            (ExtensibilityElement) addressExList.get(0);
+                            (ExtensibilityElement) addressExList.getFirst();
                         addressNS =
                             addressFirstEx.getElementType().getNamespaceURI();
                     } else {
@@ -1132,9 +1132,9 @@ public class WSIFServiceImpl implements WSIFService {
             Parser.getAllSchemaTypes(def, schemaTypes, loc);
 
             // if we can, close the WSDLLocator
-            if (loc instanceof ClosableLocator) {
+            if (loc instanceof ClosableLocator locator) {
                 try {
-                    ((ClosableLocator) loc).close();
+                    locator.close();
                 } catch (IOException ioe) {
                     // Ignore. Is this the correct thing to do??
                     Trc.ignoredException(ioe);
@@ -1215,8 +1215,8 @@ public class WSIFServiceImpl implements WSIFService {
             return false;
         }
         Object on = features.get(WSIFConstants.WSIF_FEATURE_AUTO_MAP_TYPES);
-        if (on != null && on instanceof Boolean) {
-            if (((Boolean) on).booleanValue()) {
+        if (on != null && on instanceof Boolean boolean1) {
+            if (boolean1.booleanValue()) {
                 return true;
             } else {
                 return false;
@@ -1230,8 +1230,8 @@ public class WSIFServiceImpl implements WSIFService {
         if (features != null) {
             Object pa =
                 features.get(WSIFConstants.WSIF_FEATURE_PROXY_AUTHENTICATION);
-            if (pa != null && pa instanceof PasswordAuthentication) {
-                return (PasswordAuthentication) pa;
+            if (pa != null && pa instanceof PasswordAuthentication authentication) {
+                return authentication;
             }
         }
         return null;

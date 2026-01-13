@@ -127,7 +127,7 @@ public class WSIFJmsTransport extends Transport {
         context.setTransportName("jms");
         if (destination != null)
             context.setProperty(DESTINATION, destination);
-        context.setProperty(ASYNCOPERATION, new Boolean(asyncOperation));
+        context.setProperty(ASYNCOPERATION, Boolean.valueOf(asyncOperation));
         if (wsifOperation != null)
             context.setProperty(WSIFOPERATION, wsifOperation);
         if (syncTimeout != null)

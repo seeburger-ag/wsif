@@ -104,7 +104,7 @@ public class WSIFProperties {
         	Trc.exception(e);
             t = 0;
         }
-        Trc.exit(new Long(t));
+        Trc.exit(Long.valueOf(t));
         return t;
     }
 
@@ -125,7 +125,7 @@ public class WSIFProperties {
         	Trc.exception(e);
             t = 0;
         }
-        Trc.exit(new Long(t));
+        Trc.exit(Long.valueOf(t));
         return t;
     }
     

@@ -49,7 +49,8 @@ import java.util.*;
  */
 public class WSIFOperation_JCA implements WSIFOperation {
 
-	private static final long serialVersionUID = 1L;
+    @Serial
+    private static final long serialVersionUID = 1L;
 	protected Connection fieldConnection;
 	protected InteractionSpec fieldInteractionSpec;
 	protected Definition fieldDefinition;
@@ -135,8 +136,8 @@ public class WSIFOperation_JCA implements WSIFOperation {
 			Interaction interaction = this.fieldConnection.createInteraction();
 			interaction.execute(this.fieldInteractionSpec, (javax.resource.cci.Record) input, (javax.resource.cci.Record) output);
 			interaction.close();
-			if (output instanceof WSIFMessage_JCA) {
-				((WSIFMessage_JCA) output).setInteractionSpec(this.fieldInteractionSpec);
+			if (output instanceof WSIFMessage_JCA cA) {
+				cA.setInteractionSpec(this.fieldInteractionSpec);
 			}
 			fieldFactory.updateOutputMessage(output, fieldBinding, fieldOperationName, fieldInputName, fieldOutputName, fieldInteractionSpec);
 		}

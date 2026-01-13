@@ -34,7 +34,8 @@ import javax.wsdl.*;
  */
 public class PortTypeSelection implements java.io.Serializable {
 
-	private static final long serialVersionUID = 1L;
+    @Serial
+    private static final long serialVersionUID = 1L;
 	private javax.xml.namespace.QName fieldPortTypeQName = null;
 	private OperationSelection[] fieldOperationSelection = null;
 

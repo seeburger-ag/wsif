@@ -34,7 +34,8 @@ import org.apache.wsif.logging.Trc;
  */
 public class JavaExtensionRegistry
     extends javax.wsdl.extensions.ExtensionRegistry {
-	private static final long serialVersionUID = 1L;
+    @Serial
+    private static final long serialVersionUID = 1L;
         
     public JavaExtensionRegistry() {
         super();

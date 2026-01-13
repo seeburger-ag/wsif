@@ -1,9 +1,0 @@
-<?xml version="1.0"?>
-<schema xmlns="http://www.w3.org/2001/XMLSchema"
-        targetNamespace="http://www.buyservice.com/buy-types"
-        xmlns:buy="http://www.buyservice.com/buy-types">
-    <annotation>
-        <documentation>This schema defines the input structure for the buy service</documentation>
-    </annotation>
-
-</schema>

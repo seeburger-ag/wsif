@@ -37,8 +37,9 @@ import javax.xml.namespace.QName;
  * @author Paul Fremantle <pzf@uk.ibm.com>
  */
 public class WSIFResponse implements Serializable {
-	
-	private static final long serialVersionUID = 1L;
+
+    @Serial
+    private static final long serialVersionUID = 1L;
 	
     QName serviceID;
     String operationName;

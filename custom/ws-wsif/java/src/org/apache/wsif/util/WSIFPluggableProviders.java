@@ -121,7 +121,7 @@ public class WSIFPluggableProviders {
             return null;
         }
         if (providers.size() == 1) {
-            provider = (WSIFProvider) providers.get(0);
+            provider = (WSIFProvider) providers.getFirst();
         } else {
             provider = chooseProvider(providers, namespaceURI);
         }
@@ -249,7 +249,7 @@ public class WSIFPluggableProviders {
         String namespaceURI,
         boolean issueMessage) {
 
-        Trc.entry(null, namespaceURI, new Boolean(issueMessage));
+        Trc.entry(null, namespaceURI, Boolean.valueOf(issueMessage));
         if (providersFromSPIFiles == null) {
             providersFromSPIFiles = getAllDynamicWSIFProviders();
         }
@@ -332,8 +332,7 @@ public class WSIFPluggableProviders {
         for (Iterator i = classNames.iterator(); i.hasNext();) {
             try {
                 o = Class.forName((String) i.next(), true, loader).newInstance();
-                if (o instanceof org.apache.wsif.spi.WSIFProvider) {
-                    WSIFProvider p = (org.apache.wsif.spi.WSIFProvider) o;
+                if (o instanceof org.apache.wsif.spi.WSIFProvider p) {
                     if (p.getBindingNamespaceURIs().length > 0) {
                         Trc.event(null, "Registering provider: " + p);
                         providers.add(p);
@@ -417,7 +416,7 @@ public class WSIFPluggableProviders {
         if (providers == null || providers.size() < 1) {
             return null;
         } else if (providers.size() == 1) {
-            return (WSIFProvider) providers.get(0);
+            return (WSIFProvider) providers.getFirst();
         }
 
         int i = providers.size() - 1;
@@ -470,7 +469,7 @@ public class WSIFPluggableProviders {
     private static void issueMultipleProvidersMsg(
         String uri,
         ArrayList providers) {
-        String providerNames = providers.get(0).getClass().getName();
+        String providerNames = providers.getFirst().getClass().getName();
         for (int i = 1; i < providers.size(); i++) {
             providerNames += ", " + providers.get(i).getClass().getName();
         }

@@ -49,6 +49,7 @@ import org.apache.wsif.util.jms.WSIFJMSDestination;
  * @author Mark Whitlock <whitlock@apache.org>
  */
 public class WSIFJmsSender extends BasicHandler {
+    @Serial
     private static final long serialVersionUID = 1L;
     private static final long SYNC_TIMEOUT = WSIFProperties.getSyncTimeout();
     private static final long ASYNC_TIMEOUT = WSIFProperties.getAsyncTimeout();

@@ -35,7 +35,8 @@ import org.apache.wsif.format.jms.JMSFormatHandler;
 import org.apache.wsif.logging.Trc;
 
 public class PrimitiveTypeFormatHandler implements JMSFormatHandler {
-	private static final long serialVersionUID = 1L;
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     protected static DateFormat GREGORIAN_CALENDAR_DATE_FORMAT =
         new SimpleDateFormat("yyyy-MM-dd");
@@ -163,10 +164,10 @@ public class PrimitiveTypeFormatHandler implements JMSFormatHandler {
     public void write(Message message) {
         Trc.entry(this, message);
         try {
-            if (message instanceof javax.jms.TextMessage)
-                write((javax.jms.TextMessage) message);
-            else if (message instanceof javax.jms.ObjectMessage)
-                write((javax.jms.ObjectMessage) message);
+            if (message instanceof javax.jms.TextMessage textMessage)
+                write(textMessage);
+            else if (message instanceof javax.jms.ObjectMessage objectMessage)
+                write(objectMessage);
         } catch (Exception e) {
         	Trc.exception(e);
         }
@@ -179,10 +180,10 @@ public class PrimitiveTypeFormatHandler implements JMSFormatHandler {
     public void read(Message message) {
         Trc.entry(this, message);
         try {
-            if (message instanceof javax.jms.TextMessage)
-                read((javax.jms.TextMessage) message);
-            else if (message instanceof javax.jms.ObjectMessage)
-                read((javax.jms.ObjectMessage) message);
+            if (message instanceof javax.jms.TextMessage textMessage)
+                read(textMessage);
+            else if (message instanceof javax.jms.ObjectMessage objectMessage)
+                read(objectMessage);
         } catch (Exception e) {
         	Trc.exception(e);
         }
@@ -195,14 +196,14 @@ public class PrimitiveTypeFormatHandler implements JMSFormatHandler {
 
         if (primitiveType == null)
             value = "";
-        else if (primitiveType instanceof java.util.GregorianCalendar)
+        else if (primitiveType instanceof java.util.GregorianCalendar calendar)
             value =
                 GREGORIAN_CALENDAR_DATE_FORMAT.format(
-                    ((java.util.GregorianCalendar) primitiveType).getTime());
-        else if (primitiveType instanceof java.util.Date)
-            value = STANDARD_DATE_FORMAT.format((java.util.Date) primitiveType);
-        else if (primitiveType instanceof byte[])
-            value = new String((byte[]) primitiveType);
+                    calendar.getTime());
+        else if (primitiveType instanceof java.util.Date date)
+            value = STANDARD_DATE_FORMAT.format(date);
+        else if (primitiveType instanceof byte[] bytes)
+            value = new String(bytes);
         else {
             // Convert the primitiveType to a String
             value = primitiveType.toString();
@@ -213,8 +214,8 @@ public class PrimitiveTypeFormatHandler implements JMSFormatHandler {
     }
 
     private void write(javax.jms.ObjectMessage message) throws JMSException {
-        if (primitiveType != null && primitiveType instanceof java.io.Serializable)
-            message.setObject((java.io.Serializable) primitiveType);
+        if (primitiveType != null && primitiveType instanceof java.io.Serializable serializable)
+            message.setObject(serializable);
     }
 
     private void read(javax.jms.TextMessage message) throws JMSException {

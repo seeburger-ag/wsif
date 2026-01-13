@@ -41,8 +41,9 @@ import org.apache.wsif.util.WSIFUtils;
  * @author Owen Burroughs <owenb@apache.org>
  */
 public class WSIFDynamicTypeMap implements Serializable {
-	
-	private static final long serialVersionUID = 1L;
+
+    @Serial
+    private static final long serialVersionUID = 1L;
 	
     protected Vector typeMapList = new Vector();
     // Create a Vector of xmlTypes (QNames) for faster lookup of existing mappings

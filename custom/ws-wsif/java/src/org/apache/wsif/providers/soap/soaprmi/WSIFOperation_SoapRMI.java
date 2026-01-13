@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.net.URI;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -68,6 +69,7 @@ public class WSIFOperation_SoapRMI
     extends WSIFDefaultOperation
     implements WSIFOperation {
 
+    @Serial
     private static final long serialVersionUID = 1L;
 
     protected WSIFPort_SoapRMI portInstance;
@@ -215,7 +217,7 @@ public class WSIFOperation_SoapRMI
             } else {
                 List parts = output.getMessage().getOrderedParts(null);
                 if (parts.size() > 0) {
-                    returnPart = (Part) parts.get(0);
+                    returnPart = (Part) parts.getFirst();
                     returnName = returnPart.getName();
                 }
             }
@@ -348,7 +350,7 @@ public class WSIFOperation_SoapRMI
             String httpProxyHost = null;
             int httpProxyPort = -1;
 
-            URL url = new URL(locationUri);
+            URL url = URI.create(locationUri).toURL();
 
             Reader reader =
                 HTTPUtils.post(url, requestContent, requestHeaders, "text/xml; charset=utf-8",

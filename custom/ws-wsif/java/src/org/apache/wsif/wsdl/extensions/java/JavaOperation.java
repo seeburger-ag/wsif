@@ -39,7 +39,8 @@ import com.ibm.wsdl.util.StringUtils;
 public class JavaOperation
     implements ExtensibilityElement, java.io.Serializable {
 
-	private static final long serialVersionUID = 1L;
+    @Serial
+    private static final long serialVersionUID = 1L;
         
     protected QName fieldElementType = JavaBindingConstants.Q_ELEM_JAVA_OPERATION;
     // Uses the wrapper type so we can tell if it was set or not.

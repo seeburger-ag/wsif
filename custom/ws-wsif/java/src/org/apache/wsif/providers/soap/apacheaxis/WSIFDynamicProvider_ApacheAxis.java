@@ -86,11 +86,11 @@ public class WSIFDynamicProvider_ApacheAxis implements WSIFProvider {
 		WSIFPort wp = null;
 		for (Iterator i = list.iterator();(i.hasNext() && wp == null);) {
 			Object o = i.next();
-			if (o instanceof SOAPBinding) {
+			if (o instanceof SOAPBinding pBinding) {
 				wp = new WSIFPort_ApacheAxis(
 						definition,
 						port,
-						(SOAPBinding) o,
+						pBinding,
 						wsifdynamictypemap);
 			}
 		}

@@ -44,7 +44,8 @@ import org.apache.wsif.logging.Trc;
  * @author Nirmal Mukhi
  */
 public abstract class WSIFDefaultPort implements WSIFPort {
-	private static final long serialVersionUID = 1L;
+    @Serial
+    private static final long serialVersionUID = 1L;
 	
 	protected WSIFMessage context;
 

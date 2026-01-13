@@ -59,7 +59,7 @@ public class zipcoderesolverProxy
   {
     if (url == null && stringURL != null && stringURL.length() > 0)
     {
-      url = new URL(stringURL);
+      url = URI.create(stringURL).toURL();
     }
     return url;
   }

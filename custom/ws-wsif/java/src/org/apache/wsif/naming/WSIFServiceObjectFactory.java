@@ -76,8 +76,7 @@ public class WSIFServiceObjectFactory implements ObjectFactory {
         Trc.entry(this, obj, name, context, env);
 
         // Check that obj is a Reference object, if not we can't use it.	
-        if (obj instanceof Reference && obj != null) {
-            Reference ref = (Reference) obj;
+        if (obj instanceof Reference ref && obj != null) {
             if (ref.getClassName().equals(WSIFServiceRef.class.getName())) {
                 String wsdlLoc = resolveString(ref.get("wsdlLoc"));
                 String serviceNS = resolveString(ref.get("serviceNS"));

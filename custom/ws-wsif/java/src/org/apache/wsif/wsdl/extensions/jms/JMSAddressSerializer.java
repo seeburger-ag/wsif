@@ -51,6 +51,7 @@ import com.ibm.wsdl.util.xml.QNameUtils;
 public class JMSAddressSerializer
     implements ExtensionSerializer, ExtensionDeserializer, Serializable {
 
+    @Serial
     private static final long serialVersionUID = 1L;
 
     JMSPropertyValueSerializer jmsPropertyValueSerializer;

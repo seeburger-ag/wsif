@@ -25,6 +25,7 @@
 package org.apache.wsif.providers.soap.apacheaxis;
 
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
@@ -66,7 +67,8 @@ import org.apache.wsif.wsdl.extensions.jms.JMSConstants;
  */
 public class WSIFPort_ApacheAxis extends WSIFDefaultPort {
 
-	private static final long serialVersionUID = 2L;
+    @Serial
+    private static final long serialVersionUID = 2L;
 
 	protected Definition definition;
 	protected Port port;
@@ -200,7 +202,7 @@ public class WSIFPort_ApacheAxis extends WSIFDefaultPort {
 				this.soapAddress = null;
 			} else {
 			    try {
-				    this.endPointURL = new URL(s);
+				    this.endPointURL = URI.create(s).toURL();
 			    } catch (MalformedURLException e) {
 				    Trc.exception(e);
 				    throw new WSIFException(
@@ -276,8 +278,8 @@ public class WSIFPort_ApacheAxis extends WSIFDefaultPort {
 	 */
 	public void close() throws WSIFException {
 		Trc.entry(this);
-		if (transport != null && transport instanceof WSIFJmsTransport) {
-			((WSIFJmsTransport) transport).close();
+		if (transport != null && transport instanceof WSIFJmsTransport jmsTransport) {
+			jmsTransport.close();
 		}
 		Trc.exit();
 	}

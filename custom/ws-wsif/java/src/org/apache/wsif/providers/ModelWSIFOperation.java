@@ -652,14 +652,14 @@ abstract public class ModelWSIFOperation implements WSIFOperation {
         List msgParts = msg.getOrderedParts(null);
         if (msgParts != null && !msgParts.isEmpty()) {
             if (unwrap == true) {
-                Part p = (Part) msgParts.get(0);
+                Part p = (Part) msgParts.getFirst();
                 List unwrappedParts =
                     ProviderUtils.unWrapPart(
                         p.getWsdlPart(),
                         wsifPort.getDefinition(),
                         getContext());
                 msgParts.remove(p);
-                msgParts.add(0, unwrappedParts);
+                msgParts.addFirst(unwrappedParts);
             }
             for (Iterator i = msgParts.iterator(); i.hasNext();) {
                 javax.wsdl.Part wsdlPart = (javax.wsdl.Part) i.next();
@@ -872,7 +872,7 @@ abstract public class ModelWSIFOperation implements WSIFOperation {
     protected Part getReturnPart() {
         Part returnPart;
         if (outputParts.size() > 0) {
-            returnPart = (Part) outputParts.get(0);
+            returnPart = (Part) outputParts.getFirst();
         } else {
             returnPart = null;
         }
@@ -897,7 +897,7 @@ abstract public class ModelWSIFOperation implements WSIFOperation {
     protected void SetReturnPart(Part returnPart) throws WSIFException {
         if (outputParts.contains(returnPart)) {
             outputParts.remove(returnPart);
-            outputParts.add(0, returnPart);
+            outputParts.addFirst(returnPart);
         } else {
             throw new WSIFException("part does not exist: " + returnPart);
         }

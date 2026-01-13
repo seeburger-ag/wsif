@@ -79,7 +79,7 @@ public class WSIFDefaultCorrelationService implements WSIFCorrelationService {
 		Serializable state,
 		long timeout)
 		throws WSIFException {
-		Trc.entry(this, correlator, state, new Long(timeout));
+		Trc.entry(this, correlator, state, Long.valueOf(timeout));
 		if (correlator != null && state != null) {
 			if (correlatorStore == null) {
 				initialise();
@@ -92,7 +92,7 @@ public class WSIFDefaultCorrelationService implements WSIFCorrelationService {
 					}
 					timeouts.put(
 						correlator,
-						new Long(System.currentTimeMillis() + timeout));
+                        Long.valueOf(System.currentTimeMillis() + timeout));
 				}
 			} catch (IOException ex) {
 				Trc.exception(ex);
@@ -207,7 +207,7 @@ public class WSIFDefaultCorrelationService implements WSIFCorrelationService {
 		Long expireTime;
 		Serializable key;
 		ArrayList expiredKeys = new ArrayList();
-		Long now = new Long(System.currentTimeMillis());
+		Long now = Long.valueOf(System.currentTimeMillis());
 		// add to expiredKeys all the keys whose timouts have expired 
 		try {
 			for (Iterator i = timeouts.keySet().iterator(); i.hasNext();) {

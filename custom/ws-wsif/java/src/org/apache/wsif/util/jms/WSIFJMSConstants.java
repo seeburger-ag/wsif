@@ -46,8 +46,8 @@ public final class WSIFJMSConstants {
         return new WSIFException(
             "WSIF Jms support caught '"
                 + t
-                + ((t instanceof JMSException)
-                    ? ("' linked exception '" + ((JMSException) t).getLinkedException() + "'")
+                + ((t instanceof JMSException jmse)
+                    ? ("' linked exception '" + jmse.getLinkedException() + "'")
                     : "'"));
     }
 

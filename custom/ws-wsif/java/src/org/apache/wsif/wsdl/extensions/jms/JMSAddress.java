@@ -38,7 +38,8 @@ import javax.xml.namespace.QName;
  */
 public class JMSAddress implements ExtensibilityElement, Serializable {
 
-	private static final long serialVersionUID = 1L;
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     protected QName fieldElementType = JMSConstants.Q_ELEM_JMS_ADDRESS;
     // Uses the wrapper type so we can tell if it was set or not.

@@ -62,6 +62,7 @@ import org.apache.wsif.wsdl.extensions.jms.JMSProperty;
  */
 public class JMSFormatter implements WSIFFormatter, Serializable {
 
+    @Serial
     private static final long serialVersionUID = 1L;
 
     private javax.wsdl.Definition fieldDefinition;
@@ -214,7 +215,7 @@ public class JMSFormatter implements WSIFFormatter, Serializable {
 		if (portType!= null) {
 		   List operations = portType.getOperations();
 		   if (operations != null && operations.size() == 1 ) {
-			     javax.wsdl.Operation o = (javax.wsdl.Operation)operations.get(0);
+			     javax.wsdl.Operation o = (javax.wsdl.Operation)operations.getFirst();
 				 operationName = o.getName();
 				 if (o.getInput() != null) {
 				    input = o.getInput().getName();
@@ -291,7 +292,7 @@ public class JMSFormatter implements WSIFFormatter, Serializable {
 				List operations = portType.getOperations();
 				if (operations != null) {
 					if (operations.size() == 1) {
-						javax.wsdl.Operation o = (javax.wsdl.Operation)operations.get(0);
+						javax.wsdl.Operation o = (javax.wsdl.Operation)operations.getFirst();
 						operationName = o.getName();
 						if (o.getInput() != null)
 							input = o.getInput().getName();
@@ -417,8 +418,7 @@ public class JMSFormatter implements WSIFFormatter, Serializable {
                     
                     // Ignore anything that isn't a fault indicator, since
                     // those will be dealt with by unformatFaultMessage.
-                    if (bndFElem instanceof JMSFaultIndicator) {
-                        JMSFaultIndicator indic = (JMSFaultIndicator) bndFElem;
+                    if (bndFElem instanceof JMSFaultIndicator indic) {
 
                         // Only the first fault indicator that matches is used.
                         // If others match, then this error is ignored.
@@ -558,8 +558,8 @@ public class JMSFormatter implements WSIFFormatter, Serializable {
             while (inputIterator.hasNext()) {
                 ExtensibilityElement ele =
                     (ExtensibilityElement) inputIterator.next();
-                if (ele instanceof JMSInput) {
-                    return ((JMSInput) ele).getParts();
+                if (ele instanceof JMSInput input) {
+                    return input.getParts();
                 }
             }
         }
@@ -575,8 +575,8 @@ public class JMSFormatter implements WSIFFormatter, Serializable {
             while (outputIterator.hasNext()) {
                 ExtensibilityElement ele =
                     (ExtensibilityElement) outputIterator.next();
-                if (ele instanceof JMSOutput) {
-                    return ((JMSOutput) ele).getParts();
+                if (ele instanceof JMSOutput output) {
+                    return output.getParts();
                 }
             }
         }
@@ -591,8 +591,8 @@ public class JMSFormatter implements WSIFFormatter, Serializable {
             Iterator it = bindingFault.getExtensibilityElements().iterator();
             while (it.hasNext()) {
                 Object ele = it.next();
-                if (ele instanceof JMSFault) {
-                    list = ((JMSFault) ele).getParts();
+                if (ele instanceof JMSFault fault) {
+                    list = fault.getParts();
                     break;
                 }
             }

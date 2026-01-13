@@ -98,8 +98,9 @@ import org.xml.sax.InputSource;
 public class WSIFOperation_ApacheSOAP
     extends WSIFDefaultOperation
     implements WSIFOperation, Serializable {
-    	
-	private static final long serialVersionUID = 1L;
+
+    @Serial
+    private static final long serialVersionUID = 1L;
     	
     transient protected String style = null;
 
@@ -350,7 +351,7 @@ public class WSIFOperation_ApacheSOAP
             } else {
                 List parts = output.getMessage().getOrderedParts(null);
                 if (parts.size() > 0) {
-                    returnPart = (Part) parts.get(0);
+                    returnPart = (Part) parts.getFirst();
                     returnName = returnPart.getName();
                 }
             }
@@ -574,8 +575,7 @@ public class WSIFOperation_ApacheSOAP
         SOAPTransport st = getTransport();
         if (st != null) {
             call.setSOAPTransport(st);
-            if (st instanceof SOAPJMSConnection) {
-            	SOAPJMSConnection sjt = (SOAPJMSConnection) st;
+            if (st instanceof SOAPJMSConnection sjt) {
             	sjt.setSyncTimeout(WSIFProperties.getSyncTimeout());
             	sjt.setAsyncTimeout(WSIFProperties.getAsyncTimeout());
             }
@@ -715,8 +715,7 @@ public class WSIFOperation_ApacheSOAP
                 portInstance.getSOAPMappingRegistry().querySerializer(
                     part.getClass(),
                     inputUse);
-            if (o instanceof PartSerializer) {
-                PartSerializer tmp = (PartSerializer) o;
+            if (o instanceof PartSerializer tmp) {
                 try {
                     partSerializer =
                         (PartSerializer) tmp.getClass().newInstance();
@@ -755,8 +754,7 @@ public class WSIFOperation_ApacheSOAP
 
         SOAPTransport st = getTransport();
 
-        if (st instanceof SOAPJMSConnection) {
-           SOAPJMSConnection sjt = (SOAPJMSConnection) st;
+        if (st instanceof SOAPJMSConnection sjt) {
            sjt.setSyncTimeout(WSIFProperties.getSyncTimeout());
            sjt.setAsyncTimeout(WSIFProperties.getAsyncTimeout());
         }
@@ -837,8 +835,7 @@ public class WSIFOperation_ApacheSOAP
                         partType.getLocalPart()),
                     encoding);
 
-            if (o instanceof PartSerializer) {
-                PartSerializer tmp = (PartSerializer) o;
+            if (o instanceof PartSerializer tmp) {
                 try {
                     partSerializer =
                         (PartSerializer) tmp.getClass().newInstance();
@@ -1503,8 +1500,8 @@ public class WSIFOperation_ApacheSOAP
         name = WSIFConstants.CONTEXT_HTTP_USER;
         try {
             o = context.getObjectPart(name);
-            if (o instanceof String) {
-                addHTTPHeader(call, name, (String) o);
+            if (o instanceof String string) {
+                addHTTPHeader(call, name, string);
             }
         } catch (WSIFException ex) {
             Trc.ignoredException(ex);
@@ -1514,8 +1511,8 @@ public class WSIFOperation_ApacheSOAP
         name = WSIFConstants.CONTEXT_HTTP_PSWD;
         try {
             o = context.getObjectPart(name);
-            if (o instanceof String) {
-                addHTTPHeader(call, name, (String) o);
+            if (o instanceof String string) {
+                addHTTPHeader(call, name, string);
             }
         } catch (WSIFException ex) {
             Trc.ignoredException(ex);
@@ -1525,8 +1522,8 @@ public class WSIFOperation_ApacheSOAP
         try {
             name = WSIFConstants.CONTEXT_REQUEST_SOAP_HEADERS;
             o = context.getObjectPart(name);
-            if (o instanceof List) {
-                addSOAPHeader(call, name, (List) o);
+            if (o instanceof List list) {
+                addSOAPHeader(call, name, list);
             }
         } catch (WSIFException ex) {
             Trc.ignoredException(ex);
@@ -1651,8 +1648,8 @@ public class WSIFOperation_ApacheSOAP
     	try {
             Object o = ctx.getObjectPart(WSIFConstants.CONTEXT_HTTP_PROXY_USER);
             if (o != null) {
-                if ( o instanceof String) {
-                	uid = (String) o;
+                if ( o instanceof String string) {
+                	uid = string;
                 } else {
                 	throw new WSIFException(
                 	    "invalid value type for context part '"
@@ -1663,8 +1660,8 @@ public class WSIFOperation_ApacheSOAP
             }
             o = ctx.getObjectPart(WSIFConstants.CONTEXT_HTTP_PROXY_PSWD);
             if (o != null) {
-                if ( o instanceof String) {
-                	pswd = (String) o;
+                if ( o instanceof String string) {
+                	pswd = string;
                 } else {
                 	throw new WSIFException(
                 	    "invalid value type for context part '"
@@ -1701,8 +1698,7 @@ public class WSIFOperation_ApacheSOAP
 		Trc.entry(this, t, propertyName, value);
 		boolean isTimeoutProperty = false;
 		if (t != null 
-		&& t instanceof SOAPJMSConnection) {
-		   SOAPJMSConnection st = (SOAPJMSConnection) t;
+		&& t instanceof SOAPJMSConnection st) {
    		   try {
 			  if (WSIFConstants.WSIF_PROP_SYNC_TIMEOUT.equals(propertyName)) {
 			     isTimeoutProperty = true;

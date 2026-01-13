@@ -63,7 +63,8 @@ public class WSIFPort_EJB
     extends org.apache.wsif.base.WSIFDefaultPort
     implements java.io.Serializable {
 
-	private static final long serialVersionUID = 1L;
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     private javax.wsdl.Definition fieldDefinition = null;
     private javax.wsdl.Port fieldPortModel = null;
@@ -133,7 +134,7 @@ public class WSIFPort_EJB
 
             try {
                 ExtensibilityElement portExtension =
-                    (ExtensibilityElement) fieldPortModel.getExtensibilityElements().get(0);
+                    (ExtensibilityElement) fieldPortModel.getExtensibilityElements().getFirst();
 
                 if (portExtension == null) {
                     throw new WSIFException("missing port extension");
@@ -427,15 +428,13 @@ public class WSIFPort_EJB
         // the objects now
         if (separatedEJBRefs) {
         	Object objHome = ois.readObject();
-        	if (objHome != null && objHome instanceof HomeHandle) {
-        		HomeHandle homeHandle = (HomeHandle) objHome;
+        	if (objHome != null && objHome instanceof HomeHandle homeHandle) {
         		fieldEjbHome = homeHandle.getEJBHome();
         	}
         	// else - If the object is null then we don't need to do anything
         	
         	Object obj = ois.readObject();
-        	if (obj != null && obj instanceof Handle) {
-        		Handle handle = (Handle) obj;
+        	if (obj != null && obj instanceof Handle handle) {
         		fieldEjbObject = handle.getEJBObject();
         	}
         	// else - If the object is null then we don't need to do anything        	

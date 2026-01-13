@@ -49,8 +49,9 @@ import com.ibm.wsdl.util.xml.DOMUtils;
  */
 public class JMSOperationSerializer
     implements ExtensionSerializer, ExtensionDeserializer, Serializable {
-    	
-   	private static final long serialVersionUID = 1L;
+
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     /**
      * @see ExtensionSerializer#marshall(Class, QName, ExtensibilityElement, PrintWriter, Definition, ExtensionRegistry)

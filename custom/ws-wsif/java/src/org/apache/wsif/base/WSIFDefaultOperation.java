@@ -45,7 +45,8 @@ import org.apache.wsif.wsdl.extensions.jms.JMSProperty;
 import org.apache.wsif.wsdl.extensions.jms.JMSPropertyValue;
 
 public abstract class WSIFDefaultOperation implements WSIFOperation {
-	private static final long serialVersionUID = 1L;
+    @Serial
+    private static final long serialVersionUID = 1L;
     transient protected HashMap inJmsProps = new HashMap();
     transient protected HashMap outJmsProps = new HashMap();
     transient protected HashMap inJmsPropVals = new HashMap();
@@ -304,11 +305,9 @@ public abstract class WSIFDefaultOperation implements WSIFOperation {
         HashMap props = new HashMap(list.size());
         for (Iterator it = list.iterator(); it.hasNext();) {
             Object ee = it.next();
-            if (ee instanceof JMSProperty) {
-                JMSProperty prop = (JMSProperty) ee;
+            if (ee instanceof JMSProperty prop) {
                 props.put(prop.getPart(), prop.getName());
-            } else if (ee instanceof JMSPropertyValue) {
-                JMSPropertyValue propVal = (JMSPropertyValue) ee;
+            } else if (ee instanceof JMSPropertyValue propVal) {
     
                 String name = propVal.getName();
                 if (name == null || name.length() == 0)
@@ -354,26 +353,26 @@ public abstract class WSIFDefaultOperation implements WSIFOperation {
                         obj = value;
                     else if (
                         "int".equals(cls) || Integer.class.equals(javaClass))
-                        obj = new Integer(value);
+                        obj = Integer.valueOf(value);
                     else if (
                         "boolean".equals(cls)
                             || Boolean.class.equals(javaClass))
-                        obj = new Boolean(value);
+                        obj = Boolean.valueOf(value);
                     else if (
                         "byte".equals(cls) || Byte.class.equals(javaClass))
-                        obj = new Byte(value);
+                        obj = Byte.valueOf(value);
                     else if (
                         "double".equals(cls) || Double.class.equals(javaClass))
-                        obj = new Double(value);
+                        obj = Double.valueOf(value);
                     else if (
                         "float".equals(cls) || Float.class.equals(javaClass))
-                        obj = new Float(value);
+                        obj = Float.valueOf(value);
                     else if (
                         "long".equals(cls) || Long.class.equals(javaClass))
-                        obj = new Long(value);
+                        obj = Long.valueOf(value);
                     else if (
                         "short".equals(cls) || Short.class.equals(javaClass))
-                        obj = new Short(value);
+                        obj = Short.valueOf(value);
                     else if (classNotFound != null)
                         throw new WSIFException(
                             "Unexpected ClassNotFoundException when processing "

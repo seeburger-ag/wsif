@@ -42,7 +42,8 @@ import org.apache.wsif.wsdl.extensions.instance.InstanceEstablishmentSerializer;
  * @author Mark Whitlock <whitlock@apache.org>
  */
 public class PopulatedInstanceExtensionRegistry extends ExtensionRegistry {
-	private static final long serialVersionUID = 1L;
+    @Serial
+    private static final long serialVersionUID = 1L;
     
     public PopulatedInstanceExtensionRegistry() {
         super();

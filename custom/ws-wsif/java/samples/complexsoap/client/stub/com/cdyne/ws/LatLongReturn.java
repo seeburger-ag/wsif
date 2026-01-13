@@ -199,8 +199,8 @@ public class LatLongReturn  implements java.io.Serializable {
         }
         __hashCodeCalc = true;
         int _hashCode = 1;
-        _hashCode += new Boolean(isServiceError()).hashCode();
-        _hashCode += new Boolean(isAddressError()).hashCode();
+        _hashCode += Boolean.valueOf(isServiceError()).hashCode();
+        _hashCode += Boolean.valueOf(isAddressError()).hashCode();
         if (getCity() != null) {
             _hashCode += getCity().hashCode();
         }

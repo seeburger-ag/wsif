@@ -539,11 +539,11 @@ public class Trc {
 
     public static void entry(Object that, boolean b) {
         if (ON)
-            entry(that, new Boolean(b));
+            entry(that, Boolean.valueOf(b));
     }
     public static void entry(Object that, int i) {
         if (ON)
-            entry(that, new Integer(i));
+            entry(that, Integer.valueOf(i));
     }
 
     /**
@@ -577,11 +577,11 @@ public class Trc {
      */
     public static void exit(boolean b) {
         if (ON)
-            exit(new Boolean(b));
+            exit(Boolean.valueOf(b));
     }
     public static void exit(int i) {
         if (ON)
-            exit(new Integer(i));
+            exit(Integer.valueOf(i));
     }
 
     /**
@@ -1025,89 +1025,79 @@ public class Trc {
         String str = null;
         boolean found = false;
 
-        if (o instanceof Definition) {
+        if (o instanceof Definition d) {
             found = true;
-            Definition d = (Definition) o;
             if (d == null)
                 str = "definition(NULL)";
             else if (d.getQName() == null)
                 str = "definition(UNNAMED";
             else
                 str = "definition(" + d.getQName();
-        } else if (o instanceof Service) {
+        } else if (o instanceof Service s) {
             found = true;
-            Service s = (Service) o;
             if (s == null)
                 str = "service(NULL)";
             else if (s.getQName() == null)
                 str = "service(UNNAMED";
             else
                 str = "service(" + s.getQName();
-        } else if (o instanceof Port) {
+        } else if (o instanceof Port p) {
             found = true;
-            Port p = (Port) o;
             if (p == null)
                 str = "port(NULL)";
             else if (p.getName() == null)
                 str = "port(UNNAMED";
             else
                 str = "port(" + p.getName();
-        } else if (o instanceof PortType) {
+        } else if (o instanceof PortType pt) {
             found = true;
-            PortType pt = (PortType) o;
             if (pt == null)
                 str = "portType(NULL)";
             else if (pt.getQName() == null)
                 str = "portType(UNNAMED";
             else
                 str = "portType(" + pt.getQName();
-        } else if (o instanceof Operation) {
+        } else if (o instanceof Operation op) {
             found = true;
-            Operation op = (Operation) o;
             if (op == null)
                 str = "operation(NULL)";
             else if (op.getName() == null)
                 str = "operation(UNNAMED";
             else
                 str = "operation(" + op.getName();
-        } else if (o instanceof Binding) {
+        } else if (o instanceof Binding b) {
             found = true;
-            Binding b = (Binding) o;
             if (b == null)
                 str = "binding(NULL)";
             else if (b.getQName() == null)
                 str = "binding(UNNAMED";
             else
                 str = "binding(" + b.getQName();
-        } else if (o instanceof BindingOperation) {
+        } else if (o instanceof BindingOperation bo) {
             found = true;
-            BindingOperation bo = (BindingOperation) o;
             if (bo == null)
                 str = "bindingOperation(NULL)";
             else if (bo.getName() == null)
                 str = "bindingOperation(UNNAMED";
             else
                 str = "bindingOperation(" + bo.getName();
-        } else if (o instanceof BindingInput) {
+        } else if (o instanceof BindingInput bi) {
             found = true;
-            BindingInput bi = (BindingInput) o;
             if (bi == null)
                 str = "bindingInput(NULL)";
             else if (bi.getName() == null)
                 str = "bindingInput(UNNAMED";
             else
                 str = "bindingInput(" + bi.getName();
-        } else if (o instanceof BindingOutput) {
+        } else if (o instanceof BindingOutput bo) {
             found = true;
-            BindingOutput bo = (BindingOutput) o;
             if (bo == null)
                 str = "bindingOutput(NULL)";
             else if (bo.getName() == null)
                 str = "bindingOutput(UNNAMED";
             else
                 str = "bindingOutput(" + bo.getName();
-        } else if (o instanceof Map) {
-            Map map = (Map) o;
+        } else if (o instanceof Map map) {
             HashMap newMap = null;
             Iterator it = map.keySet().iterator();
             while (it.hasNext()) {

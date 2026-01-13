@@ -148,7 +148,7 @@ public class EJBBindingGenerator extends ModelBindingGenerator {
             if (msg != null) {
                 List parts = msg.getOrderedParts(null);
                 if (parts.size() > 0) {
-                    Part part = (Part) parts.get(0);
+                    Part part = (Part) parts.getFirst();
                     String partName = part.getName();
                     ejbOp.setReturnPart(partName);
                 }

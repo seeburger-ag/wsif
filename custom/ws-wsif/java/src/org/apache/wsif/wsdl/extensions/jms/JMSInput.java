@@ -38,7 +38,8 @@ import javax.xml.namespace.QName;
  */
 public class JMSInput implements ExtensibilityElement, Serializable {
 
-	private static final long serialVersionUID = 1L;
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     protected QName fieldElementType = JMSConstants.Q_ELEM_JMS_INPUT;
     // Uses the wrapper type so we can tell if it was set or not.

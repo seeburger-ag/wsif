@@ -36,8 +36,9 @@ import javax.xml.namespace.QName;
  * @author Ant Elder <antelder@apache.org>
  */
 public class JMSOperation implements ExtensibilityElement, Serializable {
-	
-	private static final long serialVersionUID = 1L;
+
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     protected QName fieldElementType = JMSConstants.Q_ELEM_JMS_OPERATION;
     // Uses the wrapper type so we can tell if it was set or not.
