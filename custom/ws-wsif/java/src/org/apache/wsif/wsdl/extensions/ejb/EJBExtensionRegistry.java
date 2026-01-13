@@ -24,6 +24,7 @@
 
 package org.apache.wsif.wsdl.extensions.ejb;
 
+import java.io.Serial;
 import org.apache.wsif.logging.Trc;
 
 /**

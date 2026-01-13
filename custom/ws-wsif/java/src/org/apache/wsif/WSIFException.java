@@ -24,6 +24,7 @@
 
 package org.apache.wsif;
 
+import java.io.Serial;
 import java.rmi.RemoteException;
 import org.apache.wsif.logging.Trc;
 

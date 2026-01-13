@@ -23,6 +23,7 @@
  */
 package org.apache.wsif.providers.jca.toolplugin;
 
+import java.io.Serial;
 import javax.wsdl.*;
 
 /**

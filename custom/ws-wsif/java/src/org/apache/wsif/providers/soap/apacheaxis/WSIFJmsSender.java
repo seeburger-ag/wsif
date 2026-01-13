@@ -27,6 +27,7 @@ package org.apache.wsif.providers.soap.apacheaxis;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.Serial;
 import java.io.Serializable;
 
 import javax.xml.soap.SOAPException;

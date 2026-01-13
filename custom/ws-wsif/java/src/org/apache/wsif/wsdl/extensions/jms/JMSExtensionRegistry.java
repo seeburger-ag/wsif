@@ -24,6 +24,7 @@
 
 package org.apache.wsif.wsdl.extensions.jms;
 
+import java.io.Serial;
 import javax.wsdl.extensions.ExtensionRegistry;
 import org.apache.wsif.logging.Trc;
 

@@ -153,6 +153,8 @@
                         <exclude>**/providers/soap/apachesoap/**/*.java</exclude>
                         <exclude>**/util/jms/JMS2HTTPBridge.java</exclude>
                         <exclude>**/compiler/**/*.java</exclude>
+                        <exclude>**/providers/ejb/**/*.java</exclude>
+                        <exclude>**/wsdl/extensions/ejb/**/*.java</exclude>
                     </excludes>
      <release>21</release>
                 </configuration>

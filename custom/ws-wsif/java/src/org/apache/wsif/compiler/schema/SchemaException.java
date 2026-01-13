@@ -28,6 +28,9 @@ package org.apache.wsif.compiler.schema;
  * @author Matthew J. Duftler
  * @deprecated
  */
+
+import java.io.Serial;
+
 public class SchemaException extends Exception {
     @Serial
     private static final long serialVersionUID = 1L;

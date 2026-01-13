@@ -23,8 +23,7 @@
  */
 
 package org.apache.wsif.providers;
-
-import java.io.Externalizable;
+import java.io.Serial;import java.io.Externalizable;
 
 import javax.xml.namespace.QName;
 

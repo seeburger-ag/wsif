@@ -24,6 +24,7 @@
 
 package org.apache.wsif.wsdl.extensions.ejb;
 
+import java.io.Serial;
 import java.util.List;
 
 import javax.wsdl.extensions.ExtensibilityElement;

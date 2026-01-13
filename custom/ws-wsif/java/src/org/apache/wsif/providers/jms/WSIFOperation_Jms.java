@@ -24,6 +24,7 @@
 
 package org.apache.wsif.providers.jms;
 
+import java.io.Serial;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;

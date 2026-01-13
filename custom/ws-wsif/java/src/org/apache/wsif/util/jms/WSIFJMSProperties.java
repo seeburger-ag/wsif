@@ -24,6 +24,7 @@
 
 package org.apache.wsif.util.jms;
 
+import java.io.Serial;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;

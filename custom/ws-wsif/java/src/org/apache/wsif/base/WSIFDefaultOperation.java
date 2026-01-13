@@ -24,6 +24,7 @@
 
 package org.apache.wsif.base;
 
+import java.io.Serial;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;

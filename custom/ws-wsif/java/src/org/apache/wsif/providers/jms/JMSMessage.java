@@ -24,6 +24,7 @@
 
 package org.apache.wsif.providers.jms;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.Iterator;
 

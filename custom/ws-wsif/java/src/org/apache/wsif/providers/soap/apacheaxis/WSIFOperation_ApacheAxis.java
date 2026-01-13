@@ -24,6 +24,7 @@
 
 package org.apache.wsif.providers.soap.apacheaxis;
 
+import java.io.Serial;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.HashMap;

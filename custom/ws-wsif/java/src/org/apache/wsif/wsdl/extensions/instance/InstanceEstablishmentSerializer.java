@@ -25,6 +25,7 @@
 package org.apache.wsif.wsdl.extensions.instance;
 
 import java.io.PrintWriter;
+import java.io.Serial;
 import java.io.Serializable;
 
 import javax.wsdl.Definition;

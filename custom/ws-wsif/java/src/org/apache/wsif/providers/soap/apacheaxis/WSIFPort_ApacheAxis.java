@@ -24,6 +24,7 @@
 
 package org.apache.wsif.providers.soap.apacheaxis;
 
+import java.io.Serial;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;

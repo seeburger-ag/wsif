@@ -24,6 +24,7 @@
 
 package org.apache.wsif.providers.soap.soaprmi;
 
+import java.io.Serial;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;

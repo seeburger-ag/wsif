@@ -25,6 +25,7 @@
 
 package org.apache.wsif.providers.jca;
 
+import java.io.Serial;
 import org.apache.wsif.*;
 import org.apache.wsif.format.*;
 import org.apache.wsif.providers.jca.WSIFUtils_JCA;

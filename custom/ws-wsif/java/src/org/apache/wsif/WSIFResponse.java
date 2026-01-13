@@ -24,6 +24,7 @@
 
 package org.apache.wsif;
 
+import java.io.Serial;
 import java.io.Serializable;
 
 import javax.xml.namespace.QName;

@@ -24,6 +24,7 @@
 
 package org.apache.wsif.providers;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;

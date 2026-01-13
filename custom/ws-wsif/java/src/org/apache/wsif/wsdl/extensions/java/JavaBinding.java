@@ -24,6 +24,7 @@
 
 package org.apache.wsif.wsdl.extensions.java;
 
+import java.io.Serial;
 import javax.wsdl.extensions.ExtensibilityElement;
 import javax.xml.namespace.QName;
 

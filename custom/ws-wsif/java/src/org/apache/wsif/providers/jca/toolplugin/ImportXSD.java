@@ -28,6 +28,9 @@ package org.apache.wsif.providers.jca.toolplugin;
  *  @author Hesham Fahmy <hfahmy@ca.ibm.com>
  *  @author Piotr Przybylski <piotrp@ca.ibm.com>
  */
+
+import java.io.Serial;
+
 public class ImportXSD implements java.io.Serializable {
 
     @Serial

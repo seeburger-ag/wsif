@@ -24,6 +24,7 @@
 
 package org.apache.wsif.wsdl.extensions.format;
 
+import java.io.Serial;
 import org.apache.wsif.logging.Trc;
 
 /**

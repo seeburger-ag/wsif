@@ -24,6 +24,7 @@
 
 package org.apache.wsif.base;
 
+import java.io.Serial;
 import java.util.Enumeration;
 import java.util.Vector;
 

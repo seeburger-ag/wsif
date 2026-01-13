@@ -27,6 +27,9 @@ package org.apache.wsif.providers.jca.toolplugin;
  * This class represents a binary resource that may required for an Imported Service.
  *  @author Hesham Fahmy <hfahmy@ca.ibm.com>
  */
+
+import java.io.Serial;
+
 public class ImportResource implements java.io.Serializable {
 
     @Serial

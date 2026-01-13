@@ -24,6 +24,7 @@
 
 package org.apache.wsif.providers.jca;
 
+import java.io.Serial;
 import javax.wsdl.*;
 
 /**

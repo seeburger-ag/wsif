@@ -24,6 +24,7 @@
 
 package org.apache.wsif.providers.jms;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Iterator;

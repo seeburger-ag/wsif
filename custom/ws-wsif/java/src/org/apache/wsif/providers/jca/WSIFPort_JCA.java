@@ -25,6 +25,7 @@
 
 package org.apache.wsif.providers.jca;
 
+import java.io.Serial;
 import org.apache.wsif.logging.*;
 import org.apache.wsif.providers.*;
 import org.apache.wsif.*;

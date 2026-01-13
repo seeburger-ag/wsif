@@ -24,6 +24,7 @@
 
 package org.apache.wsif.util.jms;
 
+import java.io.Serial;
 import org.apache.wsif.WSIFCorrelationId;
 
 /**

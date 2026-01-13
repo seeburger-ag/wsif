@@ -24,6 +24,7 @@
 
 package org.apache.wsif.wsdl.extensions.format;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Iterator;
 import java.util.List;
