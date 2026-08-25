@@ -87,55 +87,61 @@
   - **Commit**: e4f6518 - Step 4: Modernize framework & spec dependencies - Compile: SUCCESS
 
 - **Step 5: Remove deprecated-for-removal JDK APIs and upgrade build plugins**
-  - **Status**: 🔘 Not Started
+  - **Status**: ✅ Completed
   - **Changes Made**:
+    - `FindThisClassName extends SecurityManager` → `StackWalker.getCallerClass()`
+    - maven-bundle-plugin 3.5.0 → 5.1.9; surefire 3.0.0 → 3.5.2; javadoc 3.5.0 → 3.11.2
+    - Javadoc `<source>` 8 → 21; removed stale surefire `<includes>`
+    - Dropped orphaned `soaprmi.*` / `xpp` OSGi Import-Package instructions
   - **Review Code Changes**:
-    - Sufficiency:
-    - Necessity:
-      - Functional Behavior:
-      - Security Controls:
+    - Sufficiency: ✅ All required changes present — plus removal of the orphaned OSGi imports, a post-upgrade consistency fix
+    - Necessity: ✅ All changes necessary
+      - Functional Behavior: ✅ Preserved — `StackWalker.getCallerClass()` resolves the identical stack frame as `getClassContext()[1]` (the caller of the helper), so `printUsage()` emits the same class name
+      - Security Controls: ✅ Preserved — the removed `SecurityManager` subclass was never installed as a security manager; it was used purely as a stack-introspection trick, so no policy enforcement is affected
   - **Verification**:
-    - Command:
-    - JDK:
-    - Build tool:
-    - Result:
-    - Notes:
-  - **Deferred Work**:
-  - **Commit**:
+    - Command: `mvn clean package`
+    - JDK: C:\dev\jdk-21
+    - Build tool: C:\dev\apache-maven\bin\mvn.cmd
+    - Result: ✅ Compilation SUCCESS | OSGi bundle `wsif-2.0.jar` (589 KB) built
+    - Notes: bnd now reports **zero** unused Import-Package warnings (was `[soaprmi.*, org.apache.soap.*, sun.tools.*, javax.ejb.*]` at baseline). Confirmed no live `SecurityManager` / `sun.tools` references remain — only explanatory comments.
+  - **Deferred Work**: None
+  - **Commit**: 04457d3 - Step 5: Remove deprecated-for-removal JDK APIs and upgrade build plugins - Compile: SUCCESS
 
 - **Step 6: CVE Validation & Fix**
-  - **Status**: 🔘 Not Started
+  - **Status**: ✅ Completed
   - **Changes Made**:
+    - None required — all CVEs were already eliminated by the Step 4 dependency modernization
   - **Review Code Changes**:
-    - Sufficiency:
-    - Necessity:
-      - Functional Behavior:
-      - Security Controls:
+    - Sufficiency: ✅ All required changes present — scan covered the full 19-artifact transitive closure, not only direct dependencies
+    - Necessity: ✅ All changes necessary (no changes were needed)
+      - Functional Behavior: ✅ Preserved
+      - Security Controls: ✅ Preserved
   - **Verification**:
-    - Command:
-    - JDK:
-    - Build tool:
-    - Result:
-    - Notes:
-  - **Deferred Work**:
-  - **Commit**:
+    - Command: `mvn dependency:list` (direct + transitive) → `#appmod-validate-cves-for-java`
+    - JDK: C:\dev\jdk-21
+    - Build tool: C:\dev\apache-maven\bin\mvn.cmd
+    - Result: ✅ SUCCESS — **0 CVEs** across all 19 resolved artifacts
+    - Notes: The 6 baseline log4j 1.2.17 CVEs (CVE-2019-17571, CVE-2021-4104, CVE-2022-23302, CVE-2022-23305, CVE-2022-23307, CVE-2023-26464) are all resolved. Transitive artifacts `jakarta.transaction-api:1.3.2` and `hamcrest-core:1.3` were scanned separately and are clean.
+  - **Deferred Work**: None
+  - **Commit**: N/A - no file changes required
 
 - **Step 7: Final Validation**
-  - **Status**: 🔘 Not Started
+  - **Status**: ✅ Completed
   - **Changes Made**:
+    - None — validation only; no outstanding TODOs or workarounds to resolve
   - **Review Code Changes**:
-    - Sufficiency:
-    - Necessity:
-      - Functional Behavior:
-      - Security Controls:
+    - Sufficiency: ✅ All required changes present across all steps
+    - Necessity: ✅ All changes necessary
+      - Functional Behavior: ✅ Preserved — every source change is a mechanically equivalent rewrite
+      - Security Controls: ✅ Preserved and improved (log4j 1.x removed)
   - **Verification**:
-    - Command:
-    - JDK:
-    - Build tool:
-    - Result:
-    - Notes:
-  - **Deferred Work**:
-  - **Commit**:
+    - Command: `mvn clean test-compile`, `mvn clean test`, `mvn clean package` + JAR/bytecode assertions
+    - JDK: C:\dev\jdk-21
+    - Build tool: C:\dev\apache-maven\bin\mvn.cmd
+    - Result: ✅ Compilation SUCCESS | Tests: 0/0 passed (= baseline) | Package SUCCESS
+    - Notes: Asserted (a) bytecode major version **65 = Java 21**; (b) **203 of 206** sources compiled, only the 3 SoapRMI files excluded; (c) all **5** providers listed in `META-INF/services` present in the 294-entry JAR; (d) valid OSGi manifest (`Bundle-SymbolicName: org.apache.wsif`, `Bundle-Version: 2.0.0`) with zero bnd warnings; (e) no TODO/FIXME introduced by this upgrade — all existing markers are pre-existing 2003-era Apache notes.
+  - **Deferred Work**: None
+  - **Commit**: (recorded with the session documentation commit)
 
 ---
 
