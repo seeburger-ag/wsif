@@ -65,21 +65,26 @@
   - **Commit**: 5d31b59 - Step 3: Restore all excluded source trees to the Java 21 build - Compile: SUCCESS
 
 - **Step 4: Modernize framework & spec dependencies**
-  - **Status**: 🔘 Not Started
+  - **Status**: ✅ Completed
   - **Changes Made**:
+    - log4j 1.2.17 → reload4j 1.2.26 (removes 6 CVEs)
+    - 3 retired Geronimo spec jars → Jakarta EE 8 APIs (javax namespace kept)
+    - mail/activation → maintained `com.sun.*` successors; commons-logging 1.3.5; junit 4.13.2
+    - Removed unused EOL `javax.servlet:servlet-api:2.5`
+    - Excluded transitive `javax.activation:activation:1.1` from javax.mail
   - **Review Code Changes**:
-    - Sufficiency:
-    - Necessity:
-      - Functional Behavior:
-      - Security Controls:
+    - Sufficiency: ✅ All required changes present — plus one unplanned fix: the transitive `javax.activation:activation:1.1` exclusion, found by inspecting the resolved dependency tree
+    - Necessity: ✅ All changes necessary
+      - Functional Behavior: ✅ Preserved — every replacement spec jar retains the `javax.*` namespace, so zero source changes were needed; reload4j is a binary drop-in and WSIF never references `org.apache.log4j` directly
+      - Security Controls: ✅ Preserved and improved — log4j 1.2.17 (6 CVEs, 3 CRITICAL, no fix available in the 1.x line) removed from the tree; no security-relevant code paths altered
   - **Verification**:
-    - Command:
-    - JDK:
-    - Build tool:
-    - Result:
-    - Notes:
-  - **Deferred Work**:
-  - **Commit**:
+    - Command: `mvn clean test-compile` + `mvn dependency:tree`
+    - JDK: C:\dev\jdk-21
+    - Build tool: C:\dev\apache-maven\bin\mvn.cmd
+    - Result: ✅ Compilation SUCCESS — 226 class files (unchanged from Step 3, as expected)
+    - Notes: Dependency tree confirms log4j 1.x, all Geronimo specs and javax.servlet are gone, and exactly one `activation` artifact remains. The identified risk around the JCA wildcard `javax.resource.*` imports did not materialise — JCA 1.5 → 1.7 compiled cleanly.
+  - **Deferred Work**: None
+  - **Commit**: e4f6518 - Step 4: Modernize framework & spec dependencies - Compile: SUCCESS
 
 - **Step 5: Remove deprecated-for-removal JDK APIs and upgrade build plugins**
   - **Status**: 🔘 Not Started

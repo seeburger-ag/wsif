@@ -321,12 +321,19 @@ public class WSDL2WSDL {
     } // run
 
     /**
-     * Utility Class to get the current class name
+     * Returns the name of the class that called this method.
+     *
+     * <p>This replaces the former <code>FindThisClassName extends SecurityManager</code>
+     * helper, which relied on <code>SecurityManager.getClassContext()[1]</code>.
+     * {@link SecurityManager} has been deprecated for removal since JDK 17.
+     * {@link StackWalker#getCallerClass()} returns exactly the same frame: the
+     * caller of the method that invokes it.</p>
      */
-    protected static class FindThisClassName extends SecurityManager {
-        public String getName() {
-            return getClassContext()[1].getName();
-        }
+    private static String findThisClassName() {
+        return StackWalker
+            .getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE)
+            .getCallerClass()
+            .getName();
     }
 
     /**
@@ -384,7 +391,7 @@ public class WSDL2WSDL {
      * Prints help on how to use this
      */
     private void printUsage() {
-        String thisClassName = new FindThisClassName().getName();
+        String thisClassName = findThisClassName();
         System.err.println(
             "Usage: java " + thisClassName + " <options>" + " inputWSDLURI");
 

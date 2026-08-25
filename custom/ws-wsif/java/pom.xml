@@ -17,7 +17,12 @@
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
 
-        <osgi.imported.packages>soaprmi.*;resolution:=optional,org.apache.soap.*;resolution:=optional,xpp;resolution:=optional,org.apache.axis.*;resolution:=optional,javax.xml.rpc.*;resolution:=optional,javax.ejb.*;resolution:=optional,*</osgi.imported.packages>
+        <!--
+            soaprmi.* and xpp are intentionally absent: the SoapRMI provider is the
+            only code that referenced them and it is not built (see the
+            maven-compiler-plugin excludes below).
+        -->
+        <osgi.imported.packages>org.apache.soap.*;resolution:=optional,org.apache.axis.*;resolution:=optional,javax.xml.rpc.*;resolution:=optional,javax.ejb.*;resolution:=optional,*</osgi.imported.packages>
     </properties>
 
     <dependencies>
@@ -215,18 +220,13 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.0.0</version>
-                <configuration>
-                    <includes>
-                        <include>**/util/WSIFTestRunner.java</include>
-                    </includes>
-                </configuration>
+                <version>3.5.2</version>
             </plugin>
 
             <plugin>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>maven-bundle-plugin</artifactId>
-                <version>3.5.0</version>
+                <version>5.1.9</version>
                 <extensions>true</extensions>
                 <configuration>
                     <instructions>
@@ -257,9 +257,9 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>3.5.0</version>
+                <version>3.11.2</version>
                 <configuration>
-                    <source>8</source>
+                    <source>21</source>
                 </configuration>
             </plugin>
         </plugins>
