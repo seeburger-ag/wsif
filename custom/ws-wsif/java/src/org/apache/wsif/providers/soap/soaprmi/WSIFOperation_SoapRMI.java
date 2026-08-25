@@ -27,6 +27,7 @@ package org.apache.wsif.providers.soap.soaprmi;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.Reader;
+import java.io.Serial;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.net.URI;

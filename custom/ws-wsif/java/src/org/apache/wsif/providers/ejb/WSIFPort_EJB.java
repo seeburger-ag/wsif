@@ -27,6 +27,7 @@ package org.apache.wsif.providers.ejb;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.Serial;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Hashtable;

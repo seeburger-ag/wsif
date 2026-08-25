@@ -31,6 +31,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.MalformedURLException;
 
@@ -133,8 +134,8 @@ public class StreamFactory {
                 throw new MalformedURLException("This file was not found: " + url);
             }
         } catch (MalformedURLException e1) {
-            url = new URI("file", null, "", -1, spec, null, null).toURL();
-    
+            url = toFileURL(spec);
+
             try {
                 url.openStream();
             } catch (IOException ioe2) {
@@ -144,7 +145,7 @@ public class StreamFactory {
     
                     if (parentName != null && recursiveDepth < 3) {
                         return getURL(
-                            new URI("file", null, "", -1, parentName + '/', null, null).toURL(),
+                            toFileURL(parentName + '/'),
                             spec,
                             recursiveDepth + 1);
                     }
@@ -155,5 +156,25 @@ public class StreamFactory {
         }
     
         return url;
+    }
+
+    /**
+     * Builds a <code>file:</code> URL for the given path.
+     *
+     * <p>Uses {@link URI} instead of a deprecated {@link URL} constructor. The
+     * checked {@link URISyntaxException} that {@link URI} may raise is re-thrown
+     * as a {@link MalformedURLException} so that the declared contract of the
+     * callers is preserved.</p>
+     */
+    private static URL toFileURL(String path) throws MalformedURLException {
+        try {
+            return new URI("file", null, "", -1, path, null, null).toURL();
+        } catch (URISyntaxException | IllegalArgumentException e) {
+            MalformedURLException mue =
+                new MalformedURLException(
+                    "Cannot build a file URL for '" + path + "': " + e.getMessage());
+            mue.initCause(e);
+            throw mue;
+        }
     }
 }

@@ -270,7 +270,19 @@ public class Conventions {
         String args[] = { "-classpath", classPath, fileName };
 
         try {
-            return new sun.tools.javac.Main(System.err, "javac").compile(args);
+            // The JDK-internal sun.tools.javac.Main class was removed together with
+            // tools.jar in JDK 9. javax.tools.ToolProvider is the supported
+            // replacement and is available since Java 6.
+            javax.tools.JavaCompiler compiler = javax.tools.ToolProvider.getSystemJavaCompiler();
+
+            if (compiler == null) {
+                // Running on a JRE (or a JDK without the compiler module) rather than a JDK.
+                System.err.println("Unable to load JDK compiler.");
+
+                return false;
+            }
+
+            return compiler.run(null, null, System.err, args) == 0;
         } catch (Throwable th) {
             System.err.println("Unable to load JDK compiler.");
 

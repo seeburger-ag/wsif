@@ -17,7 +17,7 @@
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
 
-        <osgi.imported.packages>soaprmi.*;resolution:=optional,org.apache.soap.*;resolution:=optional,sun.tools.*;resolution:=optional,xpp;resolution:=optional,org.apache.axis.*;resolution:=optional,javax.xml.rpc.*;resolution:=optional,javax.ejb.*;resolution:=optional,*</osgi.imported.packages>
+        <osgi.imported.packages>soaprmi.*;resolution:=optional,org.apache.soap.*;resolution:=optional,xpp;resolution:=optional,org.apache.axis.*;resolution:=optional,javax.xml.rpc.*;resolution:=optional,javax.ejb.*;resolution:=optional,*</osgi.imported.packages>
     </properties>
 
     <dependencies>
@@ -121,6 +121,33 @@
             <version>1.4.7</version>
         </dependency>
 
+        <!--
+            Supplies javax.rmi.PortableRemoteObject, which was removed from the JDK
+            in Java 11 together with the CORBA modules (JEP 320).
+            Required by the EJB provider (WSIFPort_EJB).
+        -->
+        <dependency>
+            <groupId>org.jboss.spec.javax.rmi</groupId>
+            <artifactId>jboss-rmi-api_1.0_spec</artifactId>
+            <version>1.0.6.Final</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <!--
+            Apache SOAP 2.3.1 - supplies the org.apache.soap.* packages used by the
+            optional Apache SOAP provider and by util/jms/JMS2HTTPBridge.
+            Optional/provided: the OSGi manifest already imports org.apache.soap.*
+            with resolution:=optional, so consumers only need it when they actually
+            select the Apache SOAP provider.
+        -->
+        <dependency>
+            <groupId>soap</groupId>
+            <artifactId>soap</artifactId>
+            <version>2.3.1</version>
+            <scope>provided</scope>
+            <optional>true</optional>
+        </dependency>
+
         <!-- JUnit for testing -->
         <dependency>
             <groupId>junit</groupId>
@@ -151,12 +178,16 @@
                 <configuration>
                     <encoding>UTF-8</encoding>
                     <excludes>
+                        <!--
+                            SoapRMI provider: depends on the soaprmi.* and xpp packages,
+                            which ship only as lib/soaprmi-1_1.jar. SoapRMI is a defunct
+                            project that was never published to Maven Central, so this
+                            provider cannot be built from a resolvable dependency.
+                            It is not registered in
+                            META-INF/services/org.apache.wsif.spi.WSIFProvider and is
+                            therefore unreachable at runtime.
+                        -->
                         <exclude>**/providers/soap/soaprmi/**/*.java</exclude>
-                        <exclude>**/providers/soap/apachesoap/**/*.java</exclude>
-                        <exclude>**/util/jms/JMS2HTTPBridge.java</exclude>
-                        <exclude>**/compiler/**/*.java</exclude>
-                        <exclude>**/providers/ejb/**/*.java</exclude>
-                        <exclude>**/wsdl/extensions/ejb/**/*.java</exclude>
                     </excludes>
                     <release>21</release>
                 </configuration>
