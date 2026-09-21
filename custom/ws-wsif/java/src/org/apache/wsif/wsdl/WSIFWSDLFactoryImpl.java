@@ -70,12 +70,24 @@ public class WSIFWSDLFactoryImpl extends WSDLFactory {
         return writer;
     }
 
+    /**
+     * Returns the WSIF composite extension registry.
+     * <p>
+     * Despite the inherited "new..." name, this deliberately returns the single
+     * process-wide composite registry rather than a fresh one: providers register their
+     * WSDL extensions into it at arbitrary times, and every Definition, reader and writer
+     * has to see those registrations. The registry is append-only and safe to share
+     * across threads.
+     * <p>
+     * Note there is no null fallback to a plain PopulatedExtensionRegistry here - the
+     * composite is created during class initialization of WSIFServiceImpl and can never
+     * be null, so the fallback that used to sit here was unreachable. The WSDL4J standard
+     * extensions are already present, because the composite seeds itself with a
+     * PopulatedExtensionRegistry.
+     */
     public ExtensionRegistry newPopulatedExtensionRegistry() {
         Trc.entry(this);
         ExtensionRegistry extReg = WSIFServiceImpl.getCompositeExtensionRegistry();
-        if (extReg == null) {
-            extReg = new com.ibm.wsdl.extensions.PopulatedExtensionRegistry();
-        }
         Trc.exit(extReg);
         return extReg;
     }

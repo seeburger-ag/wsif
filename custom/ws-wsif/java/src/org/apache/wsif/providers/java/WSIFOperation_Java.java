@@ -32,12 +32,10 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Vector;
 
 import javax.wsdl.BindingFault;
 import javax.wsdl.BindingOperation;
@@ -84,20 +82,47 @@ public class WSIFOperation_Java
     
     protected String[] fieldInParameterNames = null;
     protected String[] fieldOutParameterNames = null;
-    protected Map fieldFaultMessageInfos = null;
+
+    /**
+     * Immutable map of fault class name -&gt; {@link FaultMessageInfo}, built once during
+     * construction.
+     * <p>
+     * This map is shared by reference with every {@link #copy()} of this operation, and
+     * those copies are handed to different threads. It used to be built lazily inside
+     * {@link #getFaultMessageInfos()} on the first fault, which meant concurrent invocations
+     * structurally modified the same unsynchronised HashMap. It must stay immutable.
+     */
+    protected Map<String, FaultMessageInfo> fieldFaultMessageInfos = Map.of();
+
+    /**
+     * Deferred failure from building {@link #fieldFaultMessageInfos}.
+     * <p>
+     * The fault map used to be built on the first fault, so a binding whose fault types
+     * cannot be mapped only failed when a fault was actually raised. Building it eagerly
+     * would turn that into a failure at operation-creation time, so the exception is
+     * captured here and rethrown from {@link #getFaultMessageInfos()} instead.
+     */
+    private WSIFException faultMessageInfosFailure = null;
+
     transient protected Method[] fieldMethods = null;
-    transient protected Constructor[] fieldConstructors = null;
+    transient protected Constructor<?>[] fieldConstructors = null;
     protected String fieldOutputMessageName = null;
     protected boolean fieldIsStatic = false;
     protected boolean fieldIsConstructor = false;
-    protected Map fieldTypeMaps = null;
+    protected Map<QName, Object> fieldTypeMaps = null;
     protected boolean multiOutParts = false;
     transient private Object returnClass = null;
 
-    private class FaultMessageInfo {
-        String fieldMessageName;
-        String fieldPartName;
-        String fieldFormatType;
+    /**
+     * Immutable descriptor of a WSDL fault message.
+     * <p>
+     * Static (so it does not pin the enclosing operation) and final-fielded, so instances
+     * can be published safely between threads via {@link #fieldFaultMessageInfos}.
+     */
+    static final class FaultMessageInfo {
+        final String fieldMessageName;
+        final String fieldPartName;
+        final String fieldFormatType;
         // Note: In Java fault messages contain only one part: the Java exception
 
         FaultMessageInfo(String messageName, String partName, String formatType) {
@@ -147,6 +172,28 @@ public class WSIFOperation_Java
             fieldMethods = getMethods(allMethods);
         }
 
+        // Build the fault map now, while we are still single threaded, so that it can be
+        // shared immutably with every copy() of this operation.
+        Map<String, FaultMessageInfo> faultInfos;
+        WSIFException faultInfosFailure = null;
+        try {
+            faultInfos = buildFaultMessageInfos();
+        } catch (WSIFException | RuntimeException e) {
+            // Keep the legacy failure timing - see faultMessageInfosFailure.
+            Trc.ignoredException(e);
+            faultInfos = Map.of();
+            faultInfosFailure =
+                (e instanceof WSIFException wsifException)
+                    ? wsifException
+                    : new WSIFException(
+                        "Unable to resolve the fault messages for operation '"
+                            + bindingOperationModel.getName()
+                            + "'",
+                        e);
+        }
+        fieldFaultMessageInfos = faultInfos;
+        faultMessageInfosFailure = faultInfosFailure;
+
         if (Trc.ON)
             Trc.exit(deep());
     }
@@ -158,7 +205,7 @@ public class WSIFOperation_Java
         JavaOperation jo,
         String[] inPNames,
         String[] outPNames,
-        Map faultMsgInfos,
+        Map<String, FaultMessageInfo> faultMsgInfos,
         Method[] m,
         Constructor[] c,
         String outMName,
@@ -229,15 +276,18 @@ public class WSIFOperation_Java
                 returnClass);
         
         woj.wsdlOperation = wsdlOperation;
-        
+        // The fault map is immutable and shared; carry over any deferred build failure
+        // so the copy reports it at exactly the same point the original would have.
+        woj.faultMessageInfosFailure = faultMessageInfosFailure;
+
         Trc.exit(woj);
         return woj;
     }
 
-    protected static Class getClassForName(String classname) throws WSIFException {
+    protected static Class<?> getClassForName(String classname) throws WSIFException {
     	Trc.entry(null,classname);
     	
-        Class cls = null;
+        Class<?> cls;
 
         if (classname == null) {
             throw new WSIFException("Error in getClassForName(): No class name specified!");
@@ -246,27 +296,20 @@ public class WSIFOperation_Java
         try {
             if (classname.lastIndexOf('.') == -1) {
                 // Have to check for built in data types
-                if (classname.equals("char")) {
-                    cls = char.class;
-                } else if (classname.equals("boolean")) {
-                    cls = boolean.class;
-                } else if (classname.equals("byte")) {
-                    cls = byte.class;
-                } else if (classname.equals("short")) {
-                    cls = short.class;
-                } else if (classname.equals("int")) {
-                    cls = int.class;
-                } else if (classname.equals("long")) {
-                    cls = long.class;
-                } else if (classname.equals("float")) {
-                    cls = float.class;
-                } else if (classname.equals("double")) {
-                    cls = double.class;
-                } else {
-                    // Load the class using the Thread context's class loader
-                    cls =
-                        Class.forName(classname, true, Thread.currentThread().getContextClassLoader());
-                }
+                cls = switch (classname)
+                {
+                    case "char" -> char.class;
+                    case "boolean" -> boolean.class;
+                    case "byte" -> byte.class;
+                    case "short" -> short.class;
+                    case "int" -> int.class;
+                    case "long" -> long.class;
+                    case "float" -> float.class;
+                    case "double" -> double.class;
+                    default ->
+                        // Load the class using the Thread context's class loader
+                                    Class.forName(classname, true, Thread.currentThread().getContextClassLoader());
+                };
             } else {
                 cls =
                     Class.forName(classname, true, Thread.currentThread().getContextClassLoader());
@@ -279,62 +322,125 @@ public class WSIFOperation_Java
         return cls;
     }
 
-    protected Constructor[] getConstructors()
+    /**
+     * Normalises a resolved format-binding type mapping into a list of candidate classes.
+     * <p>
+     * A WSDL format binding may map a single XML type onto several Java types, in which
+     * case {@link #getMethodArgumentClasses()} / {@link #getMethodReturnClass()} yield a
+     * {@code List} of Classes rather than a single Class.
+     */
+    @SuppressWarnings("unchecked")
+    private static List<Class<?>> toCandidateClasses(Object mappedType) {
+        if (mappedType instanceof List<?> list) {
+            return (List<Class<?>>) list;
+        }
+        return List.of((Class<?>) mappedType);
+    }
+
+    /**
+     * Fallback type equality, used only after {@code isAssignableFrom} has already failed.
+     * <p>
+     * The format binding is resolved through the thread context class loader, which inside
+     * a container (OSGi/Karaf, app servers) is frequently not the loader that defined the
+     * service class. The two Class objects are then unrelated as far as isAssignableFrom
+     * is concerned even though they denote the same type, so compare names as a fallback.
+     * <p>
+     * Note this check used to come FIRST, so every successful match paid for a String
+     * comparison that isAssignableFrom had already settled. It is now only reached on the
+     * failure path.
+     */
+    private static boolean sameClassName(Class<?> a, Class<?> b) {
+        return a.getName().equals(b.getName());
+    }
+
+    /**
+     * Tests whether a value of the WSDL-mapped type can be passed to a method or
+     * constructor parameter declared as {@code declaredType}.
+     */
+    private static boolean isAcceptableParameterType(Object mappedType, Class<?> declaredType) {
+        if (mappedType == null || declaredType == null) {
+            // Nothing to constrain the parameter with
+            return true;
+        }
+        for (Class<?> candidate : toCandidateClasses(mappedType)) {
+            if (declaredType.isAssignableFrom(candidate)
+                || sameClassName(declaredType, candidate)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Tests whether a method declaring a return type of {@code declaredType} can satisfy
+     * the WSDL-mapped return type. A null {@code mappedType} means the binding declared no
+     * returnPart, so the return value is unconstrained.
+     */
+    private static boolean isAcceptableReturnType(Object mappedType, Class<?> declaredType) {
+        if (mappedType == null || declaredType == null) {
+            return true;
+        }
+        for (Class<?> candidate : toCandidateClasses(mappedType)) {
+            if (candidate.isAssignableFrom(declaredType)
+                || sameClassName(candidate, declaredType)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    protected Constructor<?>[] getConstructors()
         throws WSIFException {
         Trc.entry(this);
-        Constructor[] candidates;
         // Get the possible constructors with the argument classes we've found.
-        Constructor[] constructors = fieldPort.getServiceObjectConstructors();
+        Constructor<?>[] constructors = fieldPort.getServiceObjectConstructors();
         Object[] args = getMethodArgumentClasses();
-        Vector possibles = new Vector();
-        for (int i = 0; i < constructors.length; i++) {
-            Class[] params = constructors[i].getParameterTypes();
+        List<Constructor<?>> possibles = new ArrayList<>();
+        for (Constructor<?> constructor : constructors) {
+            Class<?>[] params = constructor.getParameterTypes();
             if (params.length != args.length)
                 continue;
 
             boolean match = true;
             for (int j = 0; j < params.length; j++) {
-                Object obj = args[j];
-                if (obj instanceof Vector vec) {
-                    boolean found = false;
-                    for (int p = 0; p < vec.size(); p++) {
-                        Class cl = (Class) vec.get(p);
-                        if (cl.getName().equals(params[j].getName())) {
-                            found = true;
-                            break;
-                        } else if (params[j].isAssignableFrom(cl)) {
-                            found = true;
-                            break;
-                        }
-                    }
-                    if (!found) {
-                        match = false;
-                        break;
-                    }
-                } else {
-                    if (!(((Class) obj).getName().equals(params[j].getName()))
-                        && !(params[j].isAssignableFrom((Class) obj))) {
-                        match = false;
-                        break;
-                    }
+                if (!isAcceptableParameterType(args[j], params[j])) {
+                    match = false;
+                    break;
                 }
             }
             if (match) {
-                possibles.addElement(constructors[i]);
+                possibles.add(constructor);
             }
         }
-        candidates = new Constructor[possibles.size()];
-        for (int k = 0; k < candidates.length; k++) {
-            candidates[k] = (Constructor) possibles.get(k);
-        }
+        Constructor<?>[] candidates = possibles.toArray(new Constructor<?>[0]);
         Trc.exit(candidates);
         return candidates;
     }
 
-    protected Map getFaultMessageInfos() throws WSIFException {
+    /**
+     * Returns the fault message descriptors for this operation.
+     * <p>
+     * The map is built once during construction and is immutable, so it can be shared
+     * with every {@link #copy()} and read concurrently without synchronisation.
+     *
+     * @return an immutable map of fault class name to {@link FaultMessageInfo}
+     */
+    protected Map<String, FaultMessageInfo> getFaultMessageInfos() throws WSIFException {
     	Trc.entry(this);
+        if (faultMessageInfosFailure != null) {
+            throw faultMessageInfosFailure;
+        }
+        Trc.exit(fieldFaultMessageInfos);
+        return fieldFaultMessageInfos;
+    }
+
+    /**
+     * Derives the fault message descriptors from the WSDL binding. Called once, from the
+     * constructor.
+     */
+    private Map<String, FaultMessageInfo> buildFaultMessageInfos() throws WSIFException {
         // Get the current operation
-        Operation operation = null;
+        Operation operation;
         try {
             operation = getOperation();
         } catch (Exception e) {
@@ -342,24 +448,19 @@ public class WSIFOperation_Java
             throw new WSIFException("Failed to get Operation", e);
         }
 
-        if (fieldFaultMessageInfos == null) {
-            fieldFaultMessageInfos = new HashMap();
-        }
+        Map<String, FaultMessageInfo> infos = new HashMap<>();
 
-        BindingFault bindingFaultModel = null;
         Map bindingFaultModels = fieldBindingOperationModel.getBindingFaults();
-        List parts = null;
-        Iterator modelsIterator = bindingFaultModels.values().iterator();
 
-        while (modelsIterator.hasNext()) {
-            bindingFaultModel = (BindingFault) modelsIterator.next();
+        for (Object model : bindingFaultModels.values()) {
+            BindingFault bindingFaultModel = (BindingFault) model;
             String name = bindingFaultModel.getName();
             if (name == null) {
                 throw new WSIFException("Fault name not found in binding");
             }
 
             Map map = operation.getFault(name).getMessage().getParts();
-            if (map.size() >= 1) {
+            if (!map.isEmpty()) {
                 Part part = (Part) map.values().iterator().next();
                 QName partType = part.getTypeName();
                 if (partType == null) partType = part.getElementName();
@@ -369,26 +470,20 @@ public class WSIFOperation_Java
                         "formatType for typeName '" + part.getName() + "' not found in document");
                 }
 
-                if (formatType instanceof Vector types) {
-                    Enumeration enum_ = types.elements();
-                    while (enum_.hasMoreElements()) {
-                        String type = (String) enum_.nextElement();
+                if (formatType instanceof List<?> types) {
+                    for (Object t : types) {
+                        String type = (String) t;
                         // Add new fault message information to the map
-                        fieldFaultMessageInfos.put(
-                            type,
-                            new FaultMessageInfo(name, part.getName(), type));
+                        infos.put(type, new FaultMessageInfo(name, part.getName(), type));
                     }
                 } else {
                     String type = (String) formatType;
                     // Add new fault message information to the map
-                    fieldFaultMessageInfos.put(
-                        type,
-                        new FaultMessageInfo(name, part.getName(), type));
+                    infos.put(type, new FaultMessageInfo(name, part.getName(), type));
                 }
             }
         }
-        Trc.exit(fieldFaultMessageInfos);
-        return fieldFaultMessageInfos;
+        return Map.copyOf(infos);
     }
 
     /**
@@ -401,7 +496,7 @@ public class WSIFOperation_Java
         try {
             Trc.entry(this, allMethods);
 
-            ArrayList candidates = new ArrayList();
+            ArrayList<Method> candidates = new ArrayList<>();
 
             if (!fieldIsConstructor) {
 
@@ -410,7 +505,7 @@ public class WSIFOperation_Java
                     fieldJavaOperationModel.getMethodName();
                 String bindingMethodName2 = null;
                 if (Character.isUpperCase(bindingMethodName.charAt(0))) {
-                    StringBuffer sb = new StringBuffer(bindingMethodName);
+                    StringBuilder sb = new StringBuilder(bindingMethodName);
                     sb.setCharAt(0, Character.toLowerCase(sb.charAt(0)));
                     bindingMethodName2 = sb.toString();
                 }
@@ -418,92 +513,41 @@ public class WSIFOperation_Java
                 Object[] args = getMethodArgumentClasses();
                 Object retClass = getMethodReturnClass();
 
-                for (int i = 0; i < allMethods.length; i++) {
-                    String methodName = allMethods[i].getName();
+                for (Method method : allMethods) {
+                    String methodName = method.getName();
                     if (!(methodName.equals(bindingMethodName)
                         || methodName.equals(bindingMethodName2))) {
                         continue;
                     }
 
-                    Class[] params = allMethods[i].getParameterTypes();
+                    Class<?>[] params = method.getParameterTypes();
                     if (params.length != args.length)
                         continue;
-                    Class retType = allMethods[i].getReturnType();
+                    Class<?> retType = method.getReturnType();
 
-                    boolean tryAMap = false;
-                    if (multiOutParts) {
-                        Class mapClass = java.util.Map.class;
-                        boolean found = false;
-                        if (mapClass.getName().equals(retType.getName())) {
-                            tryAMap = true;
-                        } else if (mapClass.isAssignableFrom(retType)) {
-                            tryAMap = true;
-                        }
-                    }
-                    if (!tryAMap) {
-                        if (retClass != null && retClass instanceof Vector vec) {
-                            boolean found = false;
-                            for (int p = 0; p < vec.size(); p++) {
-                                Class cl = (Class) vec.get(p);
-                                if (cl.getName().equals(retType.getName())) {
-                                    found = true;
-                                    break;
-                                } else if (cl.isAssignableFrom(retType)) {
-                                    found = true;
-                                    break;
-                                }
-                            }
-                            if (!found)
-                                continue;
-                        } else {
-                            if (retType != null && retClass != null) {
-                                if (!(((Class) retClass)
-                                    .getName()
-                                    .equals(retType.getName()))
-                                    && !(((Class) retClass)
-                                        .isAssignableFrom(retType)))
-                                    continue;
-                            }
-                        }
+                    // A multi-part output message is returned as a single java.util.Map,
+                    // in which case the mapped return type does not apply.
+                    boolean tryAMap =
+                        multiOutParts && Map.class.isAssignableFrom(retType);
+
+                    if (!tryAMap && !isAcceptableReturnType(retClass, retType)) {
+                        continue;
                     }
 
                     boolean match = true;
                     for (int j = 0; j < params.length; j++) {
-                        Object obj = args[j];
-                        if (obj instanceof Vector vec) {
-                            boolean found = false;
-                            for (int p = 0; p < vec.size(); p++) {
-                                Class cl = (Class) vec.get(p);
-                                if (cl.getName().equals(params[j].getName())) {
-                                    found = true;
-                                    break;
-                                } else if (params[j].isAssignableFrom(cl)) {
-                                    found = true;
-                                    break;
-                                }
-                            }
-                            if (!found) {
-                                match = false;
-                                break;
-                            }
-                        } else {
-                            if (!(((Class) obj)
-                                .getName()
-                                .equals(params[j].getName()))
-                                && !(params[j].isAssignableFrom((Class) obj))) {
-                                match = false;
-                                break;
-                            }
+                        if (!isAcceptableParameterType(args[j], params[j])) {
+                            match = false;
+                            break;
                         }
                     }
                     if (match) {
-                        candidates.add(allMethods[i]);
+                        candidates.add(method);
                     }
                 }
             }
 
-            Method[] methods =
-                (Method[]) candidates.toArray(new Method[candidates.size()]);
+            Method[] methods = candidates.toArray(new Method[0]);
             Trc.exit(methods);
             return methods;
         } catch (Exception e) {
@@ -552,13 +596,12 @@ public class WSIFOperation_Java
         Object methodReturnClass = null;
         try {
             String returnPartString = fieldJavaOperationModel.getReturnPart();
-            List parameterOrder = fieldJavaOperationModel.getParameterOrder();
+            List<String> parameterOrder = fieldJavaOperationModel.getParameterOrder();
 
 			// Service with multiple output parts
             if (fieldOutParameterNames.length > 1) {
             	multiOutParts = true;
-                for (int p = 0; p < fieldOutParameterNames.length; p++) {
-                    String pName = fieldOutParameterNames[p];
+                for (String pName : fieldOutParameterNames) {
                     if (pName != null
                         && parameterOrder.contains(pName)) {
                         multiOutParts = false;
@@ -576,27 +619,21 @@ public class WSIFOperation_Java
                 if (returnPart != null) {
                     QName partType = returnPart.getTypeName();                    
                     if (partType == null) partType = returnPart.getElementName();
-                    Object obj = this.fieldTypeMaps.get(partType);
+                    // Memoized on the port, so the Class.forName only happens once per
+                    // part type for the whole port rather than once per operation.
+                    Object obj = fieldPort.getResolvedTypeMapping(partType);
                     if (obj == null)
+                        // Note the parentheses: without them the '+' bound tighter than
+                        // the '?:', so the condition was "<concatenated string> == null",
+                        // always false, and the whole message was discarded.
                         throw new WSIFException(
                             "Could not map type "
                                 + partType
                                 + " to a java type. Part name was "
-                                + returnPart.getName() == null 
-                                    ? "<null>" : returnPart.getName());
-                                
-                    if (obj instanceof Vector v) {
-                        Vector argv = new Vector();
-                        Enumeration enum_ = v.elements();
-                        while (enum_.hasMoreElements()) {
-                            String cls = (String) enum_.nextElement();
-                            argv.addElement(getClassForName(cls));
-                        }
-                        methodReturnClass = argv;
-                    } else {
-                        methodReturnClass =
-                            getClassForName((String) obj);
-                    }
+                                + (returnPart.getName() == null
+                                    ? "<null>" : returnPart.getName()));
+
+                    methodReturnClass = obj;
                 } else {
                     // If we get here then the return part specified on the java operation was not
                     // in the output message
@@ -634,9 +671,7 @@ public class WSIFOperation_Java
             */
 
             // Get the parameter order according to the above rules
-            List parameterOrder = null;
-
-            parameterOrder = fieldJavaOperationModel.getParameterOrder();
+            List<String> parameterOrder = fieldJavaOperationModel.getParameterOrder();
 
             if (parameterOrder == null) {
                 parameterOrder = operation.getParameterOrdering();
@@ -651,11 +686,9 @@ public class WSIFOperation_Java
             */
             if (parameterOrder == null) {
                 List partList = operation.getInput().getMessage().getOrderedParts(null);
-                parameterOrder = new Vector();
-                Iterator partListIterator = partList.iterator();
-                while (partListIterator.hasNext()) {
-                    Part part = (Part) partListIterator.next();
-                    parameterOrder.add(part.getName());
+                parameterOrder = new ArrayList<>();
+                for (Object o : partList) {
+                    parameterOrder.add(((Part) o).getName());
                 }
             }
 
@@ -679,77 +712,58 @@ public class WSIFOperation_Java
             	even if the operation is to be used with an RPC-like binding.
             */
 
-            ArrayList argNames = new ArrayList();
-            ArrayList argTypes = new ArrayList();
+            ArrayList<String> argNames = new ArrayList<>();
+            ArrayList<Object> argTypes = new ArrayList<>();
 
-            Iterator parameterIterator = parameterOrder.iterator();
-            while (parameterIterator.hasNext()) {
-                String param = (String) parameterIterator.next();
-                Part part = (Part) operation.getInput().getMessage().getPart(param);
+            for (String param : parameterOrder) {
+                Part part = operation.getInput().getMessage().getPart(param);
                 if (part == null) {
-                    part = (Part) operation.getOutput().getMessage().getPart(param);
+                    part = operation.getOutput().getMessage().getPart(param);
                 }
                 if (part == null)
                     throw new Exception(
                         "Part '"
                             + param
                             + "' from parameterOrder not found in input or output message");
-                argNames.add((String) part.getName());
+                argNames.add(part.getName());
 
                 // should also check for the element
-                QName partType = part.getTypeName();;
+                QName partType = part.getTypeName();
                 if (partType == null) partType = part.getElementName();                
-                Object obj = this.fieldTypeMaps.get(partType);
+                // Memoized on the port - see getResolvedTypeMapping
+                Object obj = fieldPort.getResolvedTypeMapping(partType);
                 if (obj == null)
+                    // Note the parentheses - see the matching fix in getMethodReturnClass()
                     throw new WSIFException(
                         "Could not map type "
                             + partType
                             + " to a java type. Part name was "
-                            + part.getName() == null ? "<null>" : part.getName());
-                
-                if (obj instanceof Vector v) {
-                    Vector argv = new Vector();
-                    Enumeration enum_ = v.elements();
-                    while (enum_.hasMoreElements()) {
-                        String cls = (String) enum_.nextElement();
-                        argv.addElement(getClassForName(cls));
-                    }
-                    argTypes.add(argv);
-                } else {
-                    argTypes.add(getClassForName((String)obj));
-                }
+                            + (part.getName() == null ? "<null>" : part.getName()));
 
+                argTypes.add(obj);
             }
 
             methodArgClasses = argTypes.toArray();
-            fieldInParameterNames = new String[argNames.size()];
-            for (int i = 0; i < argNames.size(); i++) {
-                fieldInParameterNames[i] = (String) argNames.get(i);
-            }
+            fieldInParameterNames = argNames.toArray(new String[0]);
 
             // Deal with output parts if operation is Request-Response
             if (operation.getStyle().equals(OperationType.REQUEST_RESPONSE)) {
-                argNames = new ArrayList();
+                argNames = new ArrayList<>();
                 // Get the returnPart attribute if it exists
                 String returnPart = fieldJavaOperationModel.getReturnPart();                
-                Iterator outputPartsIterator =
-                    operation.getOutput().getMessage().getOrderedParts(null).iterator();
-                while (outputPartsIterator.hasNext()) {
-                    Part part = (Part) outputPartsIterator.next();
+                for (Object o : operation.getOutput().getMessage().getOrderedParts(null)) {
+                    Part part = (Part) o;
                     String partName = part.getName();
-                    if (partName != null && returnPart != null && partName.equals(returnPart)) {
+                    if (partName != null && partName.equals(returnPart)) {
                     	// Put return part first in the list of output parts
                     	argNames.addFirst(partName);
                     } else {                    
-                        argNames.add((String) part.getName());
+                        argNames.add(partName);
                     }
                 }                               
 
                 // Populate an array of output message part names
-				fieldOutParameterNames = new String[argNames.size()];
-                for (int i = 0; i < argNames.size(); i++) {
-                    fieldOutParameterNames[i] = (String) argNames.get(i);
-                }
+				fieldOutParameterNames = argNames.toArray(new String[0]);
             } else {
             	fieldOutParameterNames = new String[0];
             }
@@ -768,7 +782,7 @@ public class WSIFOperation_Java
     // Turns an array of arguments into a form compatible with a method
     // If they are compatible, the object array is populated
     // otherwise returns null
-    protected Object[] getCompatibleArguments(Class[] parmTypes, Object[] args) {
+    protected Object[] getCompatibleArguments(Class<?>[] parmTypes, Object[] args) {
     	Trc.entry(this,parmTypes,args);
         // Go through each argument checking it's compatability with the method arg
         // creating a compatible set along the way.
@@ -776,22 +790,29 @@ public class WSIFOperation_Java
         // Also converts between WSIFAttachmentParts and DataHandlers
         // if there are further special case classes such as these which are dependent
         // on the object value, PUT THEM HERE :-)
-        if (args == null || parmTypes == null) {
-            Object[] compatibleArgs = new Object[0];
-            return compatibleArgs;
+        Class<?>[] types = (parmTypes == null) ? new Class<?>[0] : parmTypes;
+        Object[] actuals = (args == null) ? new Object[0] : args;
+
+        // Arity mismatch - this candidate cannot accept the parts. Returning null tells
+        // the caller to move on to the next overload. (The loop used to index args with
+        // parmTypes' length, which could blow up with ArrayIndexOutOfBoundsException.)
+        if (types.length != actuals.length) {
+            Trc.exit(null);
+            return null;
         }
 
-        Object[] compatibleArgs = new Object[args.length];
-        for (int i = 0; i < parmTypes.length; i++) {
+        Object[] compatibleArgs = new Object[actuals.length];
+        for (int i = 0; i < types.length; i++) {
             // If the arg is a null then skip it
-            if (args[i] == null) {
-                compatibleArgs[i] = ProviderUtils.getDefaultObject(parmTypes[i]);
+            if (actuals[i] == null) {
+                compatibleArgs[i] = ProviderUtils.getDefaultObject(types[i]);
                 continue;
             }
             // Consider the special cas, squeezing a String into a Character
-            Object convertedArg = getCompatibleObject(parmTypes[i], args[i]);
+            Object convertedArg = getCompatibleObject(types[i], actuals[i]);
             if (convertedArg == null) {
                 // can't convert one of the arguments so return null
+                Trc.exit(null);
                 return null;
             } else {
                 compatibleArgs[i] = convertedArg;
@@ -802,11 +823,31 @@ public class WSIFOperation_Java
         return compatibleArgs;
     }
 
+    /**
+     * Instantiates a holder object for an in/out parameter.
+     * <p>
+     * Any reflective failure is deliberately wrapped in a WSIFException rather than being
+     * allowed to escape as an InvocationTargetException, which the callers reserve for
+     * faults thrown by the service implementation itself.
+     */
+    private static Object newOutputHolder(Class<?> type) throws WSIFException {
+        try {
+            return type.getDeclaredConstructor().newInstance();
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            Trc.exception(e);
+            throw new WSIFException(
+                "Could not create an instance of '"
+                    + type.getName()
+                    + "' to hold an in/out parameter",
+                e);
+        }
+    }
+
     protected Object getCompatibleReturn(Method method, Object returnObj) {
     	Trc.entry(this,method,returnObj);
-    	Object o = null;
-    	Class rt = method.getReturnType();
-    	Class ct = null;
+    	Object o;
+    	Class<?> rt = method.getReturnType();
+    	Class<?> ct = null;
     	int dims = 0;
     	if (rt.isArray()) {
     		ct = rt.getComponentType();
@@ -819,17 +860,14 @@ public class WSIFOperation_Java
         if (returnObj instanceof java.lang.Character) {
             o = getCompatibleObject(java.lang.String.class, returnObj);
         } else if (ct != null && (ct.equals(java.lang.Character.class) || ct.equals(char.class))) {
-        	String stringArrayClassName = "[Ljava.lang.String;";
-        	for (int d=1; d<dims; d++) {
-        		stringArrayClassName = "["+stringArrayClassName;
-        	}
-        	try {
-        		Class stringArrayClass = Class.forName(stringArrayClassName, true, Thread.currentThread().getContextClassLoader());
-        		o = getCompatibleObject(stringArrayClass, returnObj);
-        	} catch(ClassNotFoundException cnf) {
-        		Trc.ignoredException(cnf);
-        		o = returnObj;
-        	}
+            // Build the equally-dimensioned String array type directly. This used to
+            // assemble a "[[Ljava.lang.String;" descriptor and hand it to Class.forName
+            // on every call.
+            Class<?> stringArrayClass = String[].class;
+            for (int d = 1; d < dims; d++) {
+                stringArrayClass = stringArrayClass.arrayType();
+            }
+            o = getCompatibleObject(stringArrayClass, returnObj);
         } else {
             o = returnObj;
         }
@@ -847,11 +885,14 @@ public class WSIFOperation_Java
     // If a conversion is not known about then the obj is returned
     // Note: if you are adding other cases ensure you add both directions since the
     //       this conversion may be needed on method args AND returns
-    protected Object getCompatibleObject(Class cls, Object obj) {
+    protected Object getCompatibleObject(Class<?> cls, Object obj) {
     	Trc.entry(this,cls,obj);
     	
-    	if (cls.getName().equals(obj.getClass().getName())) return obj;
-    	  	
+    	// Fast identity check first, falling back to a name comparison for the split
+    	// class loader case - see sameClassName(). This was previously a bare
+    	// getName().equals(), so the common case paid for a String comparison.
+    	if (cls == obj.getClass() || sameClassName(cls, obj.getClass())) return obj;
+
         // String -> Character
         if ((cls.equals(java.lang.Character.class) || cls.equals(char.class))
             && obj.getClass().equals(java.lang.String.class)) {
@@ -867,8 +908,8 @@ public class WSIFOperation_Java
         
         // String arrays -> char/Character arrays and Character arrays -> String arrays
         if (cls.isArray() && obj.getClass().isArray()) {
-        	Class cct = cls.getComponentType();
-        	Class objct = obj.getClass().getComponentType();
+        	Class<?> cct = cls.getComponentType();
+        	Class<?> objct = obj.getClass().getComponentType();
         	while (cct.isArray()) {
         		cct = cct.getComponentType();
         	}
@@ -1003,18 +1044,22 @@ public class WSIFOperation_Java
                         Trc.exception(e);
                         arguments[i] = null;
                         if (fieldOutParameterNames.length > 0) {
-                            String outParameterName = null;
+                            // getParameterTypes() clones its array on every call, so
+                            // resolve it at most once instead of once per out-parameter.
+                            Class[] firstMethodParamTypes = null;
                             for (int j = 0;
                                 j < fieldOutParameterNames.length;
                                 j++) {
-                                outParameterName = fieldOutParameterNames[j];
+                                String outParameterName = fieldOutParameterNames[j];
                                 if ((outParameterName != null)
                                     && (outParameterName
                                         .equals(fieldInParameterNames[i]))) {
+                                    if (firstMethodParamTypes == null) {
+                                        firstMethodParamTypes =
+                                            fieldMethods[0].getParameterTypes();
+                                    }
                                     arguments[i] =
-                                        (fieldMethods[0]
-                                            .getParameterTypes()[i])
-                                            .newInstance();
+                                        newOutputHolder(firstMethodParamTypes[i]);
                                     usedOutputParam = true;
                                 }
                             }
@@ -1026,15 +1071,15 @@ public class WSIFOperation_Java
             boolean invokedOK = false;
             if (fieldIsConstructor) {
                 for (int a = 0; a < fieldConstructors.length; a++) {
+                    // getParameterTypes() clones its array on every call - read it once
+                    Class[] ctorParamTypes = fieldConstructors[a].getParameterTypes();
                     try {
                         // Get a set of arguments which are compatible with the ctor
                         Object[] compatibleArguments =
-                            getCompatibleArguments(
-                                fieldConstructors[a].getParameterTypes(),
-                                arguments);
-                        // If we didn't get any arguments then the parts aren't compatible with the ctor
+                            getCompatibleArguments(ctorParamTypes, arguments);
+                        // The parts aren't compatible with this ctor, try the next candidate
                         if (compatibleArguments == null)
-                            break;
+                            continue;
                         // Parts are compatible so invoke the ctor with the compatible set
 
                         Trc.event(
@@ -1066,6 +1111,10 @@ public class WSIFOperation_Java
             } else {
                 if (fieldIsStatic) {
                     for (int a = 0; a < fieldMethods.length; a++) {
+                        // getParameterTypes() clones its array on every call - read it
+                        // once per candidate rather than inside the nested loops below
+                        Class[] methodParamTypes =
+                            fieldMethods[a].getParameterTypes();
                         if (usedOutputParam) {
                             for (int i = 0;
                                 i < fieldInParameterNames.length;
@@ -1080,8 +1129,7 @@ public class WSIFOperation_Java
                                         && (outParameterName
                                             .equals(fieldInParameterNames[i]))) {
                                         arguments[i] =
-                                            (fieldMethods[a].getParameterTypes()[i])
-                                                .newInstance();
+                                            newOutputHolder(methodParamTypes[i]);
                                     }
                                 }
                             }
@@ -1089,12 +1137,10 @@ public class WSIFOperation_Java
                         try {
                             // Get a set of arguments which are compatible with the method
                             Object[] compatibleArguments =
-                                getCompatibleArguments(
-                                    fieldMethods[a].getParameterTypes(),
-                                    arguments);
-                            // If we didn't get any arguments then the parts aren't compatible with the method
+                                getCompatibleArguments(methodParamTypes, arguments);
+                            // The parts aren't compatible with this method, try the next one
                             if (compatibleArguments == null)
-                                break;
+                                continue;
                             // Parts are compatible so invoke the method with the compatible set
 
                             Trc.event(
@@ -1127,6 +1173,10 @@ public class WSIFOperation_Java
                                 + "'");
                 } else {
                     for (int a = 0; a < fieldMethods.length; a++) {
+                        // getParameterTypes() clones its array on every call - read it
+                        // once per candidate rather than inside the nested loops below
+                        Class[] methodParamTypes =
+                            fieldMethods[a].getParameterTypes();
                         if (usedOutputParam) {
                             for (int i = 0;
                                 i < fieldInParameterNames.length;
@@ -1141,8 +1191,7 @@ public class WSIFOperation_Java
                                         && (outParameterName
                                             .equals(fieldInParameterNames[i]))) {
                                         arguments[i] =
-                                            (fieldMethods[a].getParameterTypes()[i])
-                                                .newInstance();
+                                            newOutputHolder(methodParamTypes[i]);
                                     }
                                 }
                             }
@@ -1150,12 +1199,10 @@ public class WSIFOperation_Java
                         try {
                             // Get a set of arguments which are compatible with the method
                             Object[] compatibleArguments =
-                                getCompatibleArguments(
-                                    fieldMethods[a].getParameterTypes(),
-                                    arguments);
-                            // If we didn't get any arguments then the parts aren't compatible with the method
+                                getCompatibleArguments(methodParamTypes, arguments);
+                            // The parts aren't compatible with this method, try the next one
                             if (compatibleArguments == null)
-                                break;
+                                continue;
                             // Parts are compatible so invoke the method with the compatible set
 
                             Object objRef = fieldPort.getObjectReference();
@@ -1192,12 +1239,12 @@ public class WSIFOperation_Java
                 }
 
                 // Deal with the output message
-                String outParameterName = null;
+                String outParameterName;
                 if (fieldOutParameterNames.length == 1) {
                     // Only one output part - it must be the object returned by the
                     // Java service invocation
                     output.setName(getOutputMessageName());
-                    outParameterName = (String) fieldOutParameterNames[0];
+                    outParameterName = fieldOutParameterNames[0];
                     if (outParameterName != null) {
                         output.setObjectPart(
                             outParameterName,
@@ -1209,7 +1256,7 @@ public class WSIFOperation_Java
                             .class
                             .isAssignableFrom(chosenMethod.getReturnType())) {
                             // Method should have returned a Map
-                            if (!(result instanceof Map)) {
+                            if (!(result instanceof Map<?, ?> returnedMap)) {
                                 throw new WSIFException(
                                     "Operation "
                                         + getOperation().getName()
@@ -1217,15 +1264,11 @@ public class WSIFOperation_Java
                                         + "and the Java method did not return an instance of java.util.Map");
                             }
 
-                            Map returnedMap = (Map) result;
                             output.setName(getOutputMessageName());
 
                             // Get multiple output parts from the map
 
-                            for (int p = 0;
-                                p < fieldOutParameterNames.length;
-                                p++) {
-                                String pName = fieldOutParameterNames[p];
+                            for (String pName : fieldOutParameterNames) {
                                 if (returnedMap.containsKey(pName)) {
                                     Object outPart = returnedMap.get(pName);
                                     Message outputMessage =
@@ -1237,10 +1280,16 @@ public class WSIFOperation_Java
                                         partType = wsdlPart.getElementName();
                                     }
                                     Object typeObj =
-                                        this.fieldTypeMaps.get(partType);
+                                        fieldPort.getResolvedTypeMapping(partType);
                                     if (typeObj != null) {
-                                        Class c =
-                                            getClassForName((String) typeObj);
+                                        // A type may map onto several Java types; the
+                                        // first is the binding's primary choice. This
+                                        // used to cast straight to String and so threw
+                                        // ClassCastException for such a mapping.
+                                        Class<?> c =
+                                            (typeObj instanceof List<?> mapped)
+                                                ? (Class<?>) mapped.getFirst()
+                                                : (Class<?>) typeObj;
                                         Object outPart2 =
                                             getCompatibleObject(c, outPart);
                                         output.setObjectPart(pName, outPart2);
@@ -1259,11 +1308,10 @@ public class WSIFOperation_Java
                                     // class. If it's a Map, just add the map to the output
                                     // message. If not, throw an exception to say the map
                                     // does not contain the missing part.
-                                    if (returnClass != null
-                                        && returnClass instanceof Class class1
+                                    if (returnClass instanceof Class<?> class1
                                         && Map.class.isAssignableFrom(
                                             class1)) {
-                                        Map m = new HashMap();
+                                        Map<String, Object> m = new HashMap<>();
                                         m.put(
                                             fieldOutParameterNames[0],
                                             result);
@@ -1342,9 +1390,8 @@ public class WSIFOperation_Java
             Trc.exception(ex);
             Throwable invocationFault = ex.getTargetException();
             String className = invocationFault.getClass().getName();
-            Map faultMessageInfos = getFaultMessageInfos();
-            FaultMessageInfo faultMessageInfo =
-                (FaultMessageInfo) faultMessageInfos.get(className);
+            Map<String, FaultMessageInfo> faultMessageInfos = getFaultMessageInfos();
+            FaultMessageInfo faultMessageInfo = faultMessageInfos.get(className);
             if ((faultMessageInfo != null)
                 && (faultMessageInfo.fieldPartName != null)) { // Found fault
                 Object faultPart = invocationFault;
@@ -1362,14 +1409,12 @@ public class WSIFOperation_Java
                 operationSucceeded = false;
             } else {
                 // Try to find a matching class:
-                Class invocationFaultClass = invocationFault.getClass();
-                Class tempClass = null;
-                Iterator it = faultMessageInfos.values().iterator();
+                Class<?> invocationFaultClass = invocationFault.getClass();
                 boolean found = false;
-                while (it.hasNext()) {
-                    faultMessageInfo = (FaultMessageInfo) it.next();
+                for (FaultMessageInfo info : faultMessageInfos.values()) {
+                    faultMessageInfo = info;
                     try {
-                        tempClass =
+                        Class<?> tempClass =
                             Class.forName(
                                 faultMessageInfo.fieldFormatType,
                                 true,
@@ -1450,7 +1495,7 @@ public class WSIFOperation_Java
             }
 
             Object[] arguments = null;
-            Object part = null;
+            Object part;
             if ((fieldInParameterNames != null) && (fieldInParameterNames.length > 0)) {
                 arguments = new Object[fieldInParameterNames.length];
                 for (int i = 0; i < fieldInParameterNames.length; i++) {
@@ -1468,13 +1513,15 @@ public class WSIFOperation_Java
 
             if (fieldIsConstructor) {
                 for (int a = 0; a < fieldConstructors.length; a++) {
+                    // getParameterTypes() clones its array on every call - read it once
+                    Class[] ctorParamTypes = fieldConstructors[a].getParameterTypes();
                     try {
                         // Get a set of arguments which are compatible with the ctor
                         Object[] compatibleArguments =
-                            getCompatibleArguments(fieldConstructors[a].getParameterTypes(), arguments);
-                        // If we didn't get any arguments then the parts aren't compatible with the ctor
+                            getCompatibleArguments(ctorParamTypes, arguments);
+                        // The parts aren't compatible with this ctor, try the next candidate
                         if (compatibleArguments == null)
-                            break;
+                            continue;
                         // Parts are compatible so invoke the ctor with the compatible set
 
                         Trc.event(
@@ -1506,13 +1553,15 @@ public class WSIFOperation_Java
             } else {
                 if (fieldIsStatic) {
                     for (int a = 0; a < fieldMethods.length; a++) {
+                        // getParameterTypes() clones its array on every call - read it once
+                        Class[] methodParamTypes = fieldMethods[a].getParameterTypes();
                         try {
                             // Get a set of arguments which are compatible with the method
                             Object[] compatibleArguments =
-                                getCompatibleArguments(fieldMethods[a].getParameterTypes(), arguments);
-                            // If we didn't get any arguments then the parts aren't compatible with the method
+                                getCompatibleArguments(methodParamTypes, arguments);
+                            // The parts aren't compatible with this method, try the next one
                             if (compatibleArguments == null)
-                                break;
+                                continue;
                             // Parts are compatible so invoke the method with the compatible set
 
                             Trc.event(
@@ -1544,13 +1593,15 @@ public class WSIFOperation_Java
                             "Failed to invoke method '" + fieldJavaOperationModel.getMethodName() + "'");
                 } else {
                     for (int a = 0; a < fieldMethods.length; a++) {
+                        // getParameterTypes() clones its array on every call - read it once
+                        Class[] methodParamTypes = fieldMethods[a].getParameterTypes();
                         try {
                             // Get a set of arguments which are compatible with the method
                             Object[] compatibleArguments =
-                                getCompatibleArguments(fieldMethods[a].getParameterTypes(), arguments);
-                            // If we didn't get any arguments then the parts aren't compatible with the method
+                                getCompatibleArguments(methodParamTypes, arguments);
+                            // The parts aren't compatible with this method, try the next one
                             if (compatibleArguments == null)
-                                break;
+                                continue;
                             // Parts are compatible so invoke the method with the compatible set
 
                             Object objRef = fieldPort.getObjectReference();
@@ -1621,69 +1672,72 @@ public class WSIFOperation_Java
     }
     
     public String deep() {
-        String buff = "";
+        StringBuilder buff = new StringBuilder();
         try {
-            buff = new String(super.toString() + ":\n");
-            buff += "portModel:" + Trc.brief(fieldPortModel);
-            buff += " wsifPort_Java:" + fieldPort;
-            buff += " bindingOperationModel:" + Trc.brief(fieldBindingOperationModel);
-            buff += " JavaOperation:" + fieldJavaOperationModel;
+            buff.append(super.toString()).append(":\n");
+            buff.append("portModel:").append(Trc.brief(fieldPortModel));
+            buff.append(" wsifPort_Java:").append(fieldPort);
+            buff.append(" bindingOperationModel:").append(Trc.brief(fieldBindingOperationModel));
+            buff.append(" JavaOperation:").append(fieldJavaOperationModel);
 
-            buff += Trc.brief("inParameterNames", fieldInParameterNames);
-            buff += Trc.brief("outParameterNames", fieldOutParameterNames);          
+            buff.append(Trc.brief("inParameterNames", fieldInParameterNames));
+            buff.append(Trc.brief("outParameterNames", fieldOutParameterNames));
 
             if (fieldFaultMessageInfos == null) {
-                buff += " faultMessageInfos:null";
+                buff.append(" faultMessageInfos:null");
             } else {
-                Iterator it = fieldFaultMessageInfos.keySet().iterator();
                 int i = 0;
-                while (it.hasNext()) {
-                    String key = (String) it.next();
-                    buff += " faultMessageInfos["
-                        + i
-                        + "]:"
-                        + key
-                        + " "
-                        + fieldFaultMessageInfos.get(key);
-                    i++;
+                for (Map.Entry<String, FaultMessageInfo> entry
+                        : fieldFaultMessageInfos.entrySet()) {
+                    buff.append(" faultMessageInfos[")
+                        .append(i++)
+                        .append("]:")
+                        .append(entry.getKey())
+                        .append(" ")
+                        .append(entry.getValue());
                 }
             }
 
-            buff += Trc.brief("methods", fieldMethods);          
-            buff += Trc.brief("constructors", fieldConstructors);          
+            buff.append(Trc.brief("methods", fieldMethods));
+            buff.append(Trc.brief("constructors", fieldConstructors));
 
-            buff += " outputMessageName:" + fieldOutputMessageName;
-            buff += " isStatic:" + fieldIsStatic;
-            buff += " isConstructor:" + fieldIsConstructor;
+            buff.append(" outputMessageName:").append(fieldOutputMessageName);
+            buff.append(" isStatic:").append(fieldIsStatic);
+            buff.append(" isConstructor:").append(fieldIsConstructor);
 
             if (fieldTypeMaps == null) {
-                buff += " faultTypeMaps:null";
+                buff.append(" faultTypeMaps:null");
             } else {
-                Iterator it = fieldTypeMaps.keySet().iterator();
                 int i = 0;
-                while (it.hasNext()) {
-                    QName key = (QName) it.next();
-                    buff += " typeMaps[" + i + "]:" + key + " " + fieldTypeMaps.get(key);
-                    i++;
+                for (Object o : fieldTypeMaps.entrySet()) {
+                    Map.Entry<?, ?> entry = (Map.Entry<?, ?>) o;
+                    buff.append(" typeMaps[")
+                        .append(i++)
+                        .append("]:")
+                        .append(entry.getKey())
+                        .append(" ")
+                        .append(entry.getValue());
                 }
             }
         } catch (Exception e) {
             Trc.exceptionInTrace(e);
         }
 
-        return buff;
+        return buff.toString();
     }
 
 	/**
 	 * Override default serialization
 	 */
-    private void writeObject(ObjectOutputStream oos) throws IOException {	
+    @Serial
+    private void writeObject(ObjectOutputStream oos) throws IOException {
         oos.defaultWriteObject();
     }
 
 	/**
 	 * Override default deserialization
 	 */
+    @Serial
     private void readObject(ObjectInputStream ois)
         throws ClassNotFoundException, IOException {
         ois.defaultReadObject();

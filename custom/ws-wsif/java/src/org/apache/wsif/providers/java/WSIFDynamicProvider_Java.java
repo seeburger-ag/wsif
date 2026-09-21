@@ -136,21 +136,32 @@ public class WSIFDynamicProvider_Java implements WSIFProvider {
 
     /**
      * Returns the WSDL namespace URIs of any bindings this provider supports.
+     * <p>
+     * A defensive copy is returned: <code>static final</code> only freezes the array
+     * reference, not its contents, so handing out the shared instance would let any
+     * caller corrupt the provider lookup for every thread in the JVM.
+     *
      * @return an array of all binding namespaces supported by this provider
      */
     public String[] getBindingNamespaceURIs() {
         Trc.entry(this);
-        Trc.exit(supportedBindingNamespaceURIs);
-        return supportedBindingNamespaceURIs;
+        String[] uris = supportedBindingNamespaceURIs.clone();
+        Trc.exit(uris);
+        return uris;
     }
 
     /**
      * Returns the WSDL namespace URIs of any port addresses this provider supports.
+     * <p>
+     * A defensive copy is returned, for the same reason as
+     * {@link #getBindingNamespaceURIs()}.
+     *
      * @return an array of all address namespaces supported by this provider
      */
     public String[] getAddressNamespaceURIs() {
         Trc.entry(this);
-        Trc.exit(supportedAddressNamespaceURIs);
-        return supportedAddressNamespaceURIs;
+        String[] uris = supportedAddressNamespaceURIs.clone();
+        Trc.exit(uris);
+        return uris;
     }
 }

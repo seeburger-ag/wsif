@@ -31,15 +31,17 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
-import java.util.Vector;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.wsdl.BindingOperation;
 import javax.wsdl.Definition;
 import javax.wsdl.Port;
-import javax.wsdl.extensions.ExtensibilityElement;
 import javax.xml.namespace.QName;
 
 import org.apache.wsif.WSIFException;
@@ -72,18 +74,48 @@ public class WSIFPort_Java extends WSIFDefaultPort implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
 
-    private Definition fieldDefinition;
-    private Port fieldPortModel;
+    private final Definition fieldDefinition;
+    private final Port fieldPortModel;
 
-    transient private Class serviceObjectClass;
-    transient private Method[] serviceObjectMethods;
-    transient private Constructor[] serviceObjectConstructors;
+    /*
+     * The three reflection caches below are lazily populated and read from every thread
+     * that drives an operation on this (shared) port. They must be volatile: publishing an
+     * array reference through a data race allows another thread to observe the reference
+     * while still reading null elements out of the array.
+     */
+    transient private volatile Class<?> serviceObjectClass;
+    transient private volatile Method[] serviceObjectMethods;
+    transient private volatile Constructor<?>[] serviceObjectConstructors;
 
-    transient private java.lang.Object fieldObjectReference; // 'physical connection'
+    /*
+     * The service object is shared by every WSIFOperation created from this port, and is
+     * replaced wholesale by setObjectReference() when a methodType="constructor" operation
+     * runs. Volatile guarantees safe publication of the instance; note that it does NOT
+     * make the service class itself thread-safe - see the class javadoc.
+     */
+    transient private volatile java.lang.Object fieldObjectReference; // 'physical connection'
     private final boolean separatedObjectRef; // DO NOT INITIALIZE UNTIL CONSTRUCTOR
 
-    private Map fieldTypeMaps;
-    transient protected Map operationInstances;
+    /** Immutable after construction, so it can be shared with every WSIFOperation_Java. */
+    private final Map<QName, Object> fieldTypeMaps;
+
+    /**
+     * Memoized {@link Class} resolutions of {@link #fieldTypeMaps}, keyed by part type.
+     * <p>
+     * The format binding stores class <em>names</em>, so every operation used to re-run
+     * Class.forName for each of its parameter and return types - and it did so two or
+     * three times per operation, because getMethodArgumentClasses() is called from both
+     * getMethods() and getConstructors(). Resolution stays lazy so that a binding
+     * referencing a class which is absent from the classpath still only fails when an
+     * operation actually needs it, exactly as before.
+     */
+    transient private volatile Map<QName, Object> resolvedTypeMaps;
+
+    /**
+     * Cache of operation prototypes. Concurrent because ports are routinely shared between
+     * threads and createOperation() performs a check-then-act on this map.
+     */
+    transient protected Map<String, WSIFOperation_Java> operationInstances;
 
     /**
      * Construct a new instance of WSIFPort_Java
@@ -106,9 +138,10 @@ public class WSIFPort_Java extends WSIFDefaultPort implements Serializable {
         fieldDefinition = def;
         fieldPortModel = port;
 
-        operationInstances = new HashMap();
+        operationInstances = new ConcurrentHashMap<>();
+        resolvedTypeMaps = new ConcurrentHashMap<>();
 
-        buildTypeMap();
+        fieldTypeMaps = buildTypeMap();
 
         if (Trc.ON) {
             Trc.exit(deep());
@@ -162,7 +195,11 @@ public class WSIFPort_Java extends WSIFDefaultPort implements Serializable {
      * Gets a WSIFOperation_Java instance for given names.
      * If an instance has already been created and exists in the 
      * operationInstances cache return that, otherwise construct
-     * a new instance, and add it to the operationInstances cache.  
+     * a new instance, and add it to the operationInstances cache.
+     * <p>
+     * Two threads racing on the same key may both build a prototype; that is harmless
+     * because the prototype is immutable once constructed and callers always receive a
+     * {@link WSIFOperation_Java#copy()} of it.
      */
     protected WSIFOperation_Java getDynamicWSIFOperation(
         String name,
@@ -172,8 +209,7 @@ public class WSIFPort_Java extends WSIFDefaultPort implements Serializable {
         Trc.entry(this, name, inputName, outputName);
 
         WSIFOperation_Java operation =
-            (WSIFOperation_Java) operationInstances.get(
-                getKey(name, inputName, outputName));
+            operationInstances.get(getKey(name, inputName, outputName));
 
         if (operation == null) {
             BindingOperation bindingOperationModel =
@@ -214,22 +250,31 @@ public class WSIFPort_Java extends WSIFDefaultPort implements Serializable {
      * Gets the Java class of the service object
      * @return Class   the class of the service object
      */
-    Class getServiceObjectClass() throws WSIFException {
+    Class<?> getServiceObjectClass() throws WSIFException {
         // no method access modifier as it used by WSIFOperation_Java
         Trc.entry(this);
-        if (serviceObjectClass == null) {
+        Class<?> cls = serviceObjectClass;
+        if (cls == null) {
 
-            ExtensibilityElement portExtension =
-                (ExtensibilityElement) fieldPortModel.getExtensibilityElements().getFirst();
-
-            if (portExtension == null) {
+            // Note: getFirst() throws NoSuchElementException on an empty list, so the
+            // emptiness test has to come first. This used to be a null check on the
+            // result, which became unreachable when get(0) was migrated to getFirst().
+            List portExtensions = fieldPortModel.getExtensibilityElements();
+            if (portExtensions == null || portExtensions.isEmpty()) {
                 throw new WSIFException("missing port extension");
             }
 
-            JavaAddress address = (JavaAddress) portExtension;
+            Object portExtension = portExtensions.getFirst();
+            if (!(portExtension instanceof JavaAddress address)) {
+                throw new WSIFException(
+                    "expected a java:address port extension but found "
+                        + (portExtension == null
+                            ? "null"
+                            : portExtension.getClass().getName()));
+            }
 
             try {
-                serviceObjectClass =
+                cls =
                     Class.forName(
                         address.getClassName(),
                         true,
@@ -242,24 +287,28 @@ public class WSIFPort_Java extends WSIFDefaultPort implements Serializable {
                         + "'",
                     ex);
             }
+            serviceObjectClass = cls;
         }
-        Trc.exit(serviceObjectClass);
-        return serviceObjectClass;
+        Trc.exit(cls);
+        return cls;
     }
 
     /**
      * Gets the constructors of the service object
      * @return Constructor[]   the constructors of the service object
      */
-    Constructor[] getServiceObjectConstructors() throws WSIFException {
+    Constructor<?>[] getServiceObjectConstructors() throws WSIFException {
         // no method access modifier as it used by WSIFOperation_Java
         Trc.entry(this);
-        if (serviceObjectConstructors == null) {
-            Class c = getServiceObjectClass();
-            serviceObjectConstructors = c.getConstructors();
+        Constructor<?>[] ctors = serviceObjectConstructors;
+        if (ctors == null) {
+            Class<?> c = getServiceObjectClass();
+            // getConstructors() already hands back a defensive copy
+            ctors = c.getConstructors();
+            serviceObjectConstructors = ctors;
         }
-        Trc.exit(serviceObjectConstructors);
-        return serviceObjectConstructors;
+        Trc.exit(ctors);
+        return ctors;
     }
 
     /**
@@ -269,24 +318,33 @@ public class WSIFPort_Java extends WSIFDefaultPort implements Serializable {
     Method[] getServiceObjectMethods() throws WSIFException {
         // no method access modifier as it used by WSIFOperation_Java
         Trc.entry(this);
-        if (serviceObjectMethods == null) {
-            Class c = getServiceObjectClass();
-            serviceObjectMethods = c.getMethods();
+        Method[] methods = serviceObjectMethods;
+        if (methods == null) {
+            Class<?> c = getServiceObjectClass();
+            // getMethods() already hands back a defensive copy
+            methods = c.getMethods();
+            serviceObjectMethods = methods;
         }
-        Trc.exit(serviceObjectMethods);
-        return serviceObjectMethods;
+        Trc.exit(methods);
+        return methods;
     }
 
     /**
      * Gets the service object.
+     * <p>
+     * Two threads arriving here concurrently may each create an instance; the loser's
+     * instance is simply discarded. That is the pre-existing behaviour and is harmless,
+     * because the reference is published safely through a volatile field.
+     *
      * @return Object   the service object instance
      */
     public Object getObjectReference() throws WSIFException {
         Trc.entry(this);
-        if (fieldObjectReference == null) {
-            Class c = getServiceObjectClass();
+        Object ref = fieldObjectReference;
+        if (ref == null) {
+            Class<?> c = getServiceObjectClass();
             try {
-                fieldObjectReference = c.newInstance();
+                ref = c.getDeclaredConstructor().newInstance();
             } catch (Exception ex) {
                 Trc.exception(ex);
                 throw new WSIFException(
@@ -295,9 +353,10 @@ public class WSIFPort_Java extends WSIFDefaultPort implements Serializable {
                         + "'",
                     ex);
             }
+            fieldObjectReference = ref;
         }
-        Trc.exit(fieldObjectReference);
-        return fieldObjectReference;
+        Trc.exit(ref);
+        return ref;
     }
 
     /**
@@ -315,25 +374,28 @@ public class WSIFPort_Java extends WSIFDefaultPort implements Serializable {
 
     /**
      * Builds the type map from the WSDL format binding.
-     * The fieldTypeMaps is a HashTable with the key
-     * a type QName, and the value a String class name.
+     * The returned map is keyed on the type QName, with a String class name
+     * (or a {@code List} of String class names, when the binding maps one XML type
+     * onto several Java types) as the value.
      * The format binding has the form:
      * <format:typeMapping style="uri" encoding="..."/>?
      *    <format:typeMap typeName="qname"|elementName="qname" formatType="nmtoken"/>*
-     * </format:typeMapping> 
+     * </format:typeMapping>
+     * <p>
+     * The result is wrapped unmodifiable and stored in a final field so that it can be
+     * shared with every WSIFOperation_Java - and therefore across threads - without
+     * further synchronisation.
+     *
+     * @return the immutable type map
      */
-    private void buildTypeMap() throws WSIFException {
+    private Map<QName, Object> buildTypeMap() throws WSIFException {
         Trc.entry(this);
         TypeMapping typeMapping = null;
 
         // Get the TypeMappings from the binding
-        Iterator bindingIterator =
-            this.fieldPortModel.getBinding().getExtensibilityElements().iterator();
-
-        // Choose the first typeMap that has encoding=Java and style=Java. 
+        // Choose the first typeMap that has encoding=Java and style=Java.
         // Ignore any other typeMap's that have other encodings and styles.
-        while (bindingIterator.hasNext()) {
-            Object next = bindingIterator.next();
+        for (Object next : fieldPortModel.getBinding().getExtensibilityElements()) {
             if (next instanceof TypeMapping mapping) {
                 typeMapping = mapping;
                 if ("Java".equals(typeMapping.getEncoding())
@@ -353,36 +415,80 @@ public class WSIFPort_Java extends WSIFDefaultPort implements Serializable {
         }
 
         // Build the formatTypeMaps hashmap 
-        fieldTypeMaps = new HashMap();
-        bindingIterator = typeMapping.getMaps().iterator();
-        while (bindingIterator.hasNext()) {
-            TypeMap typeMap = (TypeMap) bindingIterator.next();
-            ///////////////////////////////////
+        Map<QName, Object> typeMaps = new HashMap<>();
+        for (Object o : typeMapping.getMaps()) {
+            TypeMap typeMap = (TypeMap) o;
             QName typeName = typeMap.getTypeName();
             if (typeName == null) {
                 typeName = typeMap.getElementName();
             }
             String type = typeMap.getFormatType();
-            if (typeName != null && type != null) {
-                if (fieldTypeMaps.containsKey(typeName)) {
-                    Vector v = null;
-                    Object obj = fieldTypeMaps.get(typeName);
-                    if (obj instanceof Vector vector) {
-                        v = vector;
-                    } else {
-                        v = new Vector();
-                        v.addElement(obj);
-                    }
-                    v.addElement(type);
-                    this.fieldTypeMaps.put(typeName, v);
-                } else {
-                    this.fieldTypeMaps.put(typeName, type);
-                }
-            } else {
+            if (typeName == null || type == null) {
                 throw new WSIFException("Error in binding TypeMap. Key or Value is null");
             }
+
+            Object existing = typeMaps.get(typeName);
+            if (existing == null) {
+                typeMaps.put(typeName, type);
+            } else if (existing instanceof List<?> list) {
+                @SuppressWarnings("unchecked")
+                List<String> types = (List<String>) list;
+                types.add(type);
+            } else {
+                List<String> types = new ArrayList<>();
+                types.add((String) existing);
+                types.add(type);
+                typeMaps.put(typeName, types);
+            }
         }
+        Map<QName, Object> result = Collections.unmodifiableMap(typeMaps);
         Trc.exit();
+        return result;
+    }
+
+    /**
+     * Resolves the format-binding entry for a part type into the Java type(s) it maps to,
+     * memoizing the result for the lifetime of this port.
+     * <p>
+     * Resolution is deliberately lazy rather than done up-front in {@link #buildTypeMap()}:
+     * a binding may legitimately declare a mapping for a type that no invoked operation
+     * uses, and eagerly loading it would turn a working port into one that fails to
+     * construct. A failure to load still propagates to the caller, uncached, so the next
+     * attempt retries exactly as it did before.
+     *
+     * @param partType the XML type (or element) name of the message part
+     * @return a {@code Class}, or a {@code List<Class>} when the binding maps the type
+     *         onto several Java types, or null if the binding has no entry for it
+     */
+    Object getResolvedTypeMapping(QName partType) throws WSIFException {
+        // no method access modifier as it is used by WSIFOperation_Java
+        Object mapped = fieldTypeMaps.get(partType);
+        if (mapped == null) {
+            return null;
+        }
+
+        Map<QName, Object> cache = resolvedTypeMaps;
+        if (cache == null) {
+            // Can be null after deserialization (the field is transient)
+            cache = new ConcurrentHashMap<>();
+            resolvedTypeMaps = cache;
+        }
+
+        Object resolved = cache.get(partType);
+        if (resolved == null) {
+            if (mapped instanceof List<?> names) {
+                List<Class<?>> classes = new ArrayList<>(names.size());
+                for (Object name : names) {
+                    classes.add(WSIFOperation_Java.getClassForName((String) name));
+                }
+                resolved = Collections.unmodifiableList(classes);
+            } else {
+                resolved = WSIFOperation_Java.getClassForName((String) mapped);
+            }
+            // Racing threads simply compute the same value; last write wins
+            cache.put(partType, resolved);
+        }
+        return resolved;
     }
 
     /**
@@ -409,7 +515,7 @@ public class WSIFPort_Java extends WSIFDefaultPort implements Serializable {
      * Used by WSIF Trc
      */
     public String deep() {
-        StringBuffer buff = new StringBuffer();
+        StringBuilder buff = new StringBuilder();
 
         buff.append(super.toString()).append(":\n");
 
@@ -431,7 +537,7 @@ public class WSIFPort_Java extends WSIFDefaultPort implements Serializable {
             if (fieldPortModel.getName() == null) {
                 buff.append("unknown");
             } else {
-                buff.append(fieldPortModel.getName().toString());
+                buff.append(fieldPortModel.getName());
             }
         }
 
@@ -443,7 +549,7 @@ public class WSIFPort_Java extends WSIFDefaultPort implements Serializable {
         if (serviceObjectConstructors == null) {
             buff.append("null");
         } else {
-            buff.append(serviceObjectConstructors);
+            buff.append(Arrays.toString(serviceObjectConstructors));
             buff.append(" size:").append(serviceObjectConstructors.length);
         }
 
@@ -451,7 +557,7 @@ public class WSIFPort_Java extends WSIFDefaultPort implements Serializable {
         if (serviceObjectMethods == null) {
             buff.append("null");
         } else {
-            buff.append(serviceObjectMethods);
+            buff.append(Arrays.toString(serviceObjectMethods));
             buff.append(" size:").append(serviceObjectMethods.length);
         }
 
@@ -461,13 +567,9 @@ public class WSIFPort_Java extends WSIFDefaultPort implements Serializable {
         } else {
             buff.append(" size:").append(fieldTypeMaps.size());
             int i = 0;
-            for (Iterator it = fieldTypeMaps.keySet().iterator();
-                it.hasNext();
-                ) {
-                QName type = (QName) it.next();
-                Object value = fieldTypeMaps.get(type);
+            for (Map.Entry<QName, Object> entry : fieldTypeMaps.entrySet()) {
                 buff.append("\nformatTypeMaps[").append(i++).append("]:");
-                buff.append(type).append(", ").append(value);
+                buff.append(entry.getKey()).append(", ").append(entry.getValue());
             }
             buff.append("\n");
         }
@@ -478,14 +580,9 @@ public class WSIFPort_Java extends WSIFDefaultPort implements Serializable {
         } else {
             buff.append(" size:").append(operationInstances.size());
             int i = 0;
-            for (Iterator it = operationInstances.keySet().iterator();
-                it.hasNext();
-                ) {
-                String key = (String) it.next();
-                WSIFOperation_Java woj =
-                    (WSIFOperation_Java) operationInstances.get(key);
+            for (Map.Entry<String, WSIFOperation_Java> entry : operationInstances.entrySet()) {
                 buff.append("\noperationInstances[").append(i++).append("]:");
-                buff.append(key).append(" ").append(woj).append(" ");
+                buff.append(entry.getKey()).append(" ").append(entry.getValue()).append(" ");
             }
             buff.append("\n");
         }
@@ -496,6 +593,7 @@ public class WSIFPort_Java extends WSIFDefaultPort implements Serializable {
 	/**
 	 * Override default serialization
 	 */
+    @Serial
     private void writeObject(ObjectOutputStream oos) throws IOException {
         oos.defaultWriteObject();
 
@@ -512,17 +610,18 @@ public class WSIFPort_Java extends WSIFDefaultPort implements Serializable {
 	/**
 	 * Override default deserialization
 	 */
+    @Serial
     private void readObject(ObjectInputStream ois)
         throws ClassNotFoundException, IOException {
         ois.defaultReadObject();
 
 		// Recover the web service object reference
         if (separatedObjectRef) {
-        	Object ref = ois.readObject();
-        	fieldObjectReference = ref;
+            fieldObjectReference = ois.readObject();
         }
-                
+
         // reset the operation instances
-        operationInstances = new HashMap();
-    }   
+        operationInstances = new ConcurrentHashMap<>();
+        resolvedTypeMaps = new ConcurrentHashMap<>();
+    }
 }

@@ -25,8 +25,8 @@
 package org.apache.wsif.base;
 
 import java.io.Serial;
-import java.util.Enumeration;
-import java.util.Vector;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.wsdl.WSDLException;
 import javax.wsdl.extensions.ExtensibilityElement;
@@ -48,6 +48,13 @@ import com.ibm.wsdl.extensions.PopulatedExtensionRegistry;
  * This is utility class that allows to aggregate multiple
  * extensions registries into one. By default all standard WSDL4J
  * extensions are made available.
+ * <p>
+ * <b>Threading:</b> a single instance of this class is shared process-wide (see
+ * {@link WSIFServiceImpl#getCompositeExtensionRegistry()}) and is handed to every
+ * WSDL Definition, reader and writer. Providers append to it from their constructors,
+ * which happens lazily on first provider lookup and can therefore overlap with WSDL
+ * parsing on another thread. The backing list is copy-on-write so that the frequent
+ * query path needs no lock and iteration always sees a stable snapshot.
  * 
  * @author Alekander Slominski
  * @author Sanjiva Weerawarana
@@ -60,7 +67,13 @@ import com.ibm.wsdl.extensions.PopulatedExtensionRegistry;
 class PrivateCompositeExtensionRegistry extends ExtensionRegistry {
     @Serial
     private static final long serialVersionUID = 1L;
-    private Vector extRegs = new Vector();
+
+    /**
+     * Appended to rarely (provider registration), read on every extensibility element
+     * encountered while parsing WSDL - hence copy-on-write rather than a synchronized
+     * Vector, which took a monitor on every single read.
+     */
+    private final List<ExtensionRegistry> extRegs = new CopyOnWriteArrayList<>();
 
     PrivateCompositeExtensionRegistry() {
         Trc.entry(this);
@@ -106,12 +119,9 @@ class PrivateCompositeExtensionRegistry extends ExtensionRegistry {
         throws WSDLException {
         Trc.entry(this, parentType, extensionType);
 
-        ExtensionSerializer ser;
-        Enumeration enum_ = extRegs.elements();
-        while (enum_.hasMoreElements()) {
-            ExtensionRegistry reg = (ExtensionRegistry) enum_.nextElement();
+        for (ExtensionRegistry reg : extRegs) {
             try {
-                ser = reg.querySerializer(parentType, extensionType);
+                ExtensionSerializer ser = reg.querySerializer(parentType, extensionType);
                 // Check that we're not looking at the default serializer
                 ExtensionSerializer def = reg.getDefaultSerializer();
                 if (ser != null && !(ser.equals(def))) {
@@ -123,7 +133,7 @@ class PrivateCompositeExtensionRegistry extends ExtensionRegistry {
                 throw ex;
             }
         }
-        ser = new UnknownExtensionSerializer();
+        ExtensionSerializer ser = new UnknownExtensionSerializer();
         Trc.exit();
         return ser;
     }
@@ -134,12 +144,9 @@ class PrivateCompositeExtensionRegistry extends ExtensionRegistry {
         throws WSDLException {
         Trc.entry(this, parentType, elementType);
 
-        ExtensionDeserializer deser;
-        Enumeration enum_ = extRegs.elements();
-        while (enum_.hasMoreElements()) {
-            ExtensionRegistry reg = (ExtensionRegistry) enum_.nextElement();
+        for (ExtensionRegistry reg : extRegs) {
             try {
-                deser = reg.queryDeserializer(parentType, elementType);
+                ExtensionDeserializer deser = reg.queryDeserializer(parentType, elementType);
                 // Check that we're not looking at the default deserializer
                 ExtensionDeserializer def = reg.getDefaultDeserializer();
                 if (deser != null && !(deser.equals(def))) {
@@ -151,7 +158,7 @@ class PrivateCompositeExtensionRegistry extends ExtensionRegistry {
                 throw ex;
             }
         }
-        deser = new UnknownExtensionDeserializer();
+        ExtensionDeserializer deser = new UnknownExtensionDeserializer();
         Trc.exit(deser);
         return deser;
     }
@@ -162,19 +169,16 @@ class PrivateCompositeExtensionRegistry extends ExtensionRegistry {
         throws WSDLException {
         Trc.entry(this, parentType, elementType);
 
-        ExtensibilityElement ee;
-        Enumeration enum_ = extRegs.elements();
-        while (enum_.hasMoreElements()) {
-            ExtensionRegistry reg = (ExtensionRegistry) enum_.nextElement();
+        for (ExtensionRegistry reg : extRegs) {
             try {
-                ee = reg.createExtension(parentType, elementType);
+                ExtensibilityElement ee = reg.createExtension(parentType, elementType);
                 Trc.exit(ee);
                 return ee;
             } catch (WSDLException ignored) {
 	        	Trc.ignoredException(ignored);
             }
         }
-        ee = super.createExtension(parentType, elementType);
+        ExtensibilityElement ee = super.createExtension(parentType, elementType);
         Trc.exit(ee);
         return ee;
     }

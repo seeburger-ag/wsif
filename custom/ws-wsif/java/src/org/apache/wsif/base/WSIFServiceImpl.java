@@ -82,7 +82,14 @@ import org.apache.wsif.wsdl.WSIFWSDLLocatorImpl;
  * @author Mark Whitlock <whitlock@apache.org>
  */
 public class WSIFServiceImpl implements WSIFService {
-    private static PrivateCompositeExtensionRegistry providersExtRegs =
+    /**
+     * The process-wide composite extension registry.
+     * <p>
+     * Assigned during class initialization, so the JLS class-init guarantees make it
+     * safely published to every thread; final to keep it that way. The instance itself is
+     * append-only and internally copy-on-write - see PrivateCompositeExtensionRegistry.
+     */
+    private static final PrivateCompositeExtensionRegistry providersExtRegs =
         new PrivateCompositeExtensionRegistry();
     private Definition def = null;
     private Service service;
@@ -90,7 +97,7 @@ public class WSIFServiceImpl implements WSIFService {
     private Map availablePorts;
     private WSIFDynamicTypeMap typeMap = new WSIFDynamicTypeMap();
     private String preferredPort = null;
-    private Map typeReg = null;
+    //private Map typeReg = null;
     private Port chosenPort = null;
     private WSIFMessage context;
 
@@ -550,7 +557,7 @@ public class WSIFServiceImpl implements WSIFService {
 
         if (portName == null) {
             // Get first available port
-            if (availablePorts.size() > 0) {
+            if (!availablePorts.isEmpty()) {
                 port = (Port) availablePorts.values().iterator().next();
             }
             if (port == null) {
@@ -825,7 +832,7 @@ public class WSIFServiceImpl implements WSIFService {
         if (portType == null) {
             // if all ports have the same portType --> use it
             Map ports = service.getPorts();
-            if (ports.size() == 0) {
+            if (ports.isEmpty()) {
                 throw new WSIFException(
                     "WSDL must contain at least one port in "
                         + service.getQName());
@@ -864,7 +871,7 @@ public class WSIFServiceImpl implements WSIFService {
 
         Map ports = service.getPorts();
         // check that service has at least one port ...
-        if (ports.size() == 0) {
+        if (ports.isEmpty()) {
             throw new WSIFException(
                 "WSDL must contain at least one port in " + service.getQName());
         }
@@ -875,14 +882,14 @@ public class WSIFServiceImpl implements WSIFService {
             Binding binding = port.getBinding();
             if (binding != null) {
                 List bindingExList = binding.getExtensibilityElements();
-                if (bindingExList.size() > 0) {
+                if (!bindingExList.isEmpty()) {
                     ExtensibilityElement bindingFirstEx =
                         (ExtensibilityElement) bindingExList.getFirst();
                     String bindingNS =
                         bindingFirstEx.getElementType().getNamespaceURI();
                     String addressNS;
                     List addressExList = port.getExtensibilityElements();
-                    if (addressExList.size() > 0) {
+                    if (!addressExList.isEmpty()) {
                         ExtensibilityElement addressFirstEx =
                             (ExtensibilityElement) addressExList.getFirst();
                         addressNS =
@@ -1215,7 +1222,7 @@ public class WSIFServiceImpl implements WSIFService {
             return false;
         }
         Object on = features.get(WSIFConstants.WSIF_FEATURE_AUTO_MAP_TYPES);
-        if (on != null && on instanceof Boolean boolean1) {
+        if (on instanceof Boolean boolean1) {
             if (boolean1.booleanValue()) {
                 return true;
             } else {
@@ -1230,7 +1237,7 @@ public class WSIFServiceImpl implements WSIFService {
         if (features != null) {
             Object pa =
                 features.get(WSIFConstants.WSIF_FEATURE_PROXY_AUTHENTICATION);
-            if (pa != null && pa instanceof PasswordAuthentication authentication) {
+            if (pa instanceof PasswordAuthentication authentication) {
                 return authentication;
             }
         }
@@ -1240,7 +1247,7 @@ public class WSIFServiceImpl implements WSIFService {
     public String deep() {
         String buff = "";
         try {
-            buff = new String(this.toString());
+            buff = this.toString();
             buff += "\nprovidersExtRegs:"
                 + (providersExtRegs == null
                     ? "null"
