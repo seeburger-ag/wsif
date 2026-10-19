@@ -35,11 +35,23 @@ A successful build produces `target/wsif-2.0.jar` and ~225 class files.
 
 Java 21 and Maven 3.9.x are on `PATH`. Do not attempt to install or switch JDKs.
 
-### There are no tests
+### Tests: opt-in benchmarks and stress tests only
 
-`src/test/java` and `test/` do not exist, so Surefire runs **0 tests**. Do not report
-test results as meaningful verification — **compilation success is the only automated
-signal available**.
+`test/java` (configured as `testSourceDirectory`; deliberately **outside** `src`, whose
+content is compiled into the bundle) contains the Phase 0 baseline suite from
+`doc/PERFORMANCE_THREADSAFETY_PLAN.md`:
+
+- `WSIFBaselineBenchmarkTest` — performance baseline, run with
+  `mvn -o test '-Dtest=WSIFBaselineBenchmarkTest' '-Dwsif.bench=true' '-Dwsif.bench.label=<name>'`;
+  writes `target/bench/wsif-baseline-<name>.md`.
+- `WSIFConcurrencyStressTest` — thread-safety stress tests, run with
+  `mvn -o test '-Dtest=WSIFConcurrencyStressTest' '-Dwsif.stress=true'`. They assert the
+  *correct* behaviour, so some are expected to fail until the corresponding plan item is fixed.
+
+Both are **skipped by default** (JUnit `Assume`), so `mvn -o clean package` runs 0 real tests.
+In PowerShell, quote `-D` arguments containing dots (`'-Dwsif.bench=true'`). Apart from these,
+**compilation success is the only automated signal available** — do not report the skipped
+suite as meaningful verification.
 
 `test.bak/` holds the legacy upstream JUnit 3 suite (`addressbook/`, `async/`,
 `faults/`, `providers/`, `soap/`, …). It is **not part of the Maven build**, is not on
@@ -80,7 +92,8 @@ src/                           <- sourceDirectory (note: NOT src/main/java)
     logging/                   Trc (tracing), MessageLogger
     naming/, catalog/, schema/, attachments/, tools/
 samples/                       standalone examples, NOT compiled by Maven
-doc/                           original Apache HTML documentation
+test/java, test/resources      opt-in benchmarks / stress tests (testSourceDirectory)
+doc/                           original Apache HTML documentation (+ improvement plan)
 test.bak/                      legacy JUnit 3 suite, NOT built
 lib/                           original 2004 jars, NOT on the Maven classpath
 ```
