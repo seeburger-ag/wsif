@@ -41,6 +41,7 @@ import org.apache.wsif.WSIFPort;
 import org.apache.wsif.WSIFResponseHandler;
 import org.apache.wsif.compiler.util.TypeMapping;
 import org.apache.wsif.logging.Trc;
+import org.apache.wsif.providers.ModelWSIFPort;
 import org.apache.wsif.util.WSIFUtils;
 import org.apache.wsif.wsdl.extensions.jms.JMSProperty;
 import org.apache.wsif.wsdl.extensions.jms.JMSPropertyValue;
@@ -426,7 +427,7 @@ public abstract class WSIFDefaultOperation implements WSIFOperation {
     	WSIFMessage contextCopy;
 	    try {
     	    if (this.context == null) {
-    		    contextCopy = (WSIFMessage) getWSIFPort().getContext().clone();
+    		    contextCopy = portContextCopy();
     	    } else {
 			    contextCopy = (WSIFMessage) this.context.clone();
     	    }
@@ -438,6 +439,50 @@ public abstract class WSIFDefaultOperation implements WSIFOperation {
     	return contextCopy;
     }
     
+    /**
+     * Port classes whose getContext() is WSIF's own implementation, which already
+     * returns a private copy (WSIFDefaultPort, ModelWSIFPort, and subclasses that do
+     * not override it). Computed once per port class.
+     */
+    private static final ClassValue<Boolean> PORT_CONTEXT_IS_COPY =
+        new ClassValue<Boolean>() {
+            @Override
+            protected Boolean computeValue(Class<?> portClass) {
+                try {
+                    Class<?> declaring =
+                        portClass.getMethod("getContext").getDeclaringClass();
+                    return Boolean.valueOf(
+                        declaring == WSIFDefaultPort.class
+                            || declaring == ModelWSIFPort.class);
+                } catch (NoSuchMethodException e) {
+                    return Boolean.FALSE;
+                }
+            }
+        };
+
+    /**
+     * @return true if getContext() of the given port class is known to return a
+     *         private copy (package-private for tests)
+     */
+    static boolean portContextIsCopy(Class<?> portClass) {
+        return PORT_CONTEXT_IS_COPY.get(portClass).booleanValue();
+    }
+
+    /**
+     * Returns a private copy of the port's context. WSIF's own ports already hand out
+     * a copy, which used to be cloned a second time here; other WSIFPort
+     * implementations (whose contract does not promise a copy) are still cloned.
+     */
+    private WSIFMessage portContextCopy()
+        throws WSIFException, CloneNotSupportedException {
+        WSIFPort port = getWSIFPort();
+        WSIFMessage portContext = port.getContext();
+        if (portContextIsCopy(port.getClass())) {
+            return portContext;
+        }
+        return (WSIFMessage) portContext.clone();
+    }
+
     abstract protected Operation getOperation() throws Exception;
     
     protected void close() throws WSIFException {

@@ -102,8 +102,18 @@ public class WSIFServiceImpl implements WSIFService {
     private WSIFMessage context;
 
     protected ArrayList schemaTypes = new ArrayList();
+    /**
+     * Created lazily by {@link #ensureMappers()} - null until a mapping is actually
+     * needed (mapType, mapPackage, or schema types to map). Most services never need
+     * one, and creating it cost two globally synchronized factory calls per service.
+     */
     protected WSIFMappingConvention mapCon = null;
+    /** Created lazily, see {@link #mapCon}. Mutable, so never shared between copies. */
     protected WSIFMapper mapper = null;
+    // Class names from the WSIF_FEATURE_MAPPER_CLASS / ..._MAPPINGCONVENTION_CLASS
+    // features (null = factory default), used when the mapper is created lazily
+    private String mapperClassName = null;
+    private String mappingConvClassName = null;
     // Flag to indicate that we have produced mappings based on the types in the schema
     private boolean typeMapInitialised = false;
     // Flag to indicate that we have parsed the schema to find the types
@@ -418,6 +428,27 @@ public class WSIFServiceImpl implements WSIFService {
     }
 
     /**
+      * Create a WSIF service instance from a cached template whose definition has
+      * been detached (see {@link #detachDefinition()}), for the given definition.
+      * Used by the definition-keyed cache in WSIFServiceFactoryImpl.
+      */
+    WSIFServiceImpl(WSIFServiceImpl template, Definition def) throws WSIFException {
+        Trc.entry(this, template, def);
+        copyInitializedService(template);
+        this.def = def;
+        if (Trc.ON)
+            Trc.exit(deep());
+    }
+
+    /**
+     * Drops the reference to the definition. Only for cache templates, which must
+     * not keep their (weakly referenced) cache key reachable.
+     */
+    void detachDefinition() {
+        this.def = null;
+    }
+
+    /**
      * Copy the "read-only" parts of an initialized WSIFServiceImpl
      */
     private void copyInitializedService(WSIFServiceImpl svc) {
@@ -429,8 +460,13 @@ public class WSIFServiceImpl implements WSIFService {
         this.schemaTypesInitialised = svc.schemaTypesInitialised;
         this.typeMapInitialised = svc.typeMapInitialised;
         this.schemaTypes = (ArrayList) svc.schemaTypes.clone();
-        this.mapCon = svc.mapCon;
-        this.mapper = svc.mapper;
+        // The mapper is mutable (mapType -> overrideTypeMapping), so a copy must not
+        // share it with its source: it gets its own, created lazily from the same
+        // configuration if and when it is needed.
+        this.mapperClassName = svc.mapperClassName;
+        this.mappingConvClassName = svc.mappingConvClassName;
+        this.mapCon = null;
+        this.mapper = null;
         if (svc.features instanceof Hashtable hashtable) {
             this.features = (Map) hashtable.clone();
         } else if (svc.features instanceof HashMap map) {
@@ -515,7 +551,8 @@ public class WSIFServiceImpl implements WSIFService {
         Service service,
         Port port)
         throws WSIFException {
-        checkWSDLForWSIF(def);
+        // No checkWSDLForWSIF(def) here: def is the definition validated by init(),
+        // or that of the already validated service this one was copied from.
         List bindingExList = port.getBinding().getExtensibilityElements();
         ExtensibilityElement bindingFirstEx =
             (ExtensibilityElement) bindingExList.getFirst();
@@ -612,9 +649,8 @@ public class WSIFServiceImpl implements WSIFService {
      */
     public void mapType(QName xmlType, Class javaType) throws WSIFException {
         Trc.entry(this, xmlType, javaType);
-        if (mapper != null) {
-            mapper.overrideTypeMapping(xmlType, javaType.getName());
-        }
+        ensureMappers();
+        mapper.overrideTypeMapping(xmlType, javaType.getName());
         if (!schemaTypesInitialised) {
             // Map it directly now!        	
             typeMap.mapType(xmlType, javaType, true);
@@ -629,9 +665,8 @@ public class WSIFServiceImpl implements WSIFService {
      */
     public void mapType(QName xmlType, String className) throws WSIFException {
         Trc.entry(this, xmlType, className);
-        if (mapper != null) {
-            mapper.overrideTypeMapping(xmlType, className);
-        }
+        ensureMappers();
+        mapper.overrideTypeMapping(xmlType, className);
         if (!schemaTypesInitialised) {
             // Map it directly now!
             Class clazz = null;
@@ -667,9 +702,8 @@ public class WSIFServiceImpl implements WSIFService {
         // of types to apply the mapping to, so let's make sure we have one!
         populateSchemaTypes(specialistLocator);
 
-        if (mapCon != null) {
-            mapCon.overridePackageMapping(namespace, packageName);
-        }
+        ensureMappers();
+        mapCon.overridePackageMapping(namespace, packageName);
         Trc.exit();
     }
 
@@ -927,8 +961,15 @@ public class WSIFServiceImpl implements WSIFService {
             Trc.ignoredException(cce);
         }
 
-        overrideMapper(mapperClass);
-        overrideMappingConvention(mappingConvClass);
+        // Record the WSIFMapper and WSIFMappingConvention configuration. They are
+        // created lazily (ensureMappers), because most services never map a type.
+        // Classes named explicitly by a feature are still created now, so that a bad
+        // class name fails getService exactly as before.
+        this.mapperClassName = mapperClass;
+        this.mappingConvClassName = mappingConvClass;
+        if (mapperClass != null || mappingConvClass != null) {
+            ensureMappers();
+        }
 
         // If automatic mapping of types is required, generate the list of SchemaType objects
         if (autoMapTypesOn()) {
@@ -941,6 +982,16 @@ public class WSIFServiceImpl implements WSIFService {
      * new operation types are supported.
      */
     private void checkPortTypeInformation(Definition def, PortType portType)
+        throws WSIFException {
+        // Validated once per PortType (see ValidatedWsdl); failures are not remembered
+        if (ValidatedWsdl.isValidated(portType)) {
+            return;
+        }
+        doCheckPortTypeInformation(def, portType);
+        ValidatedWsdl.markValidated(portType);
+    }
+
+    private void doCheckPortTypeInformation(Definition def, PortType portType)
         throws WSIFException {
         List operationList = portType.getOperations();
 
@@ -990,6 +1041,10 @@ public class WSIFServiceImpl implements WSIFService {
     }
 
     private void checkWSDLForWSIF(Definition def) throws WSIFException {
+        // Validated once per Definition (see ValidatedWsdl); failures are not remembered
+        if (ValidatedWsdl.isValidated(def)) {
+            return;
+        }
         try {
             checkWSDL(def);
         } catch (WSDLException ex) {
@@ -998,6 +1053,7 @@ public class WSIFServiceImpl implements WSIFService {
                 "invalid WSDL defintion " + def.getQName(),
                 ex);
         }
+        ValidatedWsdl.markValidated(def);
     }
 
     /**
@@ -1083,6 +1139,20 @@ public class WSIFServiceImpl implements WSIFService {
         }
         this.context = context;
         Trc.exit();
+    }
+
+    /**
+     * Creates the WSIFMapper and WSIFMappingConvention on first use, from the
+     * configuration recorded in init (or copied from the source service).
+     * @throws A WSIFException if the mapper or convention cannot be created
+     */
+    private void ensureMappers() throws WSIFException {
+        synchronized (schemaTypes) {
+            if (mapper == null) {
+                overrideMapper(mapperClassName);
+                overrideMappingConvention(mappingConvClassName);
+            }
+        }
     }
 
     /**
@@ -1173,6 +1243,18 @@ public class WSIFServiceImpl implements WSIFService {
             // existing mappings could be added.
             if (typeMapInitialised)
                 return;
+
+            if (mapper == null) {
+                if (schemaTypes.isEmpty()) {
+                    // Nothing was ever mapped (no mapType/mapPackage) and there are no
+                    // schema types (automatic type mapping is off): the default mapper
+                    // would return an empty mapping - after building the complete
+                    // standard XML->Java table for three XSD namespaces. Skip it.
+                    typeMapInitialised = true;
+                    return;
+                }
+                ensureMappers();
+            }
 
             // Without a mapper we can't do any mapping!!     	
             if (mapper == null) {

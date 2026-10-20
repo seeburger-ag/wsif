@@ -40,10 +40,17 @@ Java 21 and Maven 3.9.x are on `PATH`. Do not attempt to install or switch JDKs.
 `test/java` (configured as `testSourceDirectory`; deliberately **outside** `src`, whose
 content is compiled into the bundle) contains:
 
-- **Unit tests that run in every build:** `org.apache.wsif.base.WSIFServiceCacheTest` and
-  `org.apache.wsif.util.WSIFPluggableProvidersTest`. They are fast (< 1 s) regression guards
-  for the Phase 1 thread-safety fixes. Add a regression test in the same style when you fix
-  something.
+- **Unit tests that run in every build:**
+  - `org.apache.wsif.base`: `WSIFServiceCacheTest`, `WSIFServiceImplTest`, `ValidatedWsdlTest`,
+    `WSIFDefaultOperationContextTest`, `DefinitionServiceCacheTest`;
+  - `org.apache.wsif.util.WSIFPluggableProvidersTest`;
+  - `org.apache.wsif.providers.java.WSIFPort_JavaTypeMapTest`.
+
+  They are fast (about 1 s) regression guards for the Phase 1 and Phase 2 fixes. Add a
+  regression test in the same style when you fix something.
+- **Memoized WSDL validation (Phase 2.3):** WSIF validates a `Definition` / `PortType` only
+  once and assumes it is not modified afterwards. Run with `-Dwsif.validation.memoize=false`
+  to validate on every use.
 - **Opt-in suites from Phase 0** of `doc/PERFORMANCE_THREADSAFETY_PLAN.md`:
   - `WSIFBaselineBenchmarkTest` — performance baseline, run with
     `mvn -o test '-Dtest=WSIFBaselineBenchmarkTest' '-Dwsif.bench=true' '-Dwsif.bench.label=<name>'`;
@@ -51,7 +58,7 @@ content is compiled into the bundle) contains:
   - `WSIFConcurrencyStressTest` — thread-safety stress tests, run with
     `mvn -o test '-Dtest=WSIFConcurrencyStressTest' '-Dwsif.stress=true'`. They assert the
     *correct* behaviour, so some are expected to fail until the corresponding plan item is
-    fixed (currently only `serviceCacheDoesNotReturnStaleDefinition`, plan item 2.3).
+    fixed (currently none fail).
 
   Both are **skipped by default** (JUnit `Assume`). In PowerShell, quote `-D` arguments
   containing dots (`'-Dwsif.bench=true'`).
