@@ -6,16 +6,40 @@
 
     <groupId>org.apache.ws</groupId>
     <artifactId>wsif</artifactId>
-    <version>0.20260921</version>
+    <version>0.20261021-SNAPSHOT</version>
     <packaging>bundle</packaging>
 
     <name>WSIF</name>
     <description>Web Services Invocation Framework</description>
 
+    <scm>
+        <connection>scm:git:git@github.com:seeburger-ag/wsif.git</connection>
+        <developerConnection>scm:git:git@github.com:seeburger-ag/wsif.git</developerConnection>
+        <url>https://github.com/seeburger-ag/wsif</url>
+    </scm>
+
+    <distributionManagement>
+        <repository>
+            <id>release</id>
+            <name>SEEBURGER Release Repository</name>
+            <url>https://repo.seeburger.de/archiva/repository/release/</url>
+        </repository>
+
+        <snapshotRepository>
+            <id>snapshot</id>
+            <name>SEEBURGER Snapshot Repository</name>
+            <url>https://repo.seeburger.de/archiva/repository/snapshot/</url>
+        </snapshotRepository>
+
+        <site>
+            <id>github</id>
+            <url>scm:git:git@github.com:seeburger-ag/wsif.git</url>
+        </site>
+
+    </distributionManagement>
+
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>21</maven.compiler.source>
-        <maven.compiler.target>21</maven.compiler.target>
         <maven.compiler.release>21</maven.compiler.release>
 
         <!--
@@ -57,7 +81,7 @@
         <dependency>
             <groupId>commons-logging</groupId>
             <artifactId>commons-logging</artifactId>
-            <version>1.3.5</version>
+            <version>1.4.0</version>
         </dependency>
 
         <dependency>
@@ -209,7 +233,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.14.1</version>
+                <version>3.16.0</version>
                 <configuration>
                     <encoding>UTF-8</encoding>
                     <excludes>
@@ -231,7 +255,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.5.2</version>
+                <version>3.6.0</version>
                 <!--
                     Benchmarks (-Dwsif.bench=true) and concurrency stress tests
                     (-Dwsif.stress=true) are opt-in and skipped by default; see
@@ -246,7 +270,7 @@
             <plugin>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>maven-bundle-plugin</artifactId>
-                <version>5.1.9</version>
+                <version>6.2.0</version>
                 <extensions>true</extensions>
                 <configuration>
                     <instructions>
@@ -277,7 +301,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>3.11.2</version>
+                <version>3.12.0</version>
                 <configuration>
                     <source>21</source>
                 </configuration>
