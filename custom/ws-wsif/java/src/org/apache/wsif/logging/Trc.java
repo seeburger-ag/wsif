@@ -69,7 +69,13 @@ public class Trc {
     public static final int LOG_LEVEL_FATAL = 5;
     private static final String wsifPackageName = "org.apache.wsif";
     private static Log log = LogFactory.getLog(wsifPackageName+".*");
-    public static boolean ON = log.isDebugEnabled();
+    /**
+     * Global trace switch, checked by every Trc method and by callers that guard
+     * expensive trace argument construction with <code>if (Trc.ON)</code>.
+     * Volatile so that a change (e.g. by a management tool) is visible to all threads;
+     * a volatile read is as cheap as a plain read on the common platforms.
+     */
+    public static volatile boolean ON = log.isDebugEnabled();
     private static int currentLogLevel;
 
     static {

@@ -48,8 +48,14 @@ import org.apache.wsif.wsdl.WSIFWSDLLocatorImpl;
  */
 public class WSIFServiceFactoryImpl extends WSIFServiceFactory {
 
-    private boolean useCache = false;
-	private WSIFServiceCache cache = null;
+    /**
+     * The service cache, or null when service caching is off. A factory is
+     * typically shared by many threads (bpengine keeps one in a static field):
+     * the reference is volatile and every getService reads it exactly once, so a
+     * concurrent feature change can never be observed half-applied. Written only
+     * under the monitor of this (setFeature / setFeatures).
+     */
+    private volatile WSIFServiceCache cache = null;
     private Map features = new Hashtable();
 
     /**
@@ -84,7 +90,8 @@ public class WSIFServiceFactoryImpl extends WSIFServiceFactory {
             portTypeName);
 
         String key = "";
-        if (useCache) {
+        WSIFServiceCache c = cache;
+        if (c != null) {
             key =
                 genCacheKey(
                     wsdlLoc,
@@ -92,7 +99,7 @@ public class WSIFServiceFactoryImpl extends WSIFServiceFactory {
                     serviceName,
                     portTypeNS,
                     portTypeName);
-            WSIFServiceImpl cachedWSI = (WSIFServiceImpl) cache.get(key);
+            WSIFServiceImpl cachedWSI = (WSIFServiceImpl) c.get(key);
             if (cachedWSI != null) {
                 WSIFServiceImpl wsi = new WSIFServiceImpl(cachedWSI);
                 Trc.exit(wsi);
@@ -109,8 +116,8 @@ public class WSIFServiceFactoryImpl extends WSIFServiceFactory {
                 portTypeName,
                 getFeatures());
 
-        if (useCache && !key.equals("")) {
-            cache.put(key, wsi);
+        if (c != null && !key.equals("")) {
+            c.put(key, cacheTemplate(wsi));
         }
 
         Trc.exit(wsi);
@@ -153,7 +160,8 @@ public class WSIFServiceFactoryImpl extends WSIFServiceFactory {
             portTypeName);
 
         String key = "";
-        if (useCache) {
+        WSIFServiceCache c = cache;
+        if (c != null) {
             key =
                 genCacheKey(
                     wsdlLoc,
@@ -161,7 +169,7 @@ public class WSIFServiceFactoryImpl extends WSIFServiceFactory {
                     serviceName,
                     portTypeNS,
                     portTypeName);
-            WSIFServiceImpl cachedWSI = (WSIFServiceImpl) cache.get(key);
+            WSIFServiceImpl cachedWSI = (WSIFServiceImpl) c.get(key);
             if (cachedWSI != null) {
                 WSIFServiceImpl wsi = new WSIFServiceImpl(cachedWSI);
                 Trc.exit(wsi);
@@ -179,8 +187,8 @@ public class WSIFServiceFactoryImpl extends WSIFServiceFactory {
                 portTypeName,
                 getFeatures());
 
-        if (useCache && !key.equals("")) {
-            cache.put(key, wsi);
+        if (c != null && !key.equals("")) {
+            c.put(key, cacheTemplate(wsi));
         }
 
         Trc.exit(wsi);
@@ -196,9 +204,10 @@ public class WSIFServiceFactoryImpl extends WSIFServiceFactory {
     public WSIFService getService(Definition def) throws WSIFException {
         Trc.entryExpandWsdl(this, new Object[] { def });
         String key = "";
-        if (useCache) {
+        WSIFServiceCache c = cache;
+        if (c != null) {
             key = genCacheKey(def, null, null);
-            WSIFServiceImpl cachedWSI = (WSIFServiceImpl) cache.get(key);
+            WSIFServiceImpl cachedWSI = (WSIFServiceImpl) c.get(key);
             if (cachedWSI != null) {
                 WSIFServiceImpl wsi = new WSIFServiceImpl(cachedWSI);
                 Trc.exit(wsi);
@@ -208,8 +217,8 @@ public class WSIFServiceFactoryImpl extends WSIFServiceFactory {
 
         WSIFServiceImpl wsi = new WSIFServiceImpl(def, getFeatures());
 
-        if (useCache && !key.equals("")) {
-            cache.put(key, wsi);
+        if (c != null && !key.equals("")) {
+            c.put(key, cacheTemplate(wsi));
         }
 
         Trc.exit(wsi);
@@ -227,9 +236,10 @@ public class WSIFServiceFactoryImpl extends WSIFServiceFactory {
         throws WSIFException {
         Trc.entryExpandWsdl(this, new Object[] { def, service });
         String key = "";
-        if (useCache) {
+        WSIFServiceCache c = cache;
+        if (c != null) {
             key = genCacheKey(def, service, null);
-            WSIFServiceImpl cachedWSI = (WSIFServiceImpl) cache.get(key);
+            WSIFServiceImpl cachedWSI = (WSIFServiceImpl) c.get(key);
             if (cachedWSI != null) {
                 WSIFServiceImpl wsi = new WSIFServiceImpl(cachedWSI);
                 Trc.exit(wsi);
@@ -239,8 +249,8 @@ public class WSIFServiceFactoryImpl extends WSIFServiceFactory {
 
         WSIFServiceImpl wsi = new WSIFServiceImpl(def, service, getFeatures());
 
-        if (useCache && !key.equals("")) {
-            cache.put(key, wsi);
+        if (c != null && !key.equals("")) {
+            c.put(key, cacheTemplate(wsi));
         }
         Trc.exit(wsi);
         return wsi;
@@ -261,9 +271,10 @@ public class WSIFServiceFactoryImpl extends WSIFServiceFactory {
         throws WSIFException {
         Trc.entryExpandWsdl(this, new Object[]{def, service, portType});
         String key = "";
-        if (useCache) {
+        WSIFServiceCache c = cache;
+        if (c != null) {
             key = genCacheKey(def, service, portType);
-            WSIFServiceImpl cachedWSI = (WSIFServiceImpl) cache.get(key);
+            WSIFServiceImpl cachedWSI = (WSIFServiceImpl) c.get(key);
             if (cachedWSI != null) {
                 WSIFServiceImpl wsi = new WSIFServiceImpl(cachedWSI);
                 Trc.exit(wsi);
@@ -273,8 +284,8 @@ public class WSIFServiceFactoryImpl extends WSIFServiceFactory {
 
         WSIFServiceImpl wsi = new WSIFServiceImpl(def, service, portType, getFeatures());
 
-        if (useCache && !key.equals("")) {
-            cache.put(key, wsi);
+        if (c != null && !key.equals("")) {
+            c.put(key, cacheTemplate(wsi));
         }
 
         Trc.exit(wsi);
@@ -308,7 +319,8 @@ public class WSIFServiceFactoryImpl extends WSIFServiceFactory {
                 portTypeName });
 
         String key = "";
-        if (useCache) {
+        WSIFServiceCache c = cache;
+        if (c != null) {
             key =
                 genCacheKey(
                     def,
@@ -316,7 +328,7 @@ public class WSIFServiceFactoryImpl extends WSIFServiceFactory {
                     serviceName,
                     portTypeNS,
                     portTypeName);
-            WSIFServiceImpl cachedWSI = (WSIFServiceImpl) cache.get(key);
+            WSIFServiceImpl cachedWSI = (WSIFServiceImpl) c.get(key);
             if (cachedWSI != null) {
                 WSIFServiceImpl wsi = new WSIFServiceImpl(cachedWSI);
                 Trc.exit(wsi);
@@ -333,8 +345,8 @@ public class WSIFServiceFactoryImpl extends WSIFServiceFactory {
                 portTypeName,
                 getFeatures());
 
-        if (useCache && !key.equals("")) {
-            cache.put(key, wsi);
+        if (c != null && !key.equals("")) {
+            c.put(key, cacheTemplate(wsi));
         }
 
         Trc.exit(wsi);
@@ -359,69 +371,62 @@ public class WSIFServiceFactoryImpl extends WSIFServiceFactory {
     /**
      * @see org.apache.wsif.WSIFServiceFactory#setFeature(String, Object)
      */
-    public void setFeature(String name, Object value) {
+    public synchronized void setFeature(String name, Object value) {
         Trc.entry(this, name, value);
         if (WSIFConstants.WSIF_FEATURE_SERVICE_CACHING.equals(name)) {
-        	if (value != null && value instanceof Boolean boolean1) {
-        		if (boolean1.booleanValue()) {
-        			useCache = true;
-					if (cache == null) {
-						int size = 100;
-						Object tempInt = getFeature(WSIFConstants.WSIF_FEATURE_SERVICE_CACHE_SIZE);
-						if (tempInt != null && tempInt instanceof Integer integer) {
-							size = integer.intValue();
-						}
-						cache = new WSIFServiceCache(size);
-					}
-        		} else {
-        		    useCache = false;
-        		    cache = null;
-        		}
-        	}
-        } else if (WSIFConstants.WSIF_FEATURE_SERVICE_CACHE_SIZE.equals(name)) {        	
-        	if (value != null && value instanceof Integer integer && cache != null) {
-        		int size = integer.intValue();
-        		cache.setCacheSize(size);
-        	}
-        } 
+            applyCaching(value);
+        } else if (WSIFConstants.WSIF_FEATURE_SERVICE_CACHE_SIZE.equals(name)) {
+            applyCacheSize(value);
+        }
         features.put(name, value);
         Trc.exit();
-    }    
+    }
 
     /**
      * @see org.apache.wsif.WSIFServiceFactory#setFeatures(Map)
      */
-    public void setFeatures(Map map) {
+    public synchronized void setFeatures(Map map) {
         Trc.entry(this, map);
         features.clear();
         features.putAll(map);
         if (map.containsKey(WSIFConstants.WSIF_FEATURE_SERVICE_CACHING)) {
-        	Object value = map.get(WSIFConstants.WSIF_FEATURE_SERVICE_CACHING);        	
-        	if (value != null && value instanceof Boolean boolean1) {
-        		if (boolean1.booleanValue()) {
-        			useCache = true;
-        			if (cache == null) {
-        				int size = 100;
-						Object tempInt = getFeature(WSIFConstants.WSIF_FEATURE_SERVICE_CACHE_SIZE);
-						if (tempInt != null && tempInt instanceof Integer integer) {
-							size = integer.intValue();
-						}
-						cache = new WSIFServiceCache(size);
-        			}
-        		} else {
-        		    useCache = false;
-        		    cache = null;
-        		}
-        	}
+            applyCaching(map.get(WSIFConstants.WSIF_FEATURE_SERVICE_CACHING));
         }
         if (map.containsKey(WSIFConstants.WSIF_FEATURE_SERVICE_CACHE_SIZE)) {
-        	Object value = map.get(WSIFConstants.WSIF_FEATURE_SERVICE_CACHE_SIZE);        	
-        	if (value != null && value instanceof Integer integer && cache != null) {
-        		int size = integer.intValue();
-        		cache.setCacheSize(size);
-        	}
-        }        
+            applyCacheSize(map.get(WSIFConstants.WSIF_FEATURE_SERVICE_CACHE_SIZE));
+        }
         Trc.exit();
+    }
+
+    /**
+     * Switches service caching on or off. Caller must hold the monitor of this.
+     * A non-Boolean value is ignored, as before.
+     */
+    private void applyCaching(Object value) {
+        if (value instanceof Boolean boolean1) {
+            if (boolean1.booleanValue()) {
+                if (cache == null) {
+                    int size = 100;
+                    Object tempInt = getFeature(WSIFConstants.WSIF_FEATURE_SERVICE_CACHE_SIZE);
+                    if (tempInt instanceof Integer integer) {
+                        size = integer.intValue();
+                    }
+                    cache = new WSIFServiceCache(size);
+                }
+            } else {
+                cache = null;
+            }
+        }
+    }
+
+    /**
+     * Resizes the cache if caching is on. Caller must hold the monitor of this.
+     */
+    private void applyCacheSize(Object value) {
+        WSIFServiceCache c = cache;
+        if (value instanceof Integer integer && c != null) {
+            c.setCacheSize(integer.intValue());
+        }
     }
     
     /**
@@ -436,6 +441,28 @@ public class WSIFServiceFactoryImpl extends WSIFServiceFactory {
      */    
     public Map getFeatures() {
     	return (Map) ((Hashtable)features).clone();
+    }
+
+    /**
+     * Builds the instance stored in the service cache.
+     * <p>
+     * The cache must hold a private template rather than the service returned to
+     * the caller: the caller mutates its instance (getPort sets up type mappings,
+     * mapType, setContext) while other threads copy the cached one. The template's
+     * type mappings are set up here, once, before it is published, so that every
+     * copy inherits them instead of recomputing them on its first getPort.
+     */
+    private static WSIFServiceImpl cacheTemplate(WSIFServiceImpl wsi)
+        throws WSIFException {
+        WSIFServiceImpl template = new WSIFServiceImpl(wsi);
+        try {
+            template.setupTypeMappings();
+        } catch (WSIFException e) {
+            // Leave the template uninitialised; each copy then reports the
+            // problem from its own getPort, exactly as without caching.
+            Trc.ignoredException(e);
+        }
+        return template;
     }
 
     private String genCacheKey(

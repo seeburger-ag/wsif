@@ -30,9 +30,11 @@ import java.net.URL;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.wsif.WSIFConstants;
 import org.apache.wsif.WSIFException;
@@ -70,24 +72,46 @@ import org.apache.wsif.spi.WSIFProvider;
  *     default provider for the binding namespace
  * 3 - the provider defined first in the META-INF/services file in the
  *     jar file found first in the classpath.
+ * <p>
+ * This class is thread-safe. The provider registry is static and is used
+ * concurrently by every thread creating WSIF services or ports:
+ * <ul>
+ * <li>the chosen providers live in a {@link ConcurrentHashMap}, so lookups are
+ *     lock-free and an override is never lost by a concurrent lookup;</li>
+ * <li>SPI discovery runs at most once per registry generation, under a lock, and
+ *     the result is published as an immutable list;</li>
+ * <li>{@link #isProviderAvailable(String, String)} results are memoized and the
+ *     memo is discarded whenever the registry changes.</li>
+ * </ul>
  *
  * @author Ant Elder <antelder@apache.org>
  */
 public class WSIFPluggableProviders {
 
+    /** Guards SPI discovery and resets of the registry. */
+    private static final Object LOCK = new Object();
+
     // defines if providers will be loaded automatically
-    private static boolean autoLoadProviders = true;
+    private static volatile boolean autoLoadProviders = true;
 
     // all the providers found in all the SPI files from
     // all the jar files in the classpath, in the order
-    // they were found with the 1st in the ArrayList
-    // being higher in the classpath.
-    private static ArrayList providersFromSPIFiles;
+    // they were found with the 1st in the list
+    // being higher in the classpath. Immutable once published;
+    // null means "not discovered yet". Written only while holding LOCK.
+    private static volatile List<WSIFProvider> providersFromSPIFiles;
 
     // a mapping of providers chosen to be supporting
     // a binding namespace. The mapping key is the 
     // namespace URI, the value is the provider
-    private static HashMap defaultNSProviders;
+    private static final ConcurrentHashMap<String, WSIFProvider> defaultNSProviders =
+        new ConcurrentHashMap<>();
+
+    // memoized isProviderAvailable(ns1, ns2) results. Replaced (never cleared in
+    // place) on every registry change, so that a computation racing with a change
+    // can only store its possibly stale result in the discarded map.
+    private static volatile ConcurrentHashMap<String, Boolean> availabilityCache =
+        new ConcurrentHashMap<>();
 
     private static final String PLUGABLE_PROVIDER_FILENAME =
         "META-INF/services/org.apache.wsif.spi.WSIFProvider";
@@ -103,21 +127,19 @@ public class WSIFPluggableProviders {
         Trc.entry(null, namespaceURI);
         WSIFProvider provider;
 
-        // the defaultNSProviders Hashtable URIs end with a '/'
+        // the defaultNSProviders map URIs end with a '/'
         if (!namespaceURI.endsWith("/")) {
             namespaceURI += "/";
         }
 
-        if (defaultNSProviders == null) {
-            defaultNSProviders = new HashMap();
-        } else {
-            provider = (WSIFProvider) defaultNSProviders.get(namespaceURI);
-            if (provider != null) {
-                return provider;
-            }
+        provider = defaultNSProviders.get(namespaceURI);
+        if (provider != null) {
+            Trc.exit(provider);
+            return provider;
         }
         ArrayList providers = getSupportingProviders(namespaceURI, true);
         if (providers.size() == 0) {
+            Trc.exit(null);
             return null;
         }
         if (providers.size() == 1) {
@@ -125,7 +147,15 @@ public class WSIFPluggableProviders {
         } else {
             provider = chooseProvider(providers, namespaceURI);
         }
-        defaultNSProviders.put(namespaceURI, provider);
+        // A concurrent lookup or overrideDefaultProvider may have registered a
+        // provider meanwhile; keep that one so that all callers agree.
+        WSIFProvider existing =
+            defaultNSProviders.putIfAbsent(namespaceURI, provider);
+        if (existing != null) {
+            provider = existing;
+        } else {
+            invalidateAvailabilityCache();
+        }
         Trc.exit(provider);
         return provider;
     }
@@ -144,25 +174,18 @@ public class WSIFPluggableProviders {
         WSIFProvider provider) {
         Trc.entry(null, providerNamespaceURI, provider);
 
-        if (defaultNSProviders == null) {
-            defaultNSProviders = new HashMap();
-        }
-
-        // the defaultNSProviders HashMap URIs end with a '/'
+        // the defaultNSProviders map URIs end with a '/'
         if (!providerNamespaceURI.endsWith("/")) {
             providerNamespaceURI += "/";
         }
 
         if (provider == null) {
-            WSIFProvider p =
-                (WSIFProvider) defaultNSProviders.get(providerNamespaceURI);
-            if (defaultNSProviders != null) {
-                defaultNSProviders.remove(providerNamespaceURI);
-            }
+            defaultNSProviders.remove(providerNamespaceURI);
         } else {
             defaultNSProviders.put(providerNamespaceURI, provider);
             issueChosenProviderMsg(providerNamespaceURI, provider);
         }
+        invalidateAvailabilityCache();
 
         Trc.exit();
     }
@@ -179,12 +202,25 @@ public class WSIFPluggableProviders {
 
     /**
      * Tests if a provider is available for the given namespaces.
+     * The result is memoized until the provider registry changes.
      * @param ns1   the WSDL binding namespace URI
      * @param ns2   the WSDL port addresses namespace URI
      * @return   true if a provider is available for the given
      *            namespaces, otherwise false. 
      */
     public static boolean isProviderAvailable(String ns1, String ns2) {
+        ConcurrentHashMap<String, Boolean> cache = availabilityCache;
+        String key = String.valueOf(ns1) + '\u0000' + String.valueOf(ns2);
+        Boolean cached = cache.get(key);
+        if (cached != null) {
+            return cached.booleanValue();
+        }
+        boolean supported = computeProviderAvailable(ns1, ns2);
+        cache.put(key, Boolean.valueOf(supported));
+        return supported;
+    }
+
+    private static boolean computeProviderAvailable(String ns1, String ns2) {
         boolean supported = false;
         ArrayList ps = getSupportingProviders(ns1, false);
         if (ps.size() > 0) {
@@ -217,10 +253,13 @@ public class WSIFPluggableProviders {
      */
     public static void setAutoLoadProviders(boolean b) {
         Trc.entry(null, b);
-        if (autoLoadProviders != b) {
-            providersFromSPIFiles = null;
-            defaultNSProviders = null;
-            autoLoadProviders = b;
+        synchronized (LOCK) {
+            if (autoLoadProviders != b) {
+                providersFromSPIFiles = null;
+                defaultNSProviders.clear();
+                autoLoadProviders = b;
+                invalidateAvailabilityCache();
+            }
         }
         Trc.exit();
     }
@@ -250,34 +289,38 @@ public class WSIFPluggableProviders {
         boolean issueMessage) {
 
         Trc.entry(null, namespaceURI, Boolean.valueOf(issueMessage));
-        if (providersFromSPIFiles == null) {
-            providersFromSPIFiles = getAllDynamicWSIFProviders();
-        }
+        List<WSIFProvider> spiProviders = getProvidersFromSPIFiles();
         ArrayList supportingProviders = new ArrayList();
         String[] uris;
         WSIFProvider p;
-        for (Iterator i = providersFromSPIFiles.iterator(); i.hasNext();) {
-            p = (WSIFProvider) i.next();
+        for (Iterator<WSIFProvider> i = spiProviders.iterator(); i.hasNext();) {
+            p = i.next();
             uris = p.getBindingNamespaceURIs();
             for (int j = 0; j < uris.length; j++) {
                 if (namespaceURI != null && namespaceURI.equals(uris[j])) {
-                    Trc.event(
-                        null,
-                        "Adding provider " + p + " for namespace " + uris[j]);
+                    if (Trc.ON) {
+                        Trc.event(
+                            null,
+                            "Adding provider " + p + " for namespace " + uris[j]);
+                    }
                     supportingProviders.add(p);
                 }
             }
         }
-        if (defaultNSProviders != null) {
-            if (defaultNSProviders.get(namespaceURI) != null) {
+        // ConcurrentHashMap does not accept null keys; a null namespace never
+        // had a default provider (the URIs stored there end with '/').
+        WSIFProvider defaultProvider =
+            (namespaceURI == null) ? null : defaultNSProviders.get(namespaceURI);
+        if (defaultProvider != null) {
+            if (Trc.ON) {
                 Trc.event(
                     null,
                     "Adding default provider "
-                        + defaultNSProviders.get(namespaceURI)
+                        + defaultProvider
                         + " for namespace "
                         + namespaceURI);
-                supportingProviders.add(defaultNSProviders.get(namespaceURI));
             }
+            supportingProviders.add(defaultProvider);
         }
 
         if (supportingProviders.size() > 1 && issueMessage) {
@@ -289,6 +332,36 @@ public class WSIFPluggableProviders {
     }
 
     /**
+     * Returns the providers found by SPI discovery, running the discovery at most
+     * once per registry generation (double-checked locking on a volatile field).
+     */
+    private static List<WSIFProvider> getProvidersFromSPIFiles() {
+        List<WSIFProvider> l = providersFromSPIFiles;
+        if (l == null) {
+            synchronized (LOCK) {
+                l = providersFromSPIFiles;
+                if (l == null) {
+                    // findPlugableProviders only collects WSIFProvider instances
+                    List<WSIFProvider> found = new ArrayList<>();
+                    for (Object o : getAllDynamicWSIFProviders()) {
+                        found.add((WSIFProvider) o);
+                    }
+                    l = Collections.unmodifiableList(found);
+                    providersFromSPIFiles = l;
+                }
+            }
+        }
+        return l;
+    }
+
+    /**
+     * Discards the memoized isProviderAvailable results.
+     */
+    private static void invalidateAvailabilityCache() {
+        availabilityCache = new ConcurrentHashMap<>();
+    }
+
+    /**
      * Gets all the available WSIFProviders. 
      * WSIFProviders are located using the J2SE 1.3 JAR file extensions 
      * to support service providers.
@@ -297,7 +370,9 @@ public class WSIFPluggableProviders {
     private static ArrayList getAllDynamicWSIFProviders() {
         Trc.entry(null);
         if (!autoLoadProviders) {
-            return new ArrayList();
+            ArrayList<WSIFProvider> none = new ArrayList<>();
+            Trc.exit(none);
+            return none;
         }
 
         ArrayList al =
@@ -469,6 +544,9 @@ public class WSIFPluggableProviders {
     private static void issueMultipleProvidersMsg(
         String uri,
         ArrayList providers) {
+        if (!Trc.ON) {
+            return;
+        }
         String providerNames = providers.getFirst().getClass().getName();
         for (int i = 1; i < providers.size(); i++) {
             providerNames += ", " + providers.get(i).getClass().getName();
@@ -486,7 +564,9 @@ public class WSIFPluggableProviders {
     private static void issueChosenProviderMsg(
         String uri,
         WSIFProvider provider) {
-        	
+        if (!Trc.ON) {
+            return;
+        }
         String provName = (provider == null) ? "null" : provider.getClass().getName();
         Trc.event(null, "- Using WSIFProvider \'" + provName + "\' for namespaceURI \'" + 
             uri + "\'");

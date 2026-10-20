@@ -229,7 +229,9 @@ public class WSIFOperation_Java
             Boolean.valueOf(isSttc),
             Boolean.valueOf(isCnstr),
             tMap);
-        Trc.event(this, "mulOP was " + mulOP + ", retCl was " + retCl);            
+        if (Trc.ON) {
+            Trc.event(this, "mulOP was " + mulOP + ", retCl was " + retCl);
+        }
 
         fieldPortModel = p;
         fieldPort = pj;

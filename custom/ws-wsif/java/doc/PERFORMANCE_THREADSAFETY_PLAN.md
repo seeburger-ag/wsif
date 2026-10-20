@@ -43,6 +43,8 @@ in this WSIF fork.
 | High | `WSIFPluggableProviders` | `defaultNSProviders` (`HashMap`), `providersFromSPIFiles` and `autoLoadProviders` are static and accessed without synchronization from all invocation threads.<br>The lazy `new HashMap()` and `put` on a cache miss can corrupt the map or lose the `overrideDefaultProvider` entries.<br>The cache-hit path also misses its `Trc.exit`. |
 | Medium | `WSIFMapperFactory`<br>`WSIFMappingConventionFactory` | Correct, but a global lock on every service creation. |
 | Medium | `WSIFServiceFactoryImpl` | `useCache` and `cache` are not volatile. Irrelevant while caching is off; must be fixed before enabling it. |
+| High (with caching ON) | `WSIFServiceCache` | *Found in Phase 1; the original analysis wrongly listed it as synchronized.* `get`/`put` override `Hashtable` **without** `synchronized`, and `get` relinks the LRU list. Concurrent use corrupts the list: `NullPointerException` in the eviction stress test.<br>Single-threaded bugs as well:<br>- re-putting a key leaves a stale node, and the next eviction drops the fresh entry;<br>- a node moved to the top keeps a stale `nextObject` link;<br>- `setCacheSize(< 10)` yields a cushion of 0, so the cache grows without bound. |
+| Medium (with caching ON) | `WSIFServiceFactoryImpl` cache miss | *Found in Phase 1.* The instance returned to the caller was also the cached one. The caller mutates it (`getPort` type mappings, `mapType`, `setContext`) while other threads copy it. |
 | Medium | `WSIFServiceFactoryImpl.genCacheKey` | The key is based on `documentBaseURI`. Different process versions with the same base URI would collide and could get a stale service. |
 | Medium | `WSIFServiceImpl` copy constructor | Shares `mapper` and `mapCon` between cached copies. Verify they are stateless before enabling caching. |
 | Low | `WSIFProperties.properties`, `Trc.ON` | Non-volatile lazily-set statics. The race is benign but formally incorrect. |
@@ -54,7 +56,7 @@ What is already fine:
 - `WSIFServiceImpl`, ports and operations are effectively confined to one thread, because they
   are created per call.
 - `WSIFPort_Java` in this fork is already safe to share (volatile caches, `ConcurrentHashMap`).
-- `WSIFServiceCache` is synchronized.
+- ~~`WSIFServiceCache` is synchronized.~~ Wrong; see the table above. Fixed in Phase 1.2.
 
 ### Constraints – why ports must not simply be cached
 
@@ -97,17 +99,19 @@ Both suites are skipped by default, so `mvn -o clean package` is unaffected.
 (`SeeWSIFPort`) lives in bpengine. JMS costs (`SeeWSIFJMSOperation`, `JMSManager`) must be
 measured in bpengine, with JFR (item 3).
 
-### Phase 1 – Thread-safety in WSIF (low risk, no behaviour change)
+### Phase 1 – Thread-safety in WSIF (low risk, no behaviour change) – ✅ done, see §7
 
-1. `WSIFPluggableProviders`:
-   - Make `defaultNSProviders` a final `ConcurrentHashMap`.
-   - Hold the SPI provider list as an immutable list behind a `volatile` field.
-   - Make `autoLoadProviders` volatile and the writing methods synchronized.
-   - Add the missing `Trc.exit` on the cache-hit path.
-   - Memoize `isProviderAvailable(ns1, ns2)`; invalidate it on override and on auto-load changes.
-2. `WSIFServiceFactoryImpl`: replace `useCache` and `cache` with a single `volatile` cache reference.
-3. ✅ `WSIFProperties` – **done**, see §5.
-4. `Trc`: make `ON` volatile, and put `if (Trc.ON)` around string-building trace calls on hot paths.
+1. ✅ `WSIFPluggableProviders`:
+   - `defaultNSProviders` is a final `ConcurrentHashMap`.
+   - The SPI provider list is immutable behind a `volatile` field.
+   - `autoLoadProviders` is volatile and the writing methods are synchronized.
+   - The missing `Trc.exit` calls were added.
+   - `isProviderAvailable(ns1, ns2)` is memoized and invalidated on override and auto-load changes.
+2. ✅ `WSIFServiceFactoryImpl`: a single `volatile` cache reference. Extended in Phase 1:
+   - `WSIFServiceCache` made thread-safe and its LRU bugs fixed;
+   - the cache holds a private, pre-initialised template.
+3. ✅ `WSIFProperties` – see §5.
+4. ✅ `Trc.ON` is volatile, and string-building trace calls on hot paths are guarded with `if (Trc.ON)`.
 
 ### Phase 2 – Per-call cost in WSIF
 
@@ -154,7 +158,8 @@ measured in bpengine, with JFR (item 3).
 
 ### Risks
 
-- There is no test coverage in WSIF, so Phase 0 is the only safety net.
+- WSIF test coverage is still thin: the Phase 1 unit tests, plus the opt-in benchmark and
+  stress suites from Phase 0. Add a regression test with every change.
 - A stale cache after redeployment is possible unless the cache is keyed by `Definition`
   identity or tied to `DefinitionsCache`.
 - The Java service-object and XA semantics must be preserved.
@@ -261,3 +266,60 @@ Scalability of the full sync invoke on 20 CPUs (total ops/s):
 4. Still open in Phase 0: a JFR profile of bpengine under load, to quantify the JMS path and to
    confirm the scalability bottleneck.
 
+## 7. Phase 1 – implementation and results (2026-10-20)
+
+### 7.1 Changes
+
+| File | Change |
+|---|---|
+| `util/WSIFPluggableProviders` | `ConcurrentHashMap` registry with `putIfAbsent`, so concurrent lookups converge on one provider and an override is never overwritten.<br>SPI discovery runs once per registry generation (double-checked locking on a volatile immutable list).<br>Memoized `isProviderAvailable`: the memo map is *replaced* on every change, so a racing computation cannot store a stale result in the live memo.<br>Missing `Trc.exit` calls added; trace strings guarded; `null` namespace handled (CHM does not accept null keys). |
+| `base/WSIFServiceFactoryImpl` | `volatile WSIFServiceCache cache` (`null` = off) replaces `useCache` + `cache`. Every `getService` reads it once.<br>`setFeature` / `setFeatures` are synchronized.<br>On a cache miss a **private template** is cached, with type mappings set up once (`cacheTemplate`). The caller keeps its own instance. |
+| `base/WSIFServiceCache` | `get` / `put` synchronized (on the `Hashtable` monitor).<br>Re-put of an existing key unlinks the old node.<br>A moved node gets `nextObject = null`.<br>Cushion is at least 1; eviction is null-safe; trace strings guarded. |
+| `logging/Trc` | `ON` is `volatile`. |
+| `providers/java/WSIFOperation_Java` | The per-operation constructor trace concatenation is guarded by `if (Trc.ON)`. |
+
+Behaviour is unchanged for bpengine, which runs with caching off. With caching ON:
+
+- the cached template is no longer mutated by callers;
+- a caller's own `mapType` no longer leaks into later services from the cache.
+
+### 7.2 Tests
+
+New **unit tests that run in every build** (`mvn -o clean package`: 10 run, 7 opt-in skipped):
+
+- `test/java/org/apache/wsif/base/WSIFServiceCacheTest` (5 tests): LRU eviction, re-put,
+  small size bound, get/put-on-miss under eviction (checked after every operation), and
+  concurrent get/put. **All 5 fail on the pre-Phase-1 code.**
+- `test/java/org/apache/wsif/util/WSIFPluggableProvidersTest` (5 tests): SPI discovery, memo
+  invalidation on override and removal, override wins, auto-load reset, null namespace.
+
+New stress test `concurrentInvocationWithEvictingServiceCache`: 12 definitions with cache
+size 4 and 8 threads. On the pre-Phase-1 code it fails with an
+`NPE … "oldObject.prevObject" is null` (corrupted LRU list).
+
+Stress suite results (8 threads):
+
+| Test | Phase 0 | Phase 1 |
+|---|---|---|
+| cold provider lookup – rounds with duplicate SPI discovery | 2000 / 2000 | **0 / 2000** |
+| override lost | 0 / 2000 | 0 / 2000 (now impossible by construction) |
+| concurrent invocation, caching OFF / ON | ✅ / ✅ | ✅ / ✅ |
+| concurrent invocation, evicting cache | ❌ NPE (pre-Phase-1 code) | ✅ |
+| stale definition from cache | ❌ | ❌ still expected – Phase 2.3 |
+
+### 7.3 Performance (`doc/bench/wsif-baseline-phase1.md` vs. HEAD baseline)
+
+| Measurement | Phase 0 (HEAD 8620b6b) | Phase 1 | Change |
+|---|---:|---:|---|
+| `isProviderAvailable(java)` | 0.17 µs, 1,208 B | 0.07 µs, 120 B | memoized; −90% allocation |
+| `getService` (both WSDL sizes) | 2,176 B/op | 1,136 B/op | **−48% allocation** |
+| full sync invoke, caching OFF | 11,760 B/op | 10,672 B/op | −9% allocation; time within noise |
+| full sync invoke, caching ON, large WSDL | 5.1 µs, 5,808 B | 4.5 µs, 5,688 B | within noise; private template costs nothing per hit |
+| scalability 1 / 2 / 4 / 8 / 16 threads (k ops/s) | 110 / 197 / 295 / 281 / 168 | 103 / 204 / 308 / 228 / 183 | unchanged within noise |
+
+Notes:
+
+- A first Phase 1 run showed 2-thread throughput at 74k ops/s. An immediate re-run gave 204k,
+  so it was machine noise; the re-run is the stored report.
+- Throughput still drops beyond 4–8 threads. Phase 1 did not target that. It is the goal of
+  Phase 2.2 (global mapper locks) and of Phase 3.1 (fewer allocations).

@@ -53,25 +53,42 @@ public class WSIFServiceCache extends Hashtable {
     WSIFServiceCache(int size) {
     	super(size);
         cacheLimit = size;
-        cushionSize = ((cacheLimit * CUSHION_PERCENT) / 100); // 10%
-        if (cushionSize == 0) {
-            cushionSize = 1;
+        cushionSize = cushionFor(cacheLimit);
+        if (Trc.ON) {
+            Trc.event(this,
+                    "WSIFServiceCache created - cache limit:"
+                        + cacheLimit
+                        + " Cushion:"
+                        + cushionSize);
         }
-        Trc.event(this,
-                "WSIFServiceCache created - cache limit:"
-                    + cacheLimit
-                    + " Cushion:"
-                    + cushionSize);
-    }
-    
-    public void setCacheSize(int newSize) {
-    	synchronized (this) {
-    	    cacheLimit = newSize;
-            cushionSize = ((cacheLimit * CUSHION_PERCENT) / 100);
-    	}
     }
 
-    public Object put(Object key, Object value) {
+    /** Number of entries evicted at once; at least 1 so the cache stays bounded. */
+    private static int cushionFor(int limit) {
+        int c = (limit * CUSHION_PERCENT) / 100; // 10%
+        return c < 1 ? 1 : c;
+    }
+    
+    public synchronized void setCacheSize(int newSize) {
+        cacheLimit = newSize;
+        cushionSize = cushionFor(cacheLimit);
+    }
+
+    /*
+     * get and put mutate the LRU list and the size counter, so they must be atomic
+     * as a whole. They synchronize on this - the same monitor Hashtable uses for its
+     * own methods - because a factory, and therefore its cache, is shared by all
+     * threads creating services.
+     */
+    public synchronized Object put(Object key, Object value) {
+        LRUWrapper existing = (LRUWrapper) super.get(key);
+        if (existing != null) {
+            // Replace in place: unlink the old node so the LRU list and the size
+            // counter stay consistent with the Hashtable content.
+            unlink(existing);
+            currentSize--;
+        }
+
         LRUWrapper newObject = new LRUWrapper(key, value);
 
         if (currentSize >= cacheLimit)
@@ -85,27 +102,33 @@ public class WSIFServiceCache extends Hashtable {
 
         newObject = (LRUWrapper) super.put(key, newObject);
         currentSize++;
-        Trc.event(this,
-                "WSIFServiceCache (put). Current cache size: " + currentSize);
+        if (Trc.ON) {
+            Trc.event(this,
+                    "WSIFServiceCache (put). Current cache size: " + currentSize);
+        }
         if (newObject == null)
             return null;
         else
             return newObject.value; //to make this consistent with Hashtable
     }
 
-    public Object get(Object key) {
+    public synchronized Object get(Object key) {
         LRUWrapper tempObject = (LRUWrapper) super.get(key);
         //Adjust the LRU list
 
         if (tempObject == null) {
-            Trc.event(this,
-                    "WSIFServiceCache (get). No hit. Cache size: "
-                        + currentSize);
+            if (Trc.ON) {
+                Trc.event(this,
+                        "WSIFServiceCache (get). No hit. Cache size: "
+                            + currentSize);
+            }
             return null;
         } else {
-            Trc.event(this,
-                    "WSIFServiceCache (get). MATCH FOUND. Cache size: "
-                        + currentSize);
+            if (Trc.ON) {
+                Trc.event(this,
+                        "WSIFServiceCache (get). MATCH FOUND. Cache size: "
+                            + currentSize);
+            }
             if (newestObject != tempObject) {
                 removeFromLRUList(tempObject);
                 addToTopOfLRUList(tempObject);
@@ -117,12 +140,12 @@ public class WSIFServiceCache extends Hashtable {
     private void addToTopOfLRUList(LRUWrapper newObject) {
         newestObject.nextObject = newObject;
         newObject.prevObject = newestObject;
+        newObject.nextObject = null;
         newestObject = newObject;
     }
 
+    /** Unlinks a node that is not the newest one (callers check that). */
     private void removeFromLRUList(LRUWrapper oldObject) {
-        LRUWrapper nextObject, prevObject;
-
         if (oldObject != oldestObject) {
             oldObject.prevObject.nextObject = oldObject.nextObject;
             oldObject.nextObject.prevObject = oldObject.prevObject;
@@ -133,18 +156,41 @@ public class WSIFServiceCache extends Hashtable {
 
     }
 
+    /** Unlinks any node, including the newest and the only one. */
+    private void unlink(LRUWrapper node) {
+        if (node.prevObject != null) {
+            node.prevObject.nextObject = node.nextObject;
+        } else {
+            oldestObject = node.nextObject;
+        }
+        if (node.nextObject != null) {
+            node.nextObject.prevObject = node.prevObject;
+        } else {
+            newestObject = node.prevObject;
+        }
+        node.prevObject = null;
+        node.nextObject = null;
+    }
+
     private void shrinkCache() {
         LRUWrapper currentLRUWrapper = oldestObject;
 
-        for (int i = 1; i <= cushionSize; i++) {
+        for (int i = 1; i <= cushionSize && currentLRUWrapper != null; i++) {
             super.remove(currentLRUWrapper.key);
             currentLRUWrapper = currentLRUWrapper.nextObject;
+            currentSize--;
         }
         oldestObject = currentLRUWrapper;
-        currentSize -= cushionSize;
-        Trc.event(this,
-                "WSIFServiceCache (put). Cache size after shrinkage: "
-                    + currentSize);
+        if (oldestObject == null) {
+            newestObject = null;
+        } else {
+            oldestObject.prevObject = null;
+        }
+        if (Trc.ON) {
+            Trc.event(this,
+                    "WSIFServiceCache (put). Cache size after shrinkage: "
+                        + currentSize);
+        }
     }
 
     /**

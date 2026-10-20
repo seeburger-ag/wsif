@@ -250,6 +250,60 @@ public class WSIFConcurrencyStressTest {
     }
 
     /**
+     * Factory service cache under eviction pressure: more distinct definitions than
+     * cache entries, so get/put/shrink interleave constantly. Before Phase 1.2 the
+     * LRU bookkeeping of WSIFServiceCache was unsynchronized.
+     */
+    @Test
+    public void concurrentInvocationWithEvictingServiceCache() throws Exception {
+        final WSIFServiceFactory factory = WSIFServiceFactory.newInstance();
+        factory.setFeature(WSIFConstants.WSIF_FEATURE_SERVICE_CACHE_SIZE, Integer.valueOf(4));
+        factory.setFeature(WSIFConstants.WSIF_FEATURE_SERVICE_CACHING, Boolean.TRUE);
+        final Target[] targets = new Target[12];
+        for (int i = 0; i < targets.length; i++) {
+            String wsdl = BenchSupport.wsdl(3, 0, BenchEchoService.class.getName());
+            targets[i] = new Target(BenchSupport.readDefinition("urn:wsif:bench:evict:" + i, wsdl), 3);
+        }
+        final AtomicInteger wrong = new AtomicInteger();
+        final AtomicInteger errors = new AtomicInteger();
+        final AtomicReference<Throwable> firstError = new AtomicReference<>();
+        final CyclicBarrier barrier = new CyclicBarrier(threads);
+        List<Thread> ts = new ArrayList<>();
+        for (int i = 0; i < threads; i++) {
+            final int id = i;
+            Thread th = new Thread(() -> {
+                try {
+                    barrier.await();
+                    for (int k = 0; k < iterations; k++) {
+                        Target t = targets[(id + k) % targets.length];
+                        String payload = "t" + id + "-" + k;
+                        Object r = BenchSupport.invokeLikeBpEngine(factory, t, "op" + (k % 3), payload);
+                        WSIFService s = factory.getService(t.def, t.service, t.portType);
+                        if (!payload.equals(r) || s.getDefinition() != t.def) {
+                            wrong.incrementAndGet();
+                        }
+                    }
+                } catch (Throwable e) {
+                    errors.incrementAndGet();
+                    firstError.compareAndSet(null, e);
+                }
+            });
+            ts.add(th);
+            th.start();
+        }
+        for (Thread th : ts) {
+            th.join();
+        }
+        System.out.println("[stress] concurrent invocation (evicting cache, 12 defs / size 4): threads="
+            + threads + ", iterations=" + iterations + ", wrong=" + wrong.get() + ", errors=" + errors.get());
+        if (firstError.get() != null) {
+            firstError.get().printStackTrace();
+        }
+        assertEquals("unexpected exceptions", 0, errors.get());
+        assertEquals("wrong results", 0, wrong.get());
+    }
+
+    /**
      * Finding: the factory service cache keys on the WSDL documentBaseURI. When a
      * definition is replaced (e.g. a redeployed bpengine process) but keeps its base
      * URI, the cache returns a service built from the OLD definition.

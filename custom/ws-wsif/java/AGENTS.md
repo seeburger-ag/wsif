@@ -35,23 +35,33 @@ A successful build produces `target/wsif-2.0.jar` and ~225 class files.
 
 Java 21 and Maven 3.9.x are on `PATH`. Do not attempt to install or switch JDKs.
 
-### Tests: opt-in benchmarks and stress tests only
+### Tests: a few unit tests, plus opt-in benchmarks and stress tests
 
 `test/java` (configured as `testSourceDirectory`; deliberately **outside** `src`, whose
-content is compiled into the bundle) contains the Phase 0 baseline suite from
-`doc/PERFORMANCE_THREADSAFETY_PLAN.md`:
+content is compiled into the bundle) contains:
 
-- `WSIFBaselineBenchmarkTest` — performance baseline, run with
-  `mvn -o test '-Dtest=WSIFBaselineBenchmarkTest' '-Dwsif.bench=true' '-Dwsif.bench.label=<name>'`;
-  writes `target/bench/wsif-baseline-<name>.md`.
-- `WSIFConcurrencyStressTest` — thread-safety stress tests, run with
-  `mvn -o test '-Dtest=WSIFConcurrencyStressTest' '-Dwsif.stress=true'`. They assert the
-  *correct* behaviour, so some are expected to fail until the corresponding plan item is fixed.
+- **Unit tests that run in every build:** `org.apache.wsif.base.WSIFServiceCacheTest` and
+  `org.apache.wsif.util.WSIFPluggableProvidersTest`. They are fast (< 1 s) regression guards
+  for the Phase 1 thread-safety fixes. Add a regression test in the same style when you fix
+  something.
+- **Opt-in suites from Phase 0** of `doc/PERFORMANCE_THREADSAFETY_PLAN.md`:
+  - `WSIFBaselineBenchmarkTest` — performance baseline, run with
+    `mvn -o test '-Dtest=WSIFBaselineBenchmarkTest' '-Dwsif.bench=true' '-Dwsif.bench.label=<name>'`;
+    writes `target/bench/wsif-baseline-<name>.md`.
+  - `WSIFConcurrencyStressTest` — thread-safety stress tests, run with
+    `mvn -o test '-Dtest=WSIFConcurrencyStressTest' '-Dwsif.stress=true'`. They assert the
+    *correct* behaviour, so some are expected to fail until the corresponding plan item is
+    fixed (currently only `serviceCacheDoesNotReturnStaleDefinition`, plan item 2.3).
 
-Both are **skipped by default** (JUnit `Assume`), so `mvn -o clean package` runs 0 real tests.
-In PowerShell, quote `-D` arguments containing dots (`'-Dwsif.bench=true'`). Apart from these,
-**compilation success is the only automated signal available** — do not report the skipped
-suite as meaningful verification.
+  Both are **skipped by default** (JUnit `Assume`). In PowerShell, quote `-D` arguments
+  containing dots (`'-Dwsif.bench=true'`).
+
+Test coverage of the code base as a whole is still minimal — a passing build does not
+verify behaviour outside the areas above.
+
+**Use `mvn -o clean ...` after swapping source files** (e.g. via `git restore`, `git stash`
+or `Copy-Item`, which can keep old timestamps). The incremental compiler otherwise keeps
+stale classes, and tests silently run against the old code.
 
 `test.bak/` holds the legacy upstream JUnit 3 suite (`addressbook/`, `async/`,
 `faults/`, `providers/`, `soap/`, …). It is **not part of the Maven build**, is not on
