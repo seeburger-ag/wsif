@@ -6,7 +6,7 @@
 
     <groupId>org.apache.ws</groupId>
     <artifactId>wsif</artifactId>
-    <version>0.20260921</version>
+    <version>0.20261020-SNAPSHOT</version>
     <packaging>bundle</packaging>
 
     <name>WSIF</name>
