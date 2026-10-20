@@ -37,8 +37,10 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 
+import javax.wsdl.Binding;
 import javax.wsdl.BindingOperation;
 import javax.wsdl.Definition;
 import javax.wsdl.Port;
@@ -141,7 +143,7 @@ public class WSIFPort_Java extends WSIFDefaultPort implements Serializable {
         operationInstances = new ConcurrentHashMap<>();
         resolvedTypeMaps = new ConcurrentHashMap<>();
 
-        fieldTypeMaps = buildTypeMap();
+        fieldTypeMaps = sharedTypeMap();
 
         if (Trc.ON) {
             Trc.exit(deep());
@@ -370,6 +372,53 @@ public class WSIFPort_Java extends WSIFDefaultPort implements Serializable {
         Trc.entry(this, newObjectReference);
         fieldObjectReference = newObjectReference;
         Trc.exit();
+    }
+
+    /**
+     * Type maps already built, per Binding. A type map depends only on the binding,
+     * yet a port is created for every invocation, so it used to be rebuilt every time.
+     * The values (QName -&gt; class name String or List) do not reference the binding,
+     * so the weak keys can be collected together with their definition. Guarded by
+     * itself. Like the validation memo in WSIFServiceImpl, this relies on WSDL model
+     * objects not being modified after their first use with WSIF.
+     */
+    private static final Map<Binding, Map<QName, Object>> TYPE_MAPS = new WeakHashMap<>();
+
+    /**
+     * Returns the (immutable) type map of this port's binding, building it on first use.
+     * Failures are not cached.
+     */
+    private Map<QName, Object> sharedTypeMap() throws WSIFException {
+        Binding binding = fieldPortModel.getBinding();
+        Map<QName, Object> typeMaps;
+        synchronized (TYPE_MAPS) {
+            typeMaps = TYPE_MAPS.get(binding);
+        }
+        if (typeMaps == null) {
+            typeMaps = buildTypeMap();
+            if (binding != null) {
+                synchronized (TYPE_MAPS) {
+                    Map<QName, Object> existing = TYPE_MAPS.putIfAbsent(binding, typeMaps);
+                    if (existing != null) {
+                        typeMaps = existing;
+                    }
+                }
+            }
+        }
+        return typeMaps;
+    }
+
+    /**
+     * Gets the type map of this port's binding: type QName -&gt; Java class name
+     * (String), or a List of class names when the binding maps one XML type onto
+     * several Java types. The map is immutable and shared by all ports of the binding.
+     * <p>
+     * For subclasses, which previously had to read the private field reflectively.
+     *
+     * @return the immutable type map
+     */
+    protected Map<QName, Object> getFieldTypeMaps() {
+        return fieldTypeMaps;
     }
 
     /**

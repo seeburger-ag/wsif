@@ -56,6 +56,12 @@ public class WSIFServiceFactoryImpl extends WSIFServiceFactory {
      * under the monitor of this (setFeature / setFeatures).
      */
     private volatile WSIFServiceCache cache = null;
+    /**
+     * Service cache for the getService(Definition, ...) variants, keyed by the
+     * identity of the Definition (see DefinitionServiceCache), or null when service
+     * caching is off. Written only under the monitor of this, together with cache.
+     */
+    private volatile DefinitionServiceCache definitionCache = null;
     private Map features = new Hashtable();
 
     /**
@@ -203,24 +209,9 @@ public class WSIFServiceFactoryImpl extends WSIFServiceFactory {
      */
     public WSIFService getService(Definition def) throws WSIFException {
         Trc.entryExpandWsdl(this, new Object[] { def });
-        String key = "";
-        WSIFServiceCache c = cache;
-        if (c != null) {
-            key = genCacheKey(def, null, null);
-            WSIFServiceImpl cachedWSI = (WSIFServiceImpl) c.get(key);
-            if (cachedWSI != null) {
-                WSIFServiceImpl wsi = new WSIFServiceImpl(cachedWSI);
-                Trc.exit(wsi);
-                return wsi;
-            }
-        }
-
-        WSIFServiceImpl wsi = new WSIFServiceImpl(def, getFeatures());
-
-        if (c != null && !key.equals("")) {
-            c.put(key, cacheTemplate(wsi));
-        }
-
+        WSIFServiceImpl wsi =
+            serviceFor(def, definitionKey(null, null),
+                () -> new WSIFServiceImpl(def, getFeatures()));
         Trc.exit(wsi);
         return wsi;
     }
@@ -235,23 +226,9 @@ public class WSIFServiceFactoryImpl extends WSIFServiceFactory {
     public WSIFService getService(Definition def, Service service)
         throws WSIFException {
         Trc.entryExpandWsdl(this, new Object[] { def, service });
-        String key = "";
-        WSIFServiceCache c = cache;
-        if (c != null) {
-            key = genCacheKey(def, service, null);
-            WSIFServiceImpl cachedWSI = (WSIFServiceImpl) c.get(key);
-            if (cachedWSI != null) {
-                WSIFServiceImpl wsi = new WSIFServiceImpl(cachedWSI);
-                Trc.exit(wsi);
-                return wsi;
-            }
-        }
-
-        WSIFServiceImpl wsi = new WSIFServiceImpl(def, service, getFeatures());
-
-        if (c != null && !key.equals("")) {
-            c.put(key, cacheTemplate(wsi));
-        }
+        WSIFServiceImpl wsi =
+            serviceFor(def, definitionKey(service, null),
+                () -> new WSIFServiceImpl(def, service, getFeatures()));
         Trc.exit(wsi);
         return wsi;
     }
@@ -270,24 +247,9 @@ public class WSIFServiceFactoryImpl extends WSIFServiceFactory {
         PortType portType)
         throws WSIFException {
         Trc.entryExpandWsdl(this, new Object[]{def, service, portType});
-        String key = "";
-        WSIFServiceCache c = cache;
-        if (c != null) {
-            key = genCacheKey(def, service, portType);
-            WSIFServiceImpl cachedWSI = (WSIFServiceImpl) c.get(key);
-            if (cachedWSI != null) {
-                WSIFServiceImpl wsi = new WSIFServiceImpl(cachedWSI);
-                Trc.exit(wsi);
-                return wsi;
-            }
-        }
-
-        WSIFServiceImpl wsi = new WSIFServiceImpl(def, service, portType, getFeatures());
-
-        if (c != null && !key.equals("")) {
-            c.put(key, cacheTemplate(wsi));
-        }
-
+        WSIFServiceImpl wsi =
+            serviceFor(def, definitionKey(service, portType),
+                () -> new WSIFServiceImpl(def, service, portType, getFeatures()));
         Trc.exit(wsi);
         return wsi;
     }
@@ -318,37 +280,17 @@ public class WSIFServiceFactoryImpl extends WSIFServiceFactory {
                 portTypeNS,
                 portTypeName });
 
-        String key = "";
-        WSIFServiceCache c = cache;
-        if (c != null) {
-            key =
-                genCacheKey(
+        WSIFServiceImpl wsi =
+            serviceFor(
+                def,
+                definitionKey(serviceNS, serviceName, portTypeNS, portTypeName),
+                () -> new WSIFServiceImpl(
                     def,
                     serviceNS,
                     serviceName,
                     portTypeNS,
-                    portTypeName);
-            WSIFServiceImpl cachedWSI = (WSIFServiceImpl) c.get(key);
-            if (cachedWSI != null) {
-                WSIFServiceImpl wsi = new WSIFServiceImpl(cachedWSI);
-                Trc.exit(wsi);
-                return wsi;
-            }
-        }
-
-        WSIFServiceImpl wsi =
-            new WSIFServiceImpl(
-                def,
-                serviceNS,
-                serviceName,
-                portTypeNS,
-                portTypeName,
-                getFeatures());
-
-        if (c != null && !key.equals("")) {
-            c.put(key, cacheTemplate(wsi));
-        }
-
+                    portTypeName,
+                    getFeatures()));
         Trc.exit(wsi);
         return wsi;
     }
@@ -413,8 +355,12 @@ public class WSIFServiceFactoryImpl extends WSIFServiceFactory {
                     }
                     cache = new WSIFServiceCache(size);
                 }
+                if (definitionCache == null) {
+                    definitionCache = new DefinitionServiceCache();
+                }
             } else {
                 cache = null;
+                definitionCache = null;
             }
         }
     }
@@ -452,6 +398,62 @@ public class WSIFServiceFactoryImpl extends WSIFServiceFactory {
      * type mappings are set up here, once, before it is published, so that every
      * copy inherits them instead of recomputing them on its first getPort.
      */
+    /** Creates a new, uncached service. */
+    @FunctionalInterface
+    private interface ServiceCreator {
+        WSIFServiceImpl create() throws WSIFException;
+    }
+
+    /**
+     * Common implementation of the getService(Definition, ...) variants: returns a
+     * copy of the template cached for this definition object and key, or creates a
+     * new service and caches a template of it (if service caching is on).
+     */
+    private WSIFServiceImpl serviceFor(
+        Definition def,
+        String key,
+        ServiceCreator creator)
+        throws WSIFException {
+        DefinitionServiceCache dc = definitionCache;
+        if (dc != null && def != null) {
+            WSIFServiceImpl template = dc.get(def, key);
+            if (template != null) {
+                return new WSIFServiceImpl(template, def);
+            }
+        }
+
+        WSIFServiceImpl wsi = creator.create();
+
+        // With an authenticating proxy (WSIF_FEATURE_PROXY_AUTHENTICATION) the service
+        // re-reads the WSDL, so its definition is not the one used as the key: such a
+        // service is not cached.
+        if (dc != null && def != null && wsi.getDefinition() == def) {
+            WSIFServiceImpl template = cacheTemplate(wsi);
+            template.detachDefinition();
+            dc.put(def, key, template);
+        }
+        return wsi;
+    }
+
+    /** Cache key within one definition: the selected service and port type. */
+    private static String definitionKey(Service service, PortType portType) {
+        QName sn = (service != null) ? service.getQName() : null;
+        QName ptn = (portType != null) ? portType.getQName() : null;
+        return "S=" + sn + "P=" + ptn;
+    }
+
+    /** Cache key within one definition: the service and port type selection by name. */
+    private static String definitionKey(
+        String serviceNS,
+        String serviceName,
+        String portTypeNS,
+        String portTypeName) {
+        return "SN=" + (serviceNS == null ? "" : serviceNS)
+            + "SS=" + (serviceName == null ? "" : serviceName)
+            + "PN=" + (portTypeNS == null ? "" : portTypeNS)
+            + "PS=" + (portTypeName == null ? "" : portTypeName);
+    }
+
     private static WSIFServiceImpl cacheTemplate(WSIFServiceImpl wsi)
         throws WSIFException {
         WSIFServiceImpl template = new WSIFServiceImpl(wsi);
@@ -465,35 +467,6 @@ public class WSIFServiceFactoryImpl extends WSIFServiceFactory {
         return template;
     }
 
-    private String genCacheKey(
-        Definition def,
-        Service service,
-        PortType portType) {
-        Trc.entry(this, def, service, portType);
-
-        String db =
-            (def != null && def.getDocumentBaseURI() != null)
-                ? def.getDocumentBaseURI()
-                : "null";
-        QName serviceName = (service != null) ? service.getQName() : null;
-        String sn = (serviceName != null) ? serviceName.toString() : "null";
-        QName portTypeName = (portType != null) ? portType.getQName() : null;
-        String ptn = (portTypeName != null) ? portTypeName.toString() : "null";
-        StringBuffer key = new StringBuffer();
-        key.append("D=");
-        key.append(db);
-        key.append("S=");
-        key.append(sn);
-        key.append("P=");
-        key.append(ptn);
-
-        String ret = key.toString();
-        // If no distinguishable information is available then don't add to cache
-        if (ret.equals("D=nullS=nullP=null")) 
-            ret = "";
-        Trc.exit(ret);
-        return ret;
-    }
 
     private String genCacheKey(
         String wsdlLoc,
@@ -539,43 +512,4 @@ public class WSIFServiceFactoryImpl extends WSIFServiceFactory {
         return ret;
     }
 
-    private String genCacheKey(
-        Definition def,
-        String serviceNS,
-        String serviceName,
-        String portTypeNS,
-        String portTypeName) {
-        Trc.entry(this, def, serviceNS, serviceName, portTypeNS, portTypeName);
-
-        StringBuffer key = new StringBuffer();
-        String db =
-            (def != null && def.getDocumentBaseURI() != null)
-                ? def.getDocumentBaseURI()
-                : "null";
-        if (serviceNS == null)
-            serviceNS = "";
-        if (serviceName == null)
-            serviceName = "";
-        if (portTypeNS == null)
-            portTypeNS = "";
-        if (portTypeName == null)
-            portTypeName = "";
-        key.append("D=");
-        key.append(db);
-        key.append("SN=");
-        key.append(serviceNS);
-        key.append("SS=");
-        key.append(serviceName);
-        key.append("PN=");
-        key.append(portTypeNS);
-        key.append("PS=");
-        key.append(portTypeName);
-
-        String ret = key.toString();
-        // If no distinguishable information is available then don't add to cache
-        if (ret.equals("D=nullSN=SS=PN=PS="))
-            ret = "";
-        Trc.exit(ret);
-        return ret;
-    }
 }
