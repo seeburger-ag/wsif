@@ -131,33 +131,33 @@ The original Phase 2 list was re-evaluated against JFR profiles (§8). The new o
 Implementation details are in §8.3. Every item gets a regression test that runs in the
 default build, and the benchmark and stress suites are rerun after each step.
 
-### Phase 3 – bpengine
+### Phase 3 – bpengine (re-evaluated, see §10)
 
-1. Avoid rebuilding services per call. Either:
-   - (a) enable `WSIF_FEATURE_SERVICE_CACHING` after Phase 2.3, or
-   - (b) keep a `ConcurrentHashMap<QName, WSIFServiceImpl>` template per `DefinitionsCache`
-     and port type, and copy it per call. This is tied to the definition lifecycle, so
-     redeployments are handled automatically.
-2. Keep calling `service.getPort()` per call, to preserve the Java service-object and XA semantics.
-3. `SeeWSIFJavaPort`: replace `getFieldTypeMapsFromParent()` (reflection) with the new getter.
-4. `SeeWSIFPort` / `SeeWSIFJMSOperation`:
-   - Build each operation once instead of `new` + `copy()`.
-   - Read the sync/async timeouts and the transaction-control class once (static lazy holder).
-   - Fix the inverted `isAssignableFrom` check.
-5. `ServiceInvoker`: collect all context entries (engine group, context ID, serializers,
-   process info, priority) and do one `getContext` / `setContext`.
-6. Compile against this fork (`0.20260921`) and align the OSGi import range, so the new API
-   can be used.
-7. Later: check whether `JMSManager` can share a connection factory instead of being created
-   per call.
+The original Phase 3 list was re-evaluated against the bpengine sources after Phase 2 (§10).
+New order and scope:
 
-### Suggested order (gain vs. risk)
+| # | Item | Expected gain | Risk |
+|---|---|---|---|
+| 3.0 | **Measure in bpengine first:** JFR under representative load; find out whether the platform's JMS `ConnectionFactory` pools connections | decides 3.5 | none |
+| 3.1 | **Release the WSIF fork with a new version** (e.g. `0.20261020`) and depend on it | prerequisite for 3.3 | low |
+| 3.2 | **Cheap per-call fixes** in `ServiceInvoker`, `DefinitionsCache`, `SeeWSIFPort`, `SeeWSIFJMSOperation` | small, certain | low |
+| 3.3 | `SeeWSIFJavaPort`: use `getFieldTypeMaps()` instead of reflection | small | low |
+| 3.4 | **Cache method resolution** for Java/EJB invocation (`getMethodSignature` + `getMethod` per call) | medium for in-process calls | low–medium |
+| 3.5 | **Reuse the JMS connection** instead of one connection per invocation (only if 3.0 shows it is not pooled) | potentially the largest (connection setup per call) | **medium–high** |
+| 3.6 | Correctness fixes found during the analysis | – | low |
+| – | ~~Service caching in bpengine~~ (old 3.1) | after Phase 2 only −0…−11% in the benchmark | **dropped** (optional later) |
+| – | Keep `service.getPort()` per call (old 3.2) | – | stays a **constraint** |
 
-1. Phase 0
-2. Phase 1.1 and 1.3
-3. Phase 3.1, 3.4 and 3.5
-4. Phase 2.1, 2.2 and 2.4
-5. The remaining items
+Details and the proposed implementation are in §10.3.
+
+### Order
+
+- Phases 0–2 (WSIF) are done.
+- For Phase 3 (bpengine) see §10.4:
+  1. measure (3.0) and release the fork (3.1);
+  2. cheap fixes (3.2, 3.3);
+  3. method-resolution cache (3.4);
+  4. JMS connection reuse (3.5), only if measurement shows it is needed.
 
 ### Risks
 
@@ -585,5 +585,185 @@ Observations:
   (identity-keyed, leak-free), but it is no longer a priority.
 - Throughput still flattens beyond 4 threads in the benchmark. The remaining contention is no
   longer in WSIF's own code; profile bpengine under load (Phase 0.3) to find the next limit.
+
+## 10. Phase 3 re-evaluation (2026-10-20)
+
+### 10.1 Method
+
+Read the complete bpengine invocation path:
+
+- `ServiceInvoker` (`invoke`, `invokeNoResponse`, `createOperation`, `getPort`,
+  `getTypeSerializerInfos`);
+- `DefinitionsCache`;
+- the providers `SeeWSIFJMSProvider` / `SeeWSIFPort` / `SeeWSIFJMSOperation` /
+  `SeeWSIFJMSDestination`, `SeeWSIFJavaPort` / `SeeWSIFJavaOperation` / `SeeWSIFDefaultOperation`,
+  `SeeWSIFEJB*`, and `WebServiceRegistry`;
+- the external `com.seeburger.base.util.jms.JMSManager` (jms-util 1.5.0), by disassembly.
+
+There is no bpengine profile yet (Phase 0.3), so the ranking below is by analysis.
+
+Corrections to earlier assumptions:
+
+- Ports, operations and destinations are created **per invocation and never shared between
+  threads**. Their mutable fields (`SeeWSIFPort.operationInstances`, `SeeWSIFJMSDestination.jmsQueueName`,
+  `SeeWSIFEJBPort.serviceInstance`, …) are therefore not thread-safety problems. They are,
+  however, the reason why ports must **not** be cached or shared: `adjustQueueForPriority`
+  even rewrites the destination's queue name per call.
+- `wsif.properties` is invisible in bpengine, so the transaction-control lookup in the
+  `SeeWSIFJMSOperation` constructor never reaches `Class.forName`. Since Phase 1.3 the constructor
+  costs three cached property lookups.
+- bpengine's `pom.xml` already references `org.apache.ws:wsif:0.20260921`. The fork's version
+  was not changed by Phases 1 and 2, so that coordinate does not identify which code is used.
+
+### 10.2 Findings
+
+| # | Where | Finding | Cost / impact |
+|---|---|---|---|
+| F1 | `SeeWSIFJMSDestination` + `JMSManager` | Every destination (= every invocation) creates `new JMSManager(false)`. `JMSManager` holds its *own* `connection` and creates it via `ConnectionFactoryManager.getConnectionFactory(..)` + `RemotingCredentialsAugmentor.createConnection(..)` on first use; `close()` closes it. The XA path creates a new `XAJMSManager` per send. **One JMS connection is opened and closed per invocation.** | High if the factory does not pool (TCP/JMS handshake per call), low if it does – **unknown, measure (3.0)** |
+| F2 | `SeeWSIFJMSDestination.sendNonXA` / `receive` | A session and producer (or consumer) per send / receive; temporary reply queue per sync call. | Medium; normal JMS usage once the connection is shared |
+| F3 | `SeeWSIFJMSDestination` sync path | `send(…, setReplyTo=true)` creates temporary queue A and sets it as `JMSReplyTo`; `receive(id)` then creates **another** temporary queue B and listens there (unless a named reply queue was configured). A reply to A can never be received from B. The class comment says synchronous JMS is "NOT supported", so in practice sync calls probably use named reply queues. | **Correctness – verify** |
+| F4 | `SeeWSIFDefaultOperation.getMethodSignature` + `WebServiceRegistry.executeMethod*` | Per Java/EJB call: `cl.loadClass(..)` for every parameter type, a new `argumentNames` list, then `service.getClass().getMethod(name, sig)`. Nothing is cached. | Medium; dominant WSIF-side cost of in-process Java calls |
+| F5 | `DefinitionsCache.getServiceByPortType` | Linear scan bindings × services × ports on every invocation. | Low–medium, grows with WSDL size |
+| F6 | `DefinitionsCache` lazy maps (`bindings`, `services`, `portTypes`, `messages`, …) | Built lazily and published through plain fields without synchronization (unsafe publication; benign duplicate builds). | Low; correctness under the JMM |
+| F7 | `ServiceInvoker.getTypeSerializerInfos` | Builds a `TypeSerializerInfo` list with new serializer factories for every invocation; only `WSIFOperation_ApacheAxis` reads it, and JMS / Java / EJB calls never do. | Low–medium allocation per call |
+| F8 | `ServiceInvoker.createOperation` + `invoke` / `invokeNoResponse` | 2–3 `getContext()` / `setContext()` round trips per call (each `getContext` clones the message). | Low |
+| F9 | `SeeWSIFPort.createOperation` | On every call (new port), `getDynamicWSIFOperation` constructs the operation and then `copy()`s it, so it is constructed twice; `getFormatter()` creates a new `JMSFormatter` per send. | Low |
+| F10 | `SeeWSIFJMSOperation` constructor | `clazz.isAssignableFrom(WSIFTransactionControl.class)` is inverted. Transaction control can never be activated – dormant, because the property is not visible in bpengine (F-note above). | Correctness (dormant) |
+| F11 | `WebServiceRegistry.bind` | `services.put(..)` is executed twice, so `previous` is always the new service and the "Replaced previously registered InvocationService" warning never fires. | Correctness (logging) |
+| F12 | `SeeWSIFDefaultOperation.getMethodSignature` | Operator-precedence bug: `"…Part name was " + part.getName() == null ? "<null>" : part.getName()` compares the whole string with `null`, so the exception message is only the part name. | Correctness (message) |
+| F13 | `SeeWSIFJavaPort.getFieldTypeMapsFromParent` | `getDeclaredField` + `setAccessible` per port (= per call). | Low |
+
+### 10.3 Proposed implementation
+
+**3.0 Measure first (no code change)**
+
+- JFR recording of a bpengine node under representative load (async JMS, sync JMS, in-process
+  Java calls), with `settings=profile` and `jdk.JavaMonitorEnter#threshold=1ms`.
+- Look at: CPU and allocation in `ServiceInvoker.invoke`, `jdk.SocketRead`/`SocketWrite` and
+  thread stacks in `JMSManager.createConnection`, GC, contended monitors.
+- Find out from the platform's `ConnectionFactoryManager` implementation whether
+  `getConnectionFactory()` returns a pooling factory. That decides whether F1 matters at all.
+- Keep the WSIF benchmark as a regression guard for the WSIF part.
+
+**3.1 Release the fork** – bump `org.apache.ws:wsif` to a new version (e.g. `0.20261020`) for
+Phases 1 + 2, install/deploy it, and reference that version in bpengine's `pom.xml`. Also check
+the OSGi import range of `org.apache.wsif.*` in the bpengine manifest.
+
+**3.2 Cheap per-call fixes (one change set, low risk, unit-testable)**
+
+- `ServiceInvoker.createOperation`: compute the `TypeSerializerInfo` list only for SOAP/Axis
+  operations (`operation instanceof WSIFOperation_ApacheAxis`) – F7.
+- `ServiceInvoker`: collect all context entries (serializers, process name, partner link,
+  endpoint reference, process ID, priority, engine group, context ID) and do **one**
+  `getContext()` / `setContext()` per invocation. Today it is 2–3. `createOperation` gets the
+  engine group / context ID as parameters – F8.
+- `DefinitionsCache`: memoize `getServiceByPortType` in a transient
+  `ConcurrentHashMap<QName, Service>`, which is valid because definitions are immutable after
+  parsing (confirmed). Publish the lazy maps safely, either as `volatile` fields or by building
+  them under a lock – F5, F6.
+- `SeeWSIFPort.getDynamicWSIFOperation` / `createOperation`: return a freshly built operation
+  without the extra `copy()`. Create the `JMSFormatter` once per port – F9.
+- `SeeWSIFJMSOperation`: read the timeouts and the transaction-control class once (static lazy
+  holder), and fix the inverted check (`WSIFTransactionControl.class.isAssignableFrom(clazz)`) – F10.
+  Note: this only activates transaction control if `wsif.transactioncontrol.impl` is ever
+  configured visibly; in today's deployments nothing changes.
+- `WebServiceRegistry.bind`: single `put` – F11. `getMethodSignature`: parenthesise the
+  message – F12.
+
+**3.3 `SeeWSIFJavaPort`** – replace `getFieldTypeMapsFromParent()` with `getFieldTypeMaps()`
+(needs 3.1) – F13.
+
+**3.4 Cache method resolution for Java/EJB calls** – F4
+
+- A `ClassValue<ConcurrentHashMap<SignatureKey, ResolvedMethod>>` on the **service
+  implementation class**, where `SignatureKey` is the method name plus the part type names in
+  parameter order, and `ResolvedMethod` holds `Class<?>[]` signature, `Method`, and argument
+  names.
+- `ClassValue` ties the cache to the service class. When the service bundle is updated or
+  re-registered, a new class gets new entries and the old ones go away with the old class
+  loader – no OSGi class-loader leak.
+- `WebServiceRegistry.executeMethod*` gets an overload that takes the resolved `Method`.
+  `SeeWSIFJavaOperation` / `SeeWSIFEJBOperation` resolve once per (class, key) and only call
+  `invoke`.
+- Tests: the same `Method` is reused across calls; a re-registered service class gets a fresh
+  resolution.
+
+**3.5 Reuse the JMS connection – only if 3.0 shows connections are not pooled** – F1–F3
+
+- One shared, lazily created non-XA `JMSManager` per target instance, held by a small
+  `SharedJmsConnection` holder in bpengine. JMS `Connection` objects are thread-safe; sessions,
+  producers and consumers stay per call (they are not).
+- Registered `ExceptionListener`: on connection failure, drop the shared manager so that the
+  next call reconnects. Close it on bundle stop.
+- **Temporary queues must then be deleted explicitly.** Today they disappear with the
+  per-invocation connection; with a shared connection they would accumulate.
+  - `sendNonXA` keeps the temporary reply queue it created in the destination.
+  - `receive(id)` consumes from **that** queue instead of creating a new one, which also fixes
+    F3, and calls `TemporaryQueue.delete()` in `finally`.
+- The XA path (`XAJMSManager` per send) stays unchanged: XA connections must be enlisted in
+  the current transaction, and sharing them needs a separate design.
+- Rollout behind a configuration switch (`EngineConfiguration`, default off), with A/B
+  measurement in a test system before enabling it by default.
+
+**3.6 Correctness follow-ups**
+
+- Verify F3 with a sync JMS call without a named reply queue, and fix it as part of 3.5 or
+  separately.
+- F10, F11 and F12 are in 3.2.
+
+**Dropped / constraints**
+
+- **Service caching in bpengine (old 3.1):** after Phase 2, `getService` costs about 0.8 µs and
+  a full invoke with caching is no faster than without (§9.3). Not worth the extra state.
+  WSIF's identity-keyed cache stays available as a one-line option if a profile ever shows
+  `getService` again.
+- **Ports stay per invocation (old 3.2):** service-object semantics of the Java provider, the
+  per-call XA decision, and per-call mutable destination state (F1, `adjustQueueForPriority`).
+
+### 10.4 Order
+
+1. 3.0 (measure) and 3.1 (release) – in parallel.
+2. 3.2 and 3.3 – one low-risk change set with unit tests.
+3. 3.4 – if in-process Java/EJB calls are significant in the profile.
+4. 3.5 – only if 3.0 shows per-call connection setup, behind a switch, with A/B measurement.
+
+## 11. Phase 3.2 + 3.3 – implementation (bpengine, 2026-10-20)
+
+3.1 was done by the release of WSIF `0.20261020` (Phases 1 + 2), referenced in bpengine's `pom.xml`.
+
+### 11.1 Additional findings while switching bpengine to the new WSIF
+
+| # | Finding | Fix |
+|---|---|---|
+| F14 | Since WSIF commit `8773079` (already in `0.20260921`), `WSIFPort_Java` stores several Java types of one XML type as an (unmodifiable) `List` instead of a `Vector`. `SeeWSIFDefaultOperation.getMethodSignature` and the fault-info code checked `instanceof Vector` and otherwise cast to `String`, so such a mapping failed with a `ClassCastException`. | Checks changed to `instanceof List` (`Vector` is a `List`, so `SeeWSIFEJBOperation`'s own `Vector`-based map still works). |
+| F15 | Also since `8773079`, `WSIFPort_Java.operationInstances` is typed `Map<String, WSIFOperation_Java>`. `SeeWSIFJavaPort` stored its `SeeWSIFJavaOperation`s there, which does not extend `WSIFOperation_Java`, so **bpengine did not compile** against WSIF ≥ `0.20260921`. | `SeeWSIFJavaPort` keeps its operations in its own map. |
+
+### 11.2 Changes (bpengine)
+
+| Item | File | Change |
+|---|---|---|
+| F7 | `model/impl/base/ServiceInvoker` | `needsSoapTypeSerializers(operation)`: the `TypeSerializerInfo` list is no longer built for bpengine's own JMS / Java / EJB operations (only Axis reads it; the JMS operation forwards only `CONTEXT_JMS_PREFIX` parts). |
+| F8 | `ServiceInvoker` | `createOperation(…, withOriginalContextId)` sets engine group and (for `invoke`) the original context ID together with all other entries – one `getContext` / `setContext` instead of two per call. A failure to set the engine group is still only logged. The priority update of the async path stays (conditional, rare). |
+| F5, F6 | `extensions/wsdl/DefinitionsCache` | `getServiceByPortType` memoized (only found services; result unchanged). Lazy maps and `allDefinitions` are `volatile` (safe publication). `operations` is a `ConcurrentHashMap` – it is filled incrementally and was a plain `HashMap` written concurrently. |
+| F9 | `invservice/provider/SeeWSIFPort` | `createOperation` returns the operation from `getDynamicWSIFOperation` directly – it is already a fresh instance; the extra `copy()` constructed it twice per call. |
+| F10 | `invservice/provider/SeeWSIFJMSOperation` | `WSIFTransactionControl.class.isAssignableFrom(clazz)` (was inverted). Dormant in today's deployments (`wsif.properties` not visible). |
+| F11 | `invservice/WebServiceRegistry` | `bind` puts once, so a replaced service is reported again. |
+| F12, F14 | `invservice/SeeWSIFDefaultOperation` | Exception message parenthesised; `Vector` → `List` (see 11.1). |
+| 3.3 / F13, F15 | `invservice/java/SeeWSIFJavaPort` | `getFieldTypeMaps()` instead of `getDeclaredField` + `setAccessible`; own operation map (see 11.1). |
+
+Not done, deliberately:
+
+- **Static holder for the JMS timeouts.** Since Phase 1.3, `WSIFProperties` lookups are a cached
+  volatile read; a static holder would freeze the value for the first context class loader.
+- **Caching the `JMSFormatter` per port.** A port is used for a single operation per invocation,
+  so there is nothing to save.
+
+### 11.3 Tests (bpengine, run in the normal build)
+
+| Test | Covers |
+|---|---|
+| `invservice/SeeWSIFJavaInvocationTest` | End-to-end Java invocation through `SeeWSIFJavaProvider` → `SeeWSIFJavaPort` → `SeeWSIFJavaOperation` → `WebServiceRegistry`, with one XML type mapped onto two Java types (F13, F14, F15, cached operation prototype). |
+| `extensions/wsdl/DefinitionsCacheServiceByPortTypeTest` | Memoized lookup; unknown / `null` port type; concurrent first use of `getServiceByPortType` + `getPortTypeOperations` (50 rounds × 8 threads). |
+| `model/impl/base/ServiceInvokerSoapSerializerTest` | Serializer list only for non-bpengine operations. |
 
 
