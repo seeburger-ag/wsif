@@ -29,18 +29,11 @@
             <name>SEEBURGER Snapshot Repository</name>
             <url>https://repo.seeburger.de/archiva/repository/snapshot/</url>
         </snapshotRepository>
-
-        <site>
-            <id>github</id>
-            <url>scm:git:git@github.com:seeburger-ag/wsif.git</url>
-        </site>
-
     </distributionManagement>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.release>21</maven.compiler.release>
-
         <!--
             soaprmi.* and xpp are intentionally absent: the SoapRMI provider is the
             only code that referenced them and it is not built (see the
